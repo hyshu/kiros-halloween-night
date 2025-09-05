@@ -1,0 +1,37 @@
+name: kiro_halloween_game
+description: "Flutter GPU App."
+publish_to: "none"
+
+version: 0.0.1+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  cupertino_icons: ^1.0.8
+  flutter:
+    sdk: flutter
+  flutter_gpu:
+    sdk: flutter
+  flutter_gpu_shaders: ^0.3.0
+  vector_math: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/shaderbundles/
+    - assets/graveyard/
+    - assets/graveyard/Textures/
+    - assets/foods/
+    - assets/foods/Textures/
+    - assets/characters/
+    - assets/characters/Textures/
+
+scripts:
+  compile: cd ../compile_shader && fvm flutter clean && fvm flutter build apk && cd .. && touch flutter_gpu_experiment/assets/shaderbundles && rm -rdf flutter_gpu_experiment/assets/shaderbundles && mv compile_shader/build/shaderbundles flutter_gpu_experiment/assets/
+    

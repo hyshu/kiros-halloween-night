@@ -1,0 +1,10 @@
+{
+    "BoxVertex": {
+        "type": "vertex",
+        "file": "../kiro_halloween_game/shaders/box.vert"
+    },
+    "BoxFragment": {
+        "type": "fragment",
+        "file": "../kiro_halloween_game/shaders/box.frag"
+    }
+}
