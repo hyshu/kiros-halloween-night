@@ -103,15 +103,15 @@
     - Add ally activation and movement coordination
     - _Requirements: 5.3, 5.4_
 
-- [ ] 7. Create combat system between allies and hostile enemies
-  - [ ] 7.1 Implement combat mechanics and health system
+- [x] 7. Create combat system between allies and hostile enemies
+  - [x] 7.1 Implement combat mechanics and health system
     - Write CombatManager to orchestrate battles between allies and hostile enemies
     - Create HealthSystem with damage tracking and health management
     - Implement combat resolution with attack outcomes and health changes
     - Add ally lifecycle management with satisfaction-based removal
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-  - [ ] 7.2 Create combat AI and automatic engagement
+  - [x] 7.2 Create combat AI and automatic engagement
     - Implement AllyAI for automatic combat engagement with hostile enemies
     - Write combat detection system for ally vs hostile enemy encounters
     - Create combat feedback system integrated with dialogue

@@ -11,55 +11,52 @@ import 'spatial_index.dart';
 class EnemyManager {
   /// All enemies in the game world
   final Map<String, EnemyCharacter> _enemies = {};
-  
+
   /// Proximity detector for enemy activation
   final ProximityDetector _proximityDetector = ProximityDetector();
-  
+
   /// Spatial index for efficient proximity queries
   SpatialIndex? _spatialIndex;
-  
+
   /// Reference to the tile map for validation
   TileMap? _tileMap;
-  
+
   /// Player position for proximity calculations
   Position? _playerPosition;
 
   /// Gets all enemies in the game
-  UnmodifiableMapView<String, EnemyCharacter> get enemies => 
+  UnmodifiableMapView<String, EnemyCharacter> get enemies =>
       UnmodifiableMapView(_enemies);
-  
+
   /// Gets all active enemies (for performance optimization)
-  List<EnemyCharacter> get activeEnemies => 
+  List<EnemyCharacter> get activeEnemies =>
       _enemies.values.where((enemy) => enemy.isActive).toList();
-  
+
   /// Gets all enemies at a specific position
   List<EnemyCharacter> getEnemiesAt(Position position) {
     return _enemies.values
         .where((enemy) => enemy.position == position)
         .toList();
   }
-  
+
   /// Gets an enemy by ID
   EnemyCharacter? getEnemy(String id) {
     return _enemies[id];
   }
-  
+
   /// Gets the number of enemies in the world
   int get enemyCount => _enemies.length;
-  
+
   /// Gets the number of active enemies
   int get activeEnemyCount => activeEnemies.length;
 
   /// Initializes the enemy manager with a tile map
   void initialize(TileMap tileMap) {
     _tileMap = tileMap;
-    
+
     // Initialize the spatial index with world dimensions
     final (width, height) = tileMap.dimensions;
-    _spatialIndex = SpatialIndex(
-      worldWidth: width,
-      worldHeight: height,
-    );
+    _spatialIndex = SpatialIndex(worldWidth: width, worldHeight: height);
   }
 
   /// Spawns enemies across the world map
@@ -70,21 +67,21 @@ class EnemyManager {
     if (_tileMap == null) {
       throw StateError('EnemyManager must be initialized with a TileMap first');
     }
-    
+
     print('EnemyManager: Spawning enemies across the world...');
-    
+
     // Use EnemySpawner to generate enemies
     final spawnedEnemies = EnemySpawner.spawnEnemies(
       _tileMap!,
       spawnDensity: spawnDensity,
       playerSpawn: playerSpawn,
     );
-    
+
     // Add all spawned enemies to our management system
     for (final enemy in spawnedEnemies) {
       await addEnemy(enemy);
     }
-    
+
     print('EnemyManager: Successfully spawned ${_enemies.length} enemies');
   }
 
@@ -97,7 +94,7 @@ class EnemyManager {
     if (_tileMap == null) {
       throw StateError('EnemyManager must be initialized with a TileMap first');
     }
-    
+
     final spawnedEnemies = EnemySpawner.spawnEnemiesInRegion(
       _tileMap!,
       topLeft,
@@ -105,7 +102,7 @@ class EnemyManager {
       spawnDensity: spawnDensity,
       existingEnemies: _enemies.values.toList(),
     );
-    
+
     for (final enemy in spawnedEnemies) {
       await addEnemy(enemy);
     }
@@ -114,20 +111,24 @@ class EnemyManager {
   /// Adds an enemy to the manager
   Future<void> addEnemy(EnemyCharacter enemy) async {
     _enemies[enemy.id] = enemy;
-    
+
     // Load the enemy's 3D model
     await enemy.loadModel();
-    
-    print('EnemyManager: Added ${enemy.enemyType.displayName} '
-          'at ${enemy.position} (${enemy.id})');
+
+    print(
+      'EnemyManager: Added ${enemy.enemyType.displayName} '
+      'at ${enemy.position} (${enemy.id})',
+    );
   }
 
   /// Removes an enemy from the manager
   void removeEnemy(String enemyId) {
     final enemy = _enemies.remove(enemyId);
     if (enemy != null) {
-      print('EnemyManager: Removed ${enemy.enemyType.displayName} '
-            '(${enemy.id})');
+      print(
+        'EnemyManager: Removed ${enemy.enemyType.displayName} '
+        '(${enemy.id})',
+      );
     }
   }
 
@@ -141,16 +142,16 @@ class EnemyManager {
   /// Updates enemy activation based on player position
   void updateEnemyActivation(Position playerPosition) {
     _playerPosition = playerPosition;
-    
+
     // Update proximity detection and activation for all enemies
     for (final enemy in _enemies.values) {
       final distance = playerPosition.distanceTo(enemy.position);
-      
+
       final shouldBeActive = distance <= enemy.activationRadius;
-      
+
       if (shouldBeActive != enemy.isActive) {
         enemy.isActive = shouldBeActive;
-        
+
         if (shouldBeActive) {
           print('EnemyManager: Activated ${enemy.id} at distance $distance');
         } else {
@@ -171,14 +172,14 @@ class EnemyManager {
   /// Gets all enemies within activation range of the player
   List<EnemyCharacter> getEnemiesInPlayerRange() {
     if (_playerPosition == null) return [];
-    
+
     return getEnemiesInRadius(_playerPosition!, 15.0); // Max activation radius
   }
 
   /// Processes AI for all active enemies
   void processEnemyAI() {
     if (_playerPosition == null) return;
-    
+
     for (final enemy in activeEnemies) {
       // Process enemy AI based on their type and state
       _processEnemyAI(enemy);
@@ -188,7 +189,7 @@ class EnemyManager {
   /// Processes AI for a single enemy
   void _processEnemyAI(EnemyCharacter enemy) {
     if (_tileMap == null || _playerPosition == null) return;
-    
+
     switch (enemy.aiType) {
       case EnemyAIType.wanderer:
         _processWandererAI(enemy);
@@ -228,17 +229,16 @@ class EnemyManager {
       'enemy_types': <String, int>{},
       'ai_types': <String, int>{},
     };
-    
+
     for (final enemy in _enemies.values) {
       final enemyType = enemy.enemyType.displayName;
       final aiType = enemy.aiType.name;
-      
-      stats['enemy_types'][enemyType] = 
+
+      stats['enemy_types'][enemyType] =
           (stats['enemy_types'][enemyType] ?? 0) + 1;
-      stats['ai_types'][aiType] = 
-          (stats['ai_types'][aiType] ?? 0) + 1;
+      stats['ai_types'][aiType] = (stats['ai_types'][aiType] ?? 0) + 1;
     }
-    
+
     return stats;
   }
 
@@ -256,24 +256,28 @@ class EnemyManager {
     if (_tileMap == null) {
       throw StateError('EnemyManager must be initialized with a TileMap first');
     }
-    
+
     print('EnemyManager: Spawning enemies for testing...');
-    
+
     // Use EnemySpawner to generate enemies
     final spawnedEnemies = EnemySpawner.spawnEnemies(
       _tileMap!,
       spawnDensity: spawnDensity,
       playerSpawn: playerSpawn,
     );
-    
+
     // Add all spawned enemies to our management system without loading models
     for (final enemy in spawnedEnemies) {
       _enemies[enemy.id] = enemy;
-      print('EnemyManager: Added ${enemy.enemyType.displayName} '
-            'at ${enemy.position} (${enemy.id}) for testing');
+      print(
+        'EnemyManager: Added ${enemy.enemyType.displayName} '
+        'at ${enemy.position} (${enemy.id}) for testing',
+      );
     }
-    
-    print('EnemyManager: Successfully spawned ${_enemies.length} enemies for testing');
+
+    print(
+      'EnemyManager: Successfully spawned ${_enemies.length} enemies for testing',
+    );
     return spawnedEnemies;
   }
 
