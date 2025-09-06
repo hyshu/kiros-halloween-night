@@ -50,7 +50,7 @@
     - Add character position management and world coordinate conversion
     - _Requirements: 1.2, 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [-] 4. Implement enemy system with proximity-based activation
+- [x] 4. Implement enemy system with proximity-based activation
   - [x] 4.1 Create EnemyCharacter class with AI behavior
     - Write EnemyCharacter class using human/monster 3D models from assets
     - Implement basic AI movement and state management
@@ -73,15 +73,15 @@
     - Update rendering system to display enemies alongside other game objects
     - _Requirements: 3.1, 3.5, 10.1_
 
-- [ ] 5. Create candy item system with collection and abilities
-  - [ ] 5.1 Implement CandyItem class and inventory system
+- [x] 5. Create candy item system with collection and abilities
+  - [x] 5.1 Implement CandyItem class and inventory system
     - Write CandyItem class using food 3D models from assets/foods
     - Create Inventory class for candy collection and management
     - Implement different candy types with unique abilities and stat modifications
     - Add candy viewing capabilities for player inventory
     - _Requirements: 4.1, 4.3, 4.4, 4.5_
 
-  - [ ] 5.2 Create candy spawning and collection mechanics
+  - [x] 5.2 Create candy spawning and collection mechanics
     - Implement CandySpawner for random candy placement during map generation
     - Write automatic collection system when Kiro moves onto candy tiles
     - Create AbilityManager to apply candy effects and stat modifications

@@ -5,6 +5,8 @@ import 'character.dart';
 import 'position.dart';
 import 'tile_map.dart';
 import 'tile_type.dart';
+import 'inventory.dart';
+import 'candy_item.dart';
 
 /// Represents the player-controlled ghost character Kiro
 class GhostCharacter extends Character {
@@ -13,6 +15,9 @@ class GhostCharacter extends Character {
   
   /// Abilities granted by collected candy
   final Map<String, dynamic> abilities = {};
+  
+  /// Player's candy inventory
+  final Inventory inventory;
   
   /// Movement input state
   bool _isProcessingInput = false;
@@ -25,7 +30,9 @@ class GhostCharacter extends Character {
     required Position position,
     int health = 100,
     int maxHealth = 100,
-  }) : super(
+    Inventory? inventory,
+  }) : inventory = inventory ?? Inventory(),
+       super(
           id: id,
           position: position,
           modelPath: 'assets/graveyard/character-ghost.obj',
@@ -179,6 +186,94 @@ class GhostCharacter extends Character {
   bool hasAbility(String abilityName) {
     return abilities.containsKey(abilityName);
   }
+
+  /// Collects a candy item and adds it to inventory
+  /// Returns true if successful, false if inventory is full
+  bool collectCandy(CandyItem candy) {
+    return inventory.addCandy(candy);
+  }
+
+  /// Uses a candy item from inventory and applies its effects
+  /// Returns true if successful, false if candy not found
+  bool useCandy(String candyId) {
+    final candy = inventory.getCandyById(candyId);
+    if (candy == null) return false;
+
+    // Store candy properties before removal
+    final effect = candy.effect;
+    final value = candy.value;
+
+    // Use the candy (this will handle temporary effects and remove from inventory)
+    final success = inventory.useCandy(candyId);
+    
+    if (success) {
+      // Apply immediate effects after removal
+      switch (effect) {
+        case CandyEffect.healthBoost:
+          heal(value);
+          break;
+          
+        case CandyEffect.maxHealthIncrease:
+          // Note: This would require modifying the base Character class
+          // For now, we'll store it as an ability
+          addAbility('maxHealthBonus', 
+              (getAbility<int>('maxHealthBonus') ?? 0) + value);
+          break;
+          
+        case CandyEffect.speedIncrease:
+        case CandyEffect.allyStrength:
+        case CandyEffect.specialAbility:
+        case CandyEffect.statModification:
+          // These are handled by the inventory's temporary effect system
+          break;
+      }
+    }
+    
+    return success;
+  }
+
+  /// Gets available candy for gifting to enemies
+  List<CandyItem> getAvailableCandyForGifting() {
+    return inventory.getAvailableForGifting();
+  }
+
+  /// Gives a candy item to an enemy (removes from inventory)
+  /// Returns the candy item if successful, null if not found
+  CandyItem? giveCandy(String candyId) {
+    return inventory.removeCandyById(candyId);
+  }
+
+  /// Updates temporary effects from candy (call each turn)
+  void updateCandyEffects() {
+    inventory.updateTemporaryEffects();
+  }
+
+  /// Gets the effective speed multiplier including candy effects
+  double get effectiveSpeedMultiplier {
+    final baseSpeed = 1.0;
+    final speedBonus = inventory.getTotalAbilityModification('speedMultiplier');
+    return baseSpeed + speedBonus;
+  }
+
+  /// Gets the effective ally damage bonus from candy effects
+  int get effectiveAllyDamageBonus {
+    return inventory.getTotalAbilityModification('allyDamageBonus').round();
+  }
+
+  /// Checks if the character has wall vision from candy effects
+  bool get hasWallVision {
+    return inventory.hasActiveAbility('wallVision');
+  }
+
+  /// Checks if the character can freeze enemies from candy effects
+  bool get canFreezeEnemies {
+    return inventory.hasActiveAbility('freezeEnemies');
+  }
+
+  /// Gets the current luck bonus from candy effects
+  int get luckBonus {
+    return inventory.getTotalAbilityModification('luck').round();
+  }
   
   /// Sets the character to idle state with proper animation state
   @override
@@ -194,7 +289,7 @@ class GhostCharacter extends Character {
   bool get isMoving => !isIdle && _isProcessingInput;
   
   @override
-  String toString() => 'GhostCharacter($id) at $position [Health: $health/$maxHealth, Abilities: ${abilities.keys.join(', ')}]';
+  String toString() => 'GhostCharacter($id) at $position [Health: $health/$maxHealth, Inventory: ${inventory.count} items, Abilities: ${abilities.keys.join(', ')}]';
 }
 
 /// Represents movement directions
