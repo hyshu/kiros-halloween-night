@@ -62,7 +62,7 @@ class WorldGenerator {
     return tileMap;
   }
 
-  /// Generates roguelike rooms and corridors utilizing the full 500x1000 world space
+  /// Generates roguelike rooms and corridors utilizing the full 200x400 world space
   List<Room> _generateRoomsAndCorridors(TileMap tileMap) {
     // In test mode, create a simpler world with fewer rooms
     if (_isTestMode) {
@@ -77,10 +77,10 @@ class WorldGenerator {
     }
     
     final rooms = <Room>[];
-    final maxRooms = 25; // Use 500x1000 space with larger rooms
-    final minRoomSize = 15;
-    final maxRoomSize = 60;
-    final roomPadding = 5;
+    final maxRooms = 50; // More rooms for shorter corridors
+    final minRoomSize = 8;
+    final maxRoomSize = 20;
+    final roomPadding = 2;
     
     int attempts = 0;
     final maxAttempts = 2000;
@@ -92,7 +92,7 @@ class WorldGenerator {
       final width = minRoomSize + _random.nextInt(maxRoomSize - minRoomSize);
       final height = minRoomSize + _random.nextInt(maxRoomSize - minRoomSize);
       
-      // Use the full 500x1000 space for room placement
+      // Use the full 200x400 space for room placement
       final x = roomPadding + _random.nextInt(TileMap.worldWidth - width - roomPadding * 2);
       final z = roomPadding + _random.nextInt(TileMap.worldHeight - height - roomPadding * 2);
       
@@ -127,26 +127,65 @@ class WorldGenerator {
     }
   }
   
-  /// Connects rooms with L-shaped corridors
+  /// Connects rooms with L-shaped corridors using nearest neighbor approach
   void _connectRoomsWithCorridors(TileMap tileMap, List<Room> rooms) {
-    for (int i = 0; i < rooms.length - 1; i++) {
-      final room1 = rooms[i];
-      final room2 = rooms[i + 1];
+    if (rooms.isEmpty) return;
+    
+    // Connect each room to its nearest unconnected neighbor
+    final connected = <Room>{rooms.first};
+    final unconnected = Set<Room>.from(rooms.skip(1));
+    
+    while (unconnected.isNotEmpty) {
+      Room? nearestRoom;
+      Room? nearestConnected;
+      double shortestDistance = double.infinity;
       
-      _createCorridor(tileMap, room1.center, room2.center);
+      // Find the shortest connection between connected and unconnected rooms
+      for (final connectedRoom in connected) {
+        for (final unconnectedRoom in unconnected) {
+          final distance = connectedRoom.center.distanceTo(unconnectedRoom.center).toDouble();
+          if (distance < shortestDistance) {
+            shortestDistance = distance;
+            nearestRoom = unconnectedRoom;
+            nearestConnected = connectedRoom;
+          }
+        }
+      }
+      
+      if (nearestRoom != null && nearestConnected != null) {
+        _createCorridor(tileMap, nearestConnected.center, nearestRoom.center);
+        connected.add(nearestRoom);
+        unconnected.remove(nearestRoom);
+      } else {
+        break; // Safety break
+      }
     }
     
-    // Create additional connections for better connectivity
-    for (int i = 0; i < rooms.length; i += 3) {
-      if (i + 2 < rooms.length) {
-        _createCorridor(tileMap, rooms[i].center, rooms[i + 2].center);
+    // Add a few extra connections for redundancy (shorter ones)
+    for (int i = 0; i < rooms.length && i < 5; i++) {
+      final room = rooms[i];
+      Room? nearestRoom;
+      double shortestDistance = double.infinity;
+      
+      for (int j = 0; j < rooms.length; j++) {
+        if (i == j) continue;
+        final otherRoom = rooms[j];
+        final distance = room.center.distanceTo(otherRoom.center).toDouble();
+        if (distance < shortestDistance && distance < 30) { // Very short connections only
+          shortestDistance = distance;
+          nearestRoom = otherRoom;
+        }
+      }
+      
+      if (nearestRoom != null) {
+        _createCorridor(tileMap, room.center, nearestRoom.center);
       }
     }
   }
   
-  /// Creates an L-shaped corridor between two points
+  /// Creates an L-shaped corridor between two points with 1-tile width
   void _createCorridor(TileMap tileMap, Position start, Position end) {
-    final corridorWidth = 3; // Make corridors wide enough
+    final corridorWidth = 1; // 1-tile wide corridors for strategic movement
     
     // Decide whether to go horizontal first or vertical first randomly
     final horizontalFirst = _random.nextBool();
@@ -162,32 +201,30 @@ class WorldGenerator {
     }
   }
   
-  /// Carves a horizontal corridor
+  /// Carves a horizontal corridor with 1-tile width
   void _carveHorizontalCorridor(TileMap tileMap, int x1, int x2, int z, int width) {
     final minX = min(x1, x2);
     final maxX = max(x1, x2);
     
     for (int x = minX; x <= maxX; x++) {
-      for (int dz = -(width ~/ 2); dz <= (width ~/ 2); dz++) {
-        final position = Position(x, z + dz);
-        if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
-          tileMap.setTileAt(position, TileType.floor);
-        }
+      // For 1-tile width, only carve the center line
+      final position = Position(x, z);
+      if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
+        tileMap.setTileAt(position, TileType.floor);
       }
     }
   }
   
-  /// Carves a vertical corridor
+  /// Carves a vertical corridor with 1-tile width
   void _carveVerticalCorridor(TileMap tileMap, int x, int z1, int z2, int width) {
     final minZ = min(z1, z2);
     final maxZ = max(z1, z2);
     
     for (int z = minZ; z <= maxZ; z++) {
-      for (int dx = -(width ~/ 2); dx <= (width ~/ 2); dx++) {
-        final position = Position(x + dx, z);
-        if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
-          tileMap.setTileAt(position, TileType.floor);
-        }
+      // For 1-tile width, only carve the center line
+      final position = Position(x, z);
+      if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
+        tileMap.setTileAt(position, TileType.floor);
       }
     }
   }
@@ -196,13 +233,16 @@ class WorldGenerator {
   List<Room> _generateSimpleRoomWorld(TileMap tileMap) {
     final rooms = <Room>[];
     
-    // Create a few test rooms
-    final room1 = Room(50, 50, 30, 20);
-    final room2 = Room(200, 150, 25, 25);
-    final room3 = Room(350, 300, 40, 30);
-    final room4 = Room(100, 400, 35, 25);
+    // Create test rooms that fit in 200x400 space
+    final room1 = Room(20, 20, 15, 12);
+    final room2 = Room(80, 60, 12, 15);
+    final room3 = Room(140, 100, 18, 14);
+    final room4 = Room(50, 180, 16, 13);
+    final room5 = Room(120, 220, 14, 16);
+    final room6 = Room(30, 300, 15, 12);
+    final room7 = Room(100, 350, 17, 14);
     
-    rooms.addAll([room1, room2, room3, room4]);
+    rooms.addAll([room1, room2, room3, room4, room5, room6, room7]);
     
     // Start with all walls
     for (int z = 1; z < TileMap.worldHeight - 1; z++) {
@@ -452,7 +492,7 @@ class WorldGenerator {
     }
     
     // Place obstacles within rooms only, not in corridors
-    final obstacleCount = 150; // Fixed number for large world
+    final obstacleCount = 120; // Increased for 50 rooms
     int placed = 0;
     int attempts = 0;
     final maxAttempts = obstacleCount * 15;
@@ -510,7 +550,7 @@ class WorldGenerator {
     }
     
     // Place candy throughout floor areas (rooms and corridors)
-    final candyCount = 200; // Fixed number for large world
+    final candyCount = 150; // Increased for 50 rooms
     int placed = 0;
     int attempts = 0;
     final maxAttempts = candyCount * 20;

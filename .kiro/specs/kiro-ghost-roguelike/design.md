@@ -38,16 +38,17 @@ Game Engine Layer
 ## Components and Interfaces
 
 ### World Generation System
-**Purpose**: Creates the 500x1000 tile procedural world with guaranteed pathfinding and complete boundary enforcement
+**Purpose**: Creates the 200x400 tile procedural world with guaranteed pathfinding and complete boundary enforcement
 
 **Key Components**:
-- `WorldGenerator`: Procedural map creation with maze-like pathways and boss placement
+- `WorldGenerator`: Procedural map creation with maze-like pathways (1 tile wide corridors) and boss placement
 - `TileMap`: Grid-based world representation with tile types (floor, wall, obstacle)
 - `PathValidator`: Ensures navigable route from spawn to boss location at end of main path
 - `PerimeterWalls`: Enforces complete world boundaries with impassable barriers and no escape gaps
 - `BossLocationManager`: Places final boss monster at the designated end location
+- `CorridorGenerator`: Creates narrow 1-tile wide passages for strategic movement
 
-**Design Rationale**: Large world size provides epic scope while grid-based system simplifies collision detection and pathfinding. Complete perimeter walls prevent players from escaping the play area, ensuring contained gameplay. Boss placement at path end creates clear progression goal.
+**Design Rationale**: Moderately sized world (200x400) provides good exploration scope while maintaining performance and manageable complexity. Grid-based system simplifies collision detection and pathfinding. Complete perimeter walls prevent players from escaping the play area, ensuring contained gameplay. Boss placement at path end creates clear progression goal.
 
 ### Character System
 **Purpose**: Manages Kiro, enemies, and ally state transitions with proper 3D model integration
@@ -96,7 +97,7 @@ Game Engine Layer
 - `SpatialIndex`: Efficient spatial queries for nearby entities
 - `EnemyStateManager`: Handles transitions between active/inactive enemy states
 
-**Design Rationale**: Only processing nearby enemies maintains performance in the large 500x1000 world while creating dynamic encounters as players explore. Enemies become active and potentially hostile when Kiro approaches, then deactivate when distance increases, optimizing computational resources.
+**Design Rationale**: Only processing nearby enemies maintains performance in the 200x400 world while creating dynamic encounters as players explore. Enemies become active and potentially hostile when Kiro approaches, then deactivate when distance increases, optimizing computational resources.
 
 ### Dialogue and Event System
 **Purpose**: Provides narrative feedback and story progression through interactive dialogue
@@ -127,8 +128,8 @@ Game Engine Layer
 ### World Data
 ```dart
 class TileMap {
-  final int width = 500;
-  final int height = 1000;
+  final int width = 200;
+  final int height = 400;
   final List<List<TileType>> tiles;
   final Position bossLocation;
   final Position playerSpawn;
@@ -292,7 +293,7 @@ enum MovementResult {
 - **Performance benchmarks**: Measure frame rates with maximum entities and proximity activation
 - **Boss battle integration**: Test boss encounter initiation and victory conditions
 - **Dialogue integration**: Verify dialogue appears correctly for all game events
-- **Complete world traversal**: Test movement across entire 500x1000 map with boundary enforcement
+- **Complete world traversal**: Test movement across entire 200x400 map with boundary enforcement
 
 ### User Experience Testing
 - **Control responsiveness**: Ensure smooth grid-based character movement and idle states
@@ -303,7 +304,7 @@ enum MovementResult {
 - **World exploration**: Verify epic scope feeling and navigation clarity in large world
 
 ### Performance Testing
-- **Large world navigation**: Test movement across entire 500x1000 map
+- **Large world navigation**: Test movement across entire 200x400 map
 - **Maximum entity count**: Stress test with many active enemies and allies
 - **Memory usage**: Monitor asset loading and cleanup efficiency
 - **Frame rate stability**: Ensure consistent performance during combat

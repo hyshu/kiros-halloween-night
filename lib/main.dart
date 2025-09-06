@@ -47,7 +47,7 @@ class _GridSceneViewState extends State<GridSceneView> {
 
   Future<void> _initializeWorldMap() async {
     setState(() {
-      _loadingStatus = 'Generating 500x1000 world map...';
+      _loadingStatus = 'Generating 200x400 world map...';
     });
 
     // Generate the large world map
@@ -125,7 +125,7 @@ class _GridSceneViewState extends State<GridSceneView> {
               ),
               const SizedBox(height: 10),
               const Text(
-                'This may take a moment for the large world...',
+                'Creating rooms and narrow corridors...',
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 12,

@@ -1,13 +1,13 @@
 import 'position.dart';
 import 'tile_type.dart';
 
-/// Manages the 500x1000 tile grid world with boundary validation
+/// Manages the 200x400 tile grid world with boundary validation
 class TileMap {
   /// World width in tiles
-  static const int worldWidth = 500;
+  static const int worldWidth = 200;
   
   /// World height in tiles  
-  static const int worldHeight = 1000;
+  static const int worldHeight = 400;
   
   /// The 2D grid of tiles
   final List<List<TileType>> _tiles;

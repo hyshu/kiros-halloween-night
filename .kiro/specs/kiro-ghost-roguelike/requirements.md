@@ -23,7 +23,7 @@ This document outlines the requirements for developing a roguelike adventure gam
 
 #### Acceptance Criteria
 
-1. WHEN the game starts THEN the system SHALL generate a 500 x 1000 tile map
+1. WHEN the game starts THEN the system SHALL generate a 200 x 400 tile map
 2. WHEN generating the map THEN the system SHALL place walls and obstacles to create defined pathways
 3. WHEN generating the map THEN the system SHALL ensure there is a navigable path from start to the boss location
 4. WHEN the map is created THEN the system SHALL place the final boss monster at the end of the main path
