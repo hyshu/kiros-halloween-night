@@ -26,15 +26,15 @@ class GridRenderer extends material.StatefulWidget {
 }
 
 class _GridRendererState extends material.State<GridRenderer> {
-  double _rotationX = 0.5;
+  double _rotationX = 0.3;
   double _rotationY = 0.0;
-  double _cameraDistance = 50.0; // Increased for large world
+  double _cameraDistance = 8.0;
   Vector3 _cameraPosition = Vector3(10, 15, 20);
   Vector3 _cameraTarget = Vector3(10, 0, 10);
 
   double _baseScale = 1.0;
   material.Offset? _lastFocalPoint;
-  
+
   // Pan controls for large world navigation
   Vector3 _panOffset = Vector3.zero();
   material.Offset? _lastPanPoint;
@@ -46,12 +46,11 @@ class _GridRendererState extends material.State<GridRenderer> {
     _initializeCameraForWorld();
     _updateCameraPosition();
   }
-  
+
   void _initializeCameraForWorld() {
-    // Set initial camera target based on scene manager
     if (widget.sceneManager.tileMap != null) {
       _cameraTarget = widget.sceneManager.cameraTarget;
-      _cameraDistance = 80.0; // Larger distance for big world
+      _cameraDistance = 12.0;
     }
   }
 
@@ -62,7 +61,16 @@ class _GridRendererState extends material.State<GridRenderer> {
   }
 
   void _onSceneUpdate() {
-    setState(() {});
+    setState(() {
+      final newTarget = widget.sceneManager.cameraTarget;
+      final targetDifference = (newTarget - _cameraTarget).length;
+      if (targetDifference > 2.0) {
+        _panOffset = Vector3.zero();
+      }
+
+      _cameraTarget = newTarget + _panOffset;
+      _updateCameraPosition();
+    });
   }
 
   @override
@@ -75,32 +83,47 @@ class _GridRendererState extends material.State<GridRenderer> {
       },
       onScaleUpdate: (details) {
         setState(() {
-          // Handle zoom
           if (details.scale != 1.0) {
-            final minDistance = widget.sceneManager.tileMap != null ? 20.0 : 10.0;
-            final maxDistance = widget.sceneManager.tileMap != null ? 200.0 : 50.0;
-            _cameraDistance = (_baseScale / details.scale).clamp(minDistance, maxDistance);
+            final minDistance = widget.sceneManager.tileMap != null ? 5.0 : 3.0;
+            final maxDistance = widget.sceneManager.tileMap != null ? 25.0 : 15.0;
+            _cameraDistance = (_baseScale / details.scale).clamp(
+              minDistance,
+              maxDistance,
+            );
           }
 
-          // Handle rotation and panning
           if (_lastFocalPoint != null && _lastPanPoint != null) {
             final delta = details.localFocalPoint - _lastFocalPoint!;
-            
+
             if (details.pointerCount == 1) {
-              // Single finger - pan the camera target
-              final panSensitivity = _cameraDistance * 0.01;
-              final panDelta = (details.localFocalPoint - _lastPanPoint!) * panSensitivity;
-              
-              // Convert screen pan to world coordinates
-              final rightVector = Vector3(math.cos(_rotationY), 0, -math.sin(_rotationY));
-              final forwardVector = Vector3(math.sin(_rotationY), 0, math.cos(_rotationY));
-              
-              _panOffset += rightVector * panDelta.dx + forwardVector * panDelta.dy;
-              _cameraTarget = widget.sceneManager.cameraTarget + _panOffset;
-              
+              final panSensitivity = _cameraDistance * 0.005;
+              final panDelta =
+                  (details.localFocalPoint - _lastPanPoint!) * panSensitivity;
+
+              final rightVector = Vector3(
+                math.cos(_rotationY),
+                0,
+                -math.sin(_rotationY),
+              );
+              final forwardVector = Vector3(
+                math.sin(_rotationY),
+                0,
+                math.cos(_rotationY),
+              );
+
+              final newPanOffset =
+                  _panOffset +
+                  rightVector * panDelta.dx +
+                  forwardVector * panDelta.dy;
+
+              final maxPanDistance = 20.0;
+              if (newPanOffset.length <= maxPanDistance) {
+                _panOffset = newPanOffset;
+                _cameraTarget = widget.sceneManager.cameraTarget + _panOffset;
+              }
+
               _lastPanPoint = details.localFocalPoint;
             } else {
-              // Multi-finger - rotate
               _rotationX += delta.dy * 0.01;
               _rotationY += delta.dx * 0.01;
               _rotationX = _rotationX.clamp(-1.5, 1.5);
@@ -126,14 +149,15 @@ class _GridRendererState extends material.State<GridRenderer> {
                   objects: widget.sceneManager.allObjects,
                   cameraPosition: _cameraPosition,
                   cameraTarget: _cameraTarget,
-                  devicePixelRatio: material.MediaQuery.of(context).devicePixelRatio,
+                  devicePixelRatio: material.MediaQuery.of(
+                    context,
+                  ).devicePixelRatio,
                   tileMap: widget.sceneManager.tileMap,
                 ),
                 child: const material.SizedBox.expand(),
               );
             },
           ),
-          // World info overlay for large world
           if (widget.sceneManager.tileMap != null)
             material.Positioned(
               top: 20,
@@ -150,15 +174,24 @@ class _GridRendererState extends material.State<GridRenderer> {
                   children: [
                     material.Text(
                       'World: ${widget.sceneManager.tileMap!.dimensions.$1}x${widget.sceneManager.tileMap!.dimensions.$2}',
-                      style: const material.TextStyle(color: material.Colors.white, fontSize: 12),
+                      style: const material.TextStyle(
+                        color: material.Colors.white,
+                        fontSize: 12,
+                      ),
                     ),
                     material.Text(
                       'Camera: (${(_cameraTarget.x / 2.0).round()}, ${(_cameraTarget.z / 2.0).round()})',
-                      style: const material.TextStyle(color: material.Colors.white, fontSize: 12),
+                      style: const material.TextStyle(
+                        color: material.Colors.white,
+                        fontSize: 12,
+                      ),
                     ),
                     material.Text(
                       'Objects: ${widget.sceneManager.allObjects.length}',
-                      style: const material.TextStyle(color: material.Colors.white, fontSize: 12),
+                      style: const material.TextStyle(
+                        color: material.Colors.white,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -413,28 +446,85 @@ class GPUPainter extends material.CustomPainter {
   }
 
   Float32List _createGridVertices() {
-    // For large world, create a bigger floor plane centered on camera
     double size;
     double offsetX = 0;
     double offsetZ = 0;
-    
+
     if (tileMap != null) {
-      // Large world - create floor around camera position
-      size = 200.0; // Large floor plane
+      size = 200.0;
       offsetX = cameraTarget.x - size / 2;
       offsetZ = cameraTarget.z - size / 2;
     } else {
-      // Small world - original behavior
       size = GridSceneManager.gridSize * 2.0;
     }
-    
+
     return Float32List.fromList([
-      offsetX, -0.01, offsetZ, 0, 1, 0, 0.2, 0.2, 0.2, 0, 0,
-      offsetX + size, -0.01, offsetZ, 0, 1, 0, 0.2, 0.2, 0.2, 1, 0,
-      offsetX + size, -0.01, offsetZ + size, 0, 1, 0, 0.2, 0.2, 0.2, 1, 1,
-      offsetX, -0.01, offsetZ, 0, 1, 0, 0.2, 0.2, 0.2, 0, 0,
-      offsetX + size, -0.01, offsetZ + size, 0, 1, 0, 0.2, 0.2, 0.2, 1, 1,
-      offsetX, -0.01, offsetZ + size, 0, 1, 0, 0.2, 0.2, 0.2, 0, 1,
+      offsetX,
+      -0.01,
+      offsetZ,
+      0,
+      1,
+      0,
+      0.2,
+      0.2,
+      0.2,
+      0,
+      0,
+      offsetX + size,
+      -0.01,
+      offsetZ,
+      0,
+      1,
+      0,
+      0.2,
+      0.2,
+      0.2,
+      1,
+      0,
+      offsetX + size,
+      -0.01,
+      offsetZ + size,
+      0,
+      1,
+      0,
+      0.2,
+      0.2,
+      0.2,
+      1,
+      1,
+      offsetX,
+      -0.01,
+      offsetZ,
+      0,
+      1,
+      0,
+      0.2,
+      0.2,
+      0.2,
+      0,
+      0,
+      offsetX + size,
+      -0.01,
+      offsetZ + size,
+      0,
+      1,
+      0,
+      0.2,
+      0.2,
+      0.2,
+      1,
+      1,
+      offsetX,
+      -0.01,
+      offsetZ + size,
+      0,
+      1,
+      0,
+      0.2,
+      0.2,
+      0.2,
+      0,
+      1,
     ]);
   }
 
