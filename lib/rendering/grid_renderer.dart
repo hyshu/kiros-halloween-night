@@ -9,6 +9,7 @@ import 'package:vector_math/vector_math.dart' as vm;
 import '../core/shaders.dart';
 import '../scene/grid_scene_manager.dart';
 import '../models/model_3d.dart';
+import '../core/tile_map.dart';
 
 class GridRenderer extends material.StatefulWidget {
   final material.Color backgroundColor;
@@ -27,18 +28,31 @@ class GridRenderer extends material.StatefulWidget {
 class _GridRendererState extends material.State<GridRenderer> {
   double _rotationX = 0.5;
   double _rotationY = 0.0;
-  double _cameraDistance = 20.0;
+  double _cameraDistance = 50.0; // Increased for large world
   Vector3 _cameraPosition = Vector3(10, 15, 20);
-  final Vector3 _cameraTarget = Vector3(10, 0, 10);
+  Vector3 _cameraTarget = Vector3(10, 0, 10);
 
   double _baseScale = 1.0;
   material.Offset? _lastFocalPoint;
+  
+  // Pan controls for large world navigation
+  Vector3 _panOffset = Vector3.zero();
+  material.Offset? _lastPanPoint;
 
   @override
   void initState() {
     super.initState();
     widget.sceneManager.addListener(_onSceneUpdate);
+    _initializeCameraForWorld();
     _updateCameraPosition();
+  }
+  
+  void _initializeCameraForWorld() {
+    // Set initial camera target based on scene manager
+    if (widget.sceneManager.tileMap != null) {
+      _cameraTarget = widget.sceneManager.cameraTarget;
+      _cameraDistance = 80.0; // Larger distance for big world
+    }
   }
 
   @override
@@ -57,18 +71,40 @@ class _GridRendererState extends material.State<GridRenderer> {
       onScaleStart: (details) {
         _baseScale = _cameraDistance;
         _lastFocalPoint = details.localFocalPoint;
+        _lastPanPoint = details.localFocalPoint;
       },
       onScaleUpdate: (details) {
         setState(() {
+          // Handle zoom
           if (details.scale != 1.0) {
-            _cameraDistance = (_baseScale / details.scale).clamp(10.0, 50.0);
+            final minDistance = widget.sceneManager.tileMap != null ? 20.0 : 10.0;
+            final maxDistance = widget.sceneManager.tileMap != null ? 200.0 : 50.0;
+            _cameraDistance = (_baseScale / details.scale).clamp(minDistance, maxDistance);
           }
 
-          if (_lastFocalPoint != null) {
+          // Handle rotation and panning
+          if (_lastFocalPoint != null && _lastPanPoint != null) {
             final delta = details.localFocalPoint - _lastFocalPoint!;
-            _rotationX += delta.dy * 0.01;
-            _rotationY += delta.dx * 0.01;
-            _rotationX = _rotationX.clamp(-1.5, 1.5);
+            
+            if (details.pointerCount == 1) {
+              // Single finger - pan the camera target
+              final panSensitivity = _cameraDistance * 0.01;
+              final panDelta = (details.localFocalPoint - _lastPanPoint!) * panSensitivity;
+              
+              // Convert screen pan to world coordinates
+              final rightVector = Vector3(math.cos(_rotationY), 0, -math.sin(_rotationY));
+              final forwardVector = Vector3(math.sin(_rotationY), 0, math.cos(_rotationY));
+              
+              _panOffset += rightVector * panDelta.dx + forwardVector * panDelta.dy;
+              _cameraTarget = widget.sceneManager.cameraTarget + _panOffset;
+              
+              _lastPanPoint = details.localFocalPoint;
+            } else {
+              // Multi-finger - rotate
+              _rotationX += delta.dy * 0.01;
+              _rotationY += delta.dx * 0.01;
+              _rotationX = _rotationX.clamp(-1.5, 1.5);
+            }
           }
 
           _updateCameraPosition();
@@ -77,23 +113,58 @@ class _GridRendererState extends material.State<GridRenderer> {
       },
       onScaleEnd: (details) {
         _lastFocalPoint = null;
+        _lastPanPoint = null;
       },
-      child: material.AnimatedBuilder(
-        animation: widget.sceneManager,
-        builder: (context, _) {
-          return material.CustomPaint(
-            painter: GPUPainter(
-              backgroundColor: widget.backgroundColor,
-              objects: widget.sceneManager.allObjects,
-              cameraPosition: _cameraPosition,
-              cameraTarget: _cameraTarget,
-              devicePixelRatio: material.MediaQuery.of(
-                context,
-              ).devicePixelRatio,
+      child: material.Stack(
+        children: [
+          material.AnimatedBuilder(
+            animation: widget.sceneManager,
+            builder: (context, _) {
+              return material.CustomPaint(
+                painter: GPUPainter(
+                  backgroundColor: widget.backgroundColor,
+                  objects: widget.sceneManager.allObjects,
+                  cameraPosition: _cameraPosition,
+                  cameraTarget: _cameraTarget,
+                  devicePixelRatio: material.MediaQuery.of(context).devicePixelRatio,
+                  tileMap: widget.sceneManager.tileMap,
+                ),
+                child: const material.SizedBox.expand(),
+              );
+            },
+          ),
+          // World info overlay for large world
+          if (widget.sceneManager.tileMap != null)
+            material.Positioned(
+              top: 20,
+              left: 20,
+              child: material.Container(
+                padding: const material.EdgeInsets.all(8),
+                decoration: material.BoxDecoration(
+                  color: material.Colors.black54,
+                  borderRadius: material.BorderRadius.circular(8),
+                ),
+                child: material.Column(
+                  crossAxisAlignment: material.CrossAxisAlignment.start,
+                  mainAxisSize: material.MainAxisSize.min,
+                  children: [
+                    material.Text(
+                      'World: ${widget.sceneManager.tileMap!.dimensions.$1}x${widget.sceneManager.tileMap!.dimensions.$2}',
+                      style: const material.TextStyle(color: material.Colors.white, fontSize: 12),
+                    ),
+                    material.Text(
+                      'Camera: (${(_cameraTarget.x / 2.0).round()}, ${(_cameraTarget.z / 2.0).round()})',
+                      style: const material.TextStyle(color: material.Colors.white, fontSize: 12),
+                    ),
+                    material.Text(
+                      'Objects: ${widget.sceneManager.allObjects.length}',
+                      style: const material.TextStyle(color: material.Colors.white, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            child: const material.SizedBox.expand(),
-          );
-        },
+        ],
       ),
     );
   }
@@ -114,6 +185,7 @@ class GPUPainter extends material.CustomPainter {
   final Vector3 cameraPosition;
   final Vector3 cameraTarget;
   final double devicePixelRatio;
+  final TileMap? tileMap;
 
   GPUPainter({
     required this.backgroundColor,
@@ -121,6 +193,7 @@ class GPUPainter extends material.CustomPainter {
     required this.cameraPosition,
     required this.cameraTarget,
     required this.devicePixelRatio,
+    this.tileMap,
   });
 
   @override
@@ -340,74 +413,28 @@ class GPUPainter extends material.CustomPainter {
   }
 
   Float32List _createGridVertices() {
-    const size = GridSceneManager.gridSize * 2.0;
+    // For large world, create a bigger floor plane centered on camera
+    double size;
+    double offsetX = 0;
+    double offsetZ = 0;
+    
+    if (tileMap != null) {
+      // Large world - create floor around camera position
+      size = 200.0; // Large floor plane
+      offsetX = cameraTarget.x - size / 2;
+      offsetZ = cameraTarget.z - size / 2;
+    } else {
+      // Small world - original behavior
+      size = GridSceneManager.gridSize * 2.0;
+    }
+    
     return Float32List.fromList([
-      0,
-      -0.01,
-      0,
-      0,
-      1,
-      0,
-      0.3,
-      0.3,
-      0.3,
-      0,
-      0,
-      size,
-      -0.01,
-      0,
-      0,
-      1,
-      0,
-      0.3,
-      0.3,
-      0.3,
-      1,
-      0,
-      size,
-      -0.01,
-      size,
-      0,
-      1,
-      0,
-      0.3,
-      0.3,
-      0.3,
-      1,
-      1,
-      0,
-      -0.01,
-      0,
-      0,
-      1,
-      0,
-      0.3,
-      0.3,
-      0.3,
-      0,
-      0,
-      size,
-      -0.01,
-      size,
-      0,
-      1,
-      0,
-      0.3,
-      0.3,
-      0.3,
-      1,
-      1,
-      0,
-      -0.01,
-      size,
-      0,
-      1,
-      0,
-      0.3,
-      0.3,
-      0.3,
-      0,
-      1,
+      offsetX, -0.01, offsetZ, 0, 1, 0, 0.2, 0.2, 0.2, 0, 0,
+      offsetX + size, -0.01, offsetZ, 0, 1, 0, 0.2, 0.2, 0.2, 1, 0,
+      offsetX + size, -0.01, offsetZ + size, 0, 1, 0, 0.2, 0.2, 0.2, 1, 1,
+      offsetX, -0.01, offsetZ, 0, 1, 0, 0.2, 0.2, 0.2, 0, 0,
+      offsetX + size, -0.01, offsetZ + size, 0, 1, 0, 0.2, 0.2, 0.2, 1, 1,
+      offsetX, -0.01, offsetZ + size, 0, 1, 0, 0.2, 0.2, 0.2, 0, 1,
     ]);
   }
 
@@ -475,6 +502,7 @@ class GPUPainter extends material.CustomPainter {
     return objects != oldDelegate.objects ||
         cameraPosition != oldDelegate.cameraPosition ||
         cameraTarget != oldDelegate.cameraTarget ||
-        backgroundColor != oldDelegate.backgroundColor;
+        backgroundColor != oldDelegate.backgroundColor ||
+        tileMap != oldDelegate.tileMap;
   }
 }

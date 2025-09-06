@@ -53,27 +53,31 @@ void main() {
       test('should contain various tile types', () {
         final world = generator.generateWorld();
 
-        // Sample tiles instead of checking entire world for performance
-        final samplePositions = <Position>[];
-        for (int i = 0; i < 100; i++) {
-          final x = i * 5 % TileMap.worldWidth;
-          final z = i * 7 % TileMap.worldHeight;
-          samplePositions.add(Position(x, z));
-        }
+        // Check for room-based structure with better sampling
+        final samplePositions = <Position>[
+          // Sample room interiors
+          Position(60, 60), Position(210, 160), Position(360, 310), Position(110, 410),
+          // Sample walls around rooms
+          Position(50, 50), Position(200, 150), Position(350, 300), Position(100, 400),
+          // Sample corridor areas  
+          Position(125, 100), Position(250, 200), Position(200, 350),
+        ];
 
         final tileTypes = <TileType>{};
         for (final pos in samplePositions) {
-          tileTypes.add(world.getTileAt(pos));
+          if (world.isValidPosition(pos)) {
+            tileTypes.add(world.getTileAt(pos));
+          }
         }
 
         expect(tileTypes, contains(TileType.floor), reason: 'World should contain floor tiles');
         expect(tileTypes, contains(TileType.wall), reason: 'World should contain wall tiles');
-        // Note: obstacles and candy may not appear in sample, so we check their presence separately
         
+        // Check for obstacles and candy in generated world
         final obstacles = world.getPositionsOfType(TileType.obstacle);
         final candies = world.getPositionsOfType(TileType.candy);
-        expect(obstacles.isNotEmpty || candies.isNotEmpty, isTrue, 
-            reason: 'World should contain obstacles or candy');
+        expect(obstacles.isNotEmpty, isTrue, reason: 'World should contain obstacles');
+        expect(candies.isNotEmpty, isTrue, reason: 'World should contain candy');
       });
     });
 
@@ -129,16 +133,16 @@ void main() {
       });
     });
 
-    group('maze generation', () {
-      test('should create maze-like pathways', () {
+    group('room generation', () {
+      test('should create room-based structure', () {
         final world = generator.generateWorld();
 
-        // Check that world has some structure (not all one tile type)
+        // Check that world has room-based structure (rooms connected by corridors)
         final samplePositions = [
-          Position(5, 5),    // Known floor area in test mode
-          Position(250, 500), // Center cross
-          Position(10, 250),  // Vertical pathway
-          Position(250, 10),  // Horizontal pathway
+          Position(60, 60),   // Inside first test room
+          Position(210, 160), // Inside second test room  
+          Position(360, 310), // Inside third test room
+          Position(110, 410), // Inside fourth test room
         ];
 
         final tileTypes = <TileType>{};
@@ -149,10 +153,9 @@ void main() {
         }
         
         expect(tileTypes, contains(TileType.floor), 
-            reason: 'World should contain floor tiles');
+            reason: 'World should contain floor tiles in rooms');
         
-        // In test mode, the simple cross pattern is expected to have mostly floors
-        // Just verify that the world generation completed successfully
+        // Verify that the world generation completed successfully
         expect(world.playerSpawn, isNotNull);
         expect(world.bossLocation, isNotNull);
       });

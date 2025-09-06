@@ -3,6 +3,30 @@ import 'position.dart';
 import 'tile_map.dart';
 import 'tile_type.dart';
 
+/// Represents a room in the roguelike world
+class Room {
+  final int x;
+  final int z;
+  final int width;
+  final int height;
+  
+  Room(this.x, this.z, this.width, this.height);
+  
+  Position get center => Position(x + width ~/ 2, z + height ~/ 2);
+  
+  bool contains(Position position) {
+    return position.x >= x && position.x < x + width &&
+           position.z >= z && position.z < z + height;
+  }
+  
+  bool overlaps(Room other) {
+    return x < other.x + other.width &&
+           x + width > other.x &&
+           z < other.z + other.height &&
+           z + height > other.z;
+  }
+}
+
 /// Generates procedural worlds with maze-like pathways and guaranteed pathfinding
 class WorldGenerator {
   final Random _random;
@@ -13,17 +37,17 @@ class WorldGenerator {
     _random = Random(seed),
     _isTestMode = isTestMode;
 
-  /// Generates a complete world with maze-like pathways and boss placement
+  /// Generates a complete roguelike world with rooms and corridors
   /// Returns a TileMap with guaranteed path from spawn to boss location
   TileMap generateWorld() {
     final tileMap = TileMap();
     
-    // Generate maze-like pathways
-    _generateMazePathways(tileMap);
+    // Generate roguelike room and corridor structure
+    final rooms = _generateRoomsAndCorridors(tileMap);
     
-    // Place spawn and boss locations
-    final spawnLocation = _placePlayerSpawn(tileMap);
-    final bossLocation = _placeBossAtPathEnd(tileMap, spawnLocation);
+    // Place spawn and boss locations in appropriate rooms
+    final spawnLocation = _placePlayerSpawnInRoom(tileMap, rooms.first);
+    final bossLocation = _placeBossInRoom(tileMap, rooms.last);
     
     // Validate that a path exists from spawn to boss
     if (!_validatePath(tileMap, spawnLocation, bossLocation)) {
@@ -38,12 +62,11 @@ class WorldGenerator {
     return tileMap;
   }
 
-  /// Generates maze-like pathways using a modified recursive backtracking algorithm
-  void _generateMazePathways(TileMap tileMap) {
-    // In test mode, create a simpler world
+  /// Generates roguelike rooms and corridors utilizing the full 500x1000 world space
+  List<Room> _generateRoomsAndCorridors(TileMap tileMap) {
+    // In test mode, create a simpler world with fewer rooms
     if (_isTestMode) {
-      _generateSimpleTestWorld(tileMap);
-      return;
+      return _generateSimpleRoomWorld(tileMap);
     }
     
     // Start with all interior tiles as walls (perimeter is already walls)
@@ -53,78 +76,150 @@ class WorldGenerator {
       }
     }
     
-    // Create maze using recursive backtracking
-    final stack = <Position>[];
-    final visited = <Position>{};
+    final rooms = <Room>[];
+    final maxRooms = 25; // Use 500x1000 space with larger rooms
+    final minRoomSize = 15;
+    final maxRoomSize = 60;
+    final roomPadding = 5;
     
-    // Start from a random interior position (must be odd coordinates for proper maze)
-    final startX = 1 + (_random.nextInt((TileMap.worldWidth - 2) ~/ 2)) * 2;
-    final startZ = 1 + (_random.nextInt((TileMap.worldHeight - 2) ~/ 2)) * 2;
-    final start = Position(startX, startZ);
+    int attempts = 0;
+    final maxAttempts = 2000;
     
-    tileMap.setTileAt(start, TileType.floor);
-    stack.add(start);
-    visited.add(start);
-    
-    int iterations = 0;
-    final maxIterations = _isTestMode ? 1000 : 50000;
-    
-    while (stack.isNotEmpty && iterations < maxIterations) {
-      iterations++;
-      final current = stack.last;
-      final neighbors = _getUnvisitedMazeNeighbors(current, visited);
+    // Generate non-overlapping rooms across the large world
+    while (rooms.length < maxRooms && attempts < maxAttempts) {
+      attempts++;
       
-      if (neighbors.isNotEmpty) {
-        // Choose a random neighbor
-        final next = neighbors[_random.nextInt(neighbors.length)];
-        
-        // Remove wall between current and next
-        final wallX = (current.x + next.x) ~/ 2;
-        final wallZ = (current.z + next.z) ~/ 2;
-        final wall = Position(wallX, wallZ);
-        
-        tileMap.setTileAt(wall, TileType.floor);
-        tileMap.setTileAt(next, TileType.floor);
-        
-        visited.add(next);
-        stack.add(next);
-      } else {
-        stack.removeLast();
+      final width = minRoomSize + _random.nextInt(maxRoomSize - minRoomSize);
+      final height = minRoomSize + _random.nextInt(maxRoomSize - minRoomSize);
+      
+      // Use the full 500x1000 space for room placement
+      final x = roomPadding + _random.nextInt(TileMap.worldWidth - width - roomPadding * 2);
+      final z = roomPadding + _random.nextInt(TileMap.worldHeight - height - roomPadding * 2);
+      
+      final newRoom = Room(x, z, width, height);
+      
+      bool overlaps = false;
+      for (final existingRoom in rooms) {
+        if (newRoom.overlaps(existingRoom)) {
+          overlaps = true;
+          break;
+        }
+      }
+      
+      if (!overlaps) {
+        rooms.add(newRoom);
+        _carveRoom(tileMap, newRoom);
       }
     }
     
-    // Add some additional random passages to make it less maze-like and more dungeon-like
-    _addRandomPassages(tileMap);
+    // Connect rooms with corridors
+    _connectRoomsWithCorridors(tileMap, rooms);
+    
+    return rooms;
   }
   
-  /// Generates a simple test world with basic pathways
-  void _generateSimpleTestWorld(TileMap tileMap) {
-    // Create a simple cross pattern for testing
-    final centerX = TileMap.worldWidth ~/ 2;
-    final centerZ = TileMap.worldHeight ~/ 2;
-    
-    // Create horizontal pathway
-    for (int x = 10; x < TileMap.worldWidth - 10; x++) {
-      tileMap.setTileAt(Position(x, centerZ), TileType.floor);
-    }
-    
-    // Create vertical pathway
-    for (int z = 10; z < TileMap.worldHeight - 10; z++) {
-      tileMap.setTileAt(Position(centerX, z), TileType.floor);
-    }
-    
-    // Add some additional floor areas for spawn and boss placement
-    for (int x = 5; x < 15; x++) {
-      for (int z = 5; z < 15; z++) {
+  /// Carves out a room by setting its interior to floor tiles
+  void _carveRoom(TileMap tileMap, Room room) {
+    for (int z = room.z + 1; z < room.z + room.height - 1; z++) {
+      for (int x = room.x + 1; x < room.x + room.width - 1; x++) {
         tileMap.setTileAt(Position(x, z), TileType.floor);
       }
     }
+  }
+  
+  /// Connects rooms with L-shaped corridors
+  void _connectRoomsWithCorridors(TileMap tileMap, List<Room> rooms) {
+    for (int i = 0; i < rooms.length - 1; i++) {
+      final room1 = rooms[i];
+      final room2 = rooms[i + 1];
+      
+      _createCorridor(tileMap, room1.center, room2.center);
+    }
     
-    for (int x = TileMap.worldWidth - 15; x < TileMap.worldWidth - 5; x++) {
-      for (int z = TileMap.worldHeight - 15; z < TileMap.worldHeight - 5; z++) {
-        tileMap.setTileAt(Position(x, z), TileType.floor);
+    // Create additional connections for better connectivity
+    for (int i = 0; i < rooms.length; i += 3) {
+      if (i + 2 < rooms.length) {
+        _createCorridor(tileMap, rooms[i].center, rooms[i + 2].center);
       }
     }
+  }
+  
+  /// Creates an L-shaped corridor between two points
+  void _createCorridor(TileMap tileMap, Position start, Position end) {
+    final corridorWidth = 3; // Make corridors wide enough
+    
+    // Decide whether to go horizontal first or vertical first randomly
+    final horizontalFirst = _random.nextBool();
+    
+    if (horizontalFirst) {
+      // Horizontal then vertical
+      _carveHorizontalCorridor(tileMap, start.x, end.x, start.z, corridorWidth);
+      _carveVerticalCorridor(tileMap, end.x, start.z, end.z, corridorWidth);
+    } else {
+      // Vertical then horizontal  
+      _carveVerticalCorridor(tileMap, start.x, start.z, end.z, corridorWidth);
+      _carveHorizontalCorridor(tileMap, start.x, end.x, end.z, corridorWidth);
+    }
+  }
+  
+  /// Carves a horizontal corridor
+  void _carveHorizontalCorridor(TileMap tileMap, int x1, int x2, int z, int width) {
+    final minX = min(x1, x2);
+    final maxX = max(x1, x2);
+    
+    for (int x = minX; x <= maxX; x++) {
+      for (int dz = -(width ~/ 2); dz <= (width ~/ 2); dz++) {
+        final position = Position(x, z + dz);
+        if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
+          tileMap.setTileAt(position, TileType.floor);
+        }
+      }
+    }
+  }
+  
+  /// Carves a vertical corridor
+  void _carveVerticalCorridor(TileMap tileMap, int x, int z1, int z2, int width) {
+    final minZ = min(z1, z2);
+    final maxZ = max(z1, z2);
+    
+    for (int z = minZ; z <= maxZ; z++) {
+      for (int dx = -(width ~/ 2); dx <= (width ~/ 2); dx++) {
+        final position = Position(x + dx, z);
+        if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
+          tileMap.setTileAt(position, TileType.floor);
+        }
+      }
+    }
+  }
+  
+  /// Generates a simple room-based test world
+  List<Room> _generateSimpleRoomWorld(TileMap tileMap) {
+    final rooms = <Room>[];
+    
+    // Create a few test rooms
+    final room1 = Room(50, 50, 30, 20);
+    final room2 = Room(200, 150, 25, 25);
+    final room3 = Room(350, 300, 40, 30);
+    final room4 = Room(100, 400, 35, 25);
+    
+    rooms.addAll([room1, room2, room3, room4]);
+    
+    // Start with all walls
+    for (int z = 1; z < TileMap.worldHeight - 1; z++) {
+      for (int x = 1; x < TileMap.worldWidth - 1; x++) {
+        tileMap.setTileAt(Position(x, z), TileType.wall);
+      }
+    }
+    
+    // Carve out rooms
+    for (final room in rooms) {
+      _carveRoom(tileMap, room);
+    }
+    
+    // Connect rooms with corridors
+    _connectRoomsWithCorridors(tileMap, rooms);
+    
+    return rooms;
   }
 
   /// Gets unvisited maze neighbors (2 cells away in cardinal directions)
@@ -173,90 +268,30 @@ class WorldGenerator {
     }
   }
 
-  /// Places the player spawn location in an accessible area
-  Position _placePlayerSpawn(TileMap tileMap) {
-    // Find a suitable spawn location near one corner
-    final candidates = <Position>[];
+  /// Places the player spawn location within the first room
+  Position _placePlayerSpawnInRoom(TileMap tileMap, Room room) {
+    final spawn = Position(
+      room.x + 2 + _random.nextInt(room.width - 4),
+      room.z + 2 + _random.nextInt(room.height - 4),
+    );
     
-    // Search in the top-left quadrant for floor tiles
-    for (int z = 1; z < TileMap.worldHeight ~/ 4; z++) {
-      for (int x = 1; x < TileMap.worldWidth ~/ 4; x++) {
-        final position = Position(x, z);
-        if (tileMap.getTileAt(position) == TileType.floor) {
-          candidates.add(position);
-        }
-      }
-    }
-    
-    if (candidates.isEmpty) {
-      // Fallback: create a spawn area if none found
-      final spawn = Position(2, 2);
-      tileMap.setTileAt(spawn, TileType.floor);
-      tileMap.setPlayerSpawn(spawn);
-      return spawn;
-    }
-    
-    final spawn = candidates[_random.nextInt(candidates.length)];
+    // Ensure spawn is on floor
+    tileMap.setTileAt(spawn, TileType.floor);
     tileMap.setPlayerSpawn(spawn);
     return spawn;
   }
 
-  /// Places the boss at the end of the main path (furthest reachable point from spawn)
-  Position _placeBossAtPathEnd(TileMap tileMap, Position spawnLocation) {
-    // Use limited BFS to find a reasonably far point from spawn
-    final distances = <Position, int>{};
-    final queue = <Position>[spawnLocation];
-    distances[spawnLocation] = 0;
+  /// Places the boss within the last room (furthest from spawn)
+  Position _placeBossInRoom(TileMap tileMap, Room room) {
+    final boss = Position(
+      room.x + 2 + _random.nextInt(room.width - 4),
+      room.z + 2 + _random.nextInt(room.height - 4),
+    );
     
-    Position furthestPosition = spawnLocation;
-    int maxDistance = 0;
-    int nodesVisited = 0;
-    final maxNodes = 10000; // Limit search to prevent infinite loops
-    final minDistance = 20; // Minimum distance for boss placement
-    
-    while (queue.isNotEmpty && nodesVisited < maxNodes) {
-      final current = queue.removeAt(0);
-      final currentDistance = distances[current]!;
-      nodesVisited++;
-      
-      if (currentDistance > maxDistance) {
-        maxDistance = currentDistance;
-        furthestPosition = current;
-        
-        // If we found a good distance, we can stop early
-        if (maxDistance >= minDistance && nodesVisited > 1000) {
-          break;
-        }
-      }
-      
-      for (final neighbor in tileMap.getWalkableAdjacentPositions(current)) {
-        if (!distances.containsKey(neighbor)) {
-          distances[neighbor] = currentDistance + 1;
-          queue.add(neighbor);
-        }
-      }
-    }
-    
-    // Fallback: if no suitable position found, place in bottom-right area
-    if (maxDistance < 5) {
-      final candidates = <Position>[];
-      for (int z = TileMap.worldHeight - 50; z < TileMap.worldHeight - 1; z++) {
-        for (int x = TileMap.worldWidth - 50; x < TileMap.worldWidth - 1; x++) {
-          final position = Position(x, z);
-          if (tileMap.isValidPosition(position) && 
-              tileMap.getTileAt(position) == TileType.floor) {
-            candidates.add(position);
-          }
-        }
-      }
-      
-      if (candidates.isNotEmpty) {
-        furthestPosition = candidates[_random.nextInt(candidates.length)];
-      }
-    }
-    
-    tileMap.setBossLocation(furthestPosition);
-    return furthestPosition;
+    // Ensure boss is on floor
+    tileMap.setTileAt(boss, TileType.floor);
+    tileMap.setBossLocation(boss);
+    return boss;
   }
 
   /// Validates that a path exists between two positions using BFS
@@ -390,14 +425,14 @@ class WorldGenerator {
     return path;
   }
 
-  /// Adds obstacles to make the world more interesting
+  /// Adds obstacles within rooms to make them more interesting
   void _addObstacles(TileMap tileMap) {
     if (_isTestMode) {
-      // Simplified obstacle placement for tests
-      final obstacleCount = 10;
+      // Simplified obstacle placement for tests in rooms
+      final obstacleCount = 15;
       int placed = 0;
       int attempts = 0;
-      final maxAttempts = 50;
+      final maxAttempts = 100;
       
       while (placed < obstacleCount && attempts < maxAttempts) {
         attempts++;
@@ -416,10 +451,11 @@ class WorldGenerator {
       return;
     }
     
-    final obstacleCount = (TileMap.worldWidth * TileMap.worldHeight * 0.01).round();
+    // Place obstacles within rooms only, not in corridors
+    final obstacleCount = 150; // Fixed number for large world
     int placed = 0;
     int attempts = 0;
-    final maxAttempts = obstacleCount * 10;
+    final maxAttempts = obstacleCount * 15;
     
     while (placed < obstacleCount && attempts < maxAttempts) {
       attempts++;
@@ -447,20 +483,20 @@ class WorldGenerator {
     }
   }
 
-  /// Adds candy items throughout the world
+  /// Adds candy items throughout the rooms and corridors
   void _addCandyItems(TileMap tileMap) {
     if (_isTestMode) {
-      // Simplified candy placement for tests
-      final candyCount = 5;
+      // Simplified candy placement for tests in room-based structure
+      final candyCount = 8;
       int placed = 0;
       int attempts = 0;
-      final maxAttempts = 25;
+      final maxAttempts = 100;
       
       while (placed < candyCount && attempts < maxAttempts) {
         attempts++;
         
-        final x = 30 + _random.nextInt(TileMap.worldWidth - 60);
-        final z = 30 + _random.nextInt(TileMap.worldHeight - 60);
+        final x = 10 + _random.nextInt(TileMap.worldWidth - 20);
+        final z = 10 + _random.nextInt(TileMap.worldHeight - 20);
         final position = Position(x, z);
         
         if (tileMap.getTileAt(position) == TileType.floor &&
@@ -473,10 +509,11 @@ class WorldGenerator {
       return;
     }
     
-    final candyCount = (TileMap.worldWidth * TileMap.worldHeight * 0.005).round();
+    // Place candy throughout floor areas (rooms and corridors)
+    final candyCount = 200; // Fixed number for large world
     int placed = 0;
     int attempts = 0;
-    final maxAttempts = candyCount * 10;
+    final maxAttempts = candyCount * 20;
     
     while (placed < candyCount && attempts < maxAttempts) {
       attempts++;

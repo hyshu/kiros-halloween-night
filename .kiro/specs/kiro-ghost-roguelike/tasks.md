@@ -20,7 +20,7 @@
     - Write unit tests for map generation and path validation
     - _Requirements: 2.2, 2.3, 2.4_
 
-  - [ ] 2.3 Replace current main.dart with world map rendering
+  - [x] 2.3 Replace current main.dart with world map rendering
     - Update main.dart to use the new large world map instead of the current 10x10 Halloween scene
     - Integrate TileMap and WorldGenerator with existing GridSceneManager
     - Modify GridSceneManager to handle the 500x1000 world scale
