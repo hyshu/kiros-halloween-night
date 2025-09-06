@@ -88,15 +88,15 @@
     - Add visual feedback for candy collection events
     - _Requirements: 4.1, 4.2_
 
-- [ ] 6. Implement enemy interaction and ally conversion system
-  - [ ] 6.1 Create gift system for candy-to-enemy interactions
+- [x] 6. Implement enemy interaction and ally conversion system
+  - [x] 6.1 Create gift system for candy-to-enemy interactions
     - Write GiftSystem interface for giving candy to adjacent enemies
     - Implement candy selection UI for player choice when gifting
     - Create enemy-to-ally conversion mechanics with state transitions
     - Add satisfaction behavior display when enemies become allies
     - _Requirements: 5.1, 5.2, 5.3, 5.5_
 
-  - [ ] 6.2 Implement ally following and management system
+  - [x] 6.2 Implement ally following and management system
     - Create AllyCharacter class for converted enemies
     - Write ally following behavior that tracks Kiro's movement
     - Implement ally management system with proper state handling

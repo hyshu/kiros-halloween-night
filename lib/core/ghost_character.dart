@@ -7,17 +7,19 @@ import 'tile_map.dart';
 import 'tile_type.dart';
 import 'inventory.dart';
 import 'candy_item.dart';
+import 'ally_manager.dart';
+import 'ally_character.dart';
 
 /// Represents the player-controlled ghost character Kiro
 class GhostCharacter extends Character {
-  /// List of allied characters following Kiro
-  final List<Character> allies = [];
-  
   /// Abilities granted by collected candy
   final Map<String, dynamic> abilities = {};
   
   /// Player's candy inventory
   final Inventory inventory;
+  
+  /// Ally manager for handling converted enemies
+  final AllyManager allyManager;
   
   /// Movement input state
   bool _isProcessingInput = false;
@@ -31,7 +33,9 @@ class GhostCharacter extends Character {
     int health = 100,
     int maxHealth = 100,
     Inventory? inventory,
+    AllyManager? allyManager,
   }) : inventory = inventory ?? Inventory(),
+       allyManager = allyManager ?? AllyManager(),
        super(
           id: id,
           position: position,
@@ -41,7 +45,10 @@ class GhostCharacter extends Character {
           isActive: true,
           canMove: true,
           isIdle: true,
-        );
+        ) {
+    // Set this character as the player for the ally manager
+    this.allyManager.setPlayer(this);
+  }
 
   /// Handles keyboard input for movement
   /// Returns true if the key was recognized (regardless of movement success)
@@ -144,8 +151,9 @@ class GhostCharacter extends Character {
   
   /// Moves all allied characters to follow Kiro
   void _moveAllies(Direction direction, TileMap? tileMap) {
-    // For now, allies will be implemented in a future task
-    // This is a placeholder for the ally following system
+    // Allies are now managed by the AllyManager
+    // Their movement is handled in their own AI update cycle
+    // This method is kept for compatibility but allies move independently
   }
   
   /// Adds an ability from collected candy
@@ -246,6 +254,12 @@ class GhostCharacter extends Character {
   /// Updates temporary effects from candy (call each turn)
   void updateCandyEffects() {
     inventory.updateTemporaryEffects();
+    
+    // Apply ally combat bonuses from candy effects
+    final allyBonus = effectiveAllyDamageBonus;
+    if (allyBonus > 0) {
+      allyManager.applyGlobalCombatBonus(allyBonus);
+    }
   }
 
   /// Gets the effective speed multiplier including candy effects
@@ -288,8 +302,14 @@ class GhostCharacter extends Character {
   /// Returns true if the character is currently moving
   bool get isMoving => !isIdle && _isProcessingInput;
   
+  /// Gets the number of active allies
+  int get allyCount => allyManager.count;
+  
+  /// Gets all active allies
+  List<AllyCharacter> get allies => allyManager.allies;
+  
   @override
-  String toString() => 'GhostCharacter($id) at $position [Health: $health/$maxHealth, Inventory: ${inventory.count} items, Abilities: ${abilities.keys.join(', ')}]';
+  String toString() => 'GhostCharacter($id) at $position [Health: $health/$maxHealth, Inventory: ${inventory.count} items, Allies: ${allyManager.count}, Abilities: ${abilities.keys.join(', ')}]';
 }
 
 /// Represents movement directions
