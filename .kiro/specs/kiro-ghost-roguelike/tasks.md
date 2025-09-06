@@ -7,13 +7,13 @@
   - _Requirements: 1.1, 2.1, 3.1_
 
 - [ ] 2. Implement large world map generation system
-  - [ ] 2.1 Create TileMap class for 500x1000 grid world
+  - [x] 2.1 Create TileMap class for 500x1000 grid world
     - Write TileMap class with proper grid initialization and tile type management
     - Implement boundary validation to ensure complete perimeter walls with no escape gaps
     - Create tile type enumeration (floor, wall, obstacle, candy)
     - _Requirements: 2.1, 2.5, 2.6_
 
-  - [ ] 2.2 Implement WorldGenerator with pathfinding validation
+  - [x] 2.2 Implement WorldGenerator with pathfinding validation
     - Code procedural map generation algorithm with maze-like pathways
     - Implement path validation to ensure navigable route from start to boss location
     - Create boss placement system at the end of main path
