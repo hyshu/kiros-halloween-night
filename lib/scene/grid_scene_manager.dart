@@ -6,6 +6,8 @@ import '../core/tile_map.dart';
 import '../core/tile_type.dart';
 import '../core/position.dart';
 import '../core/ghost_character.dart';
+import '../core/enemy_manager.dart';
+import '../core/enemy_character.dart';
 
 class GridObject {
   final String modelPath;
@@ -38,6 +40,7 @@ class GridSceneManager extends ChangeNotifier {
   
   // Character management
   GhostCharacter? _ghostCharacter;
+  EnemyManager? _enemyManager;
   final Map<String, GridObject> _characterObjects = {};
   
   // Camera and viewport management for large world
@@ -109,6 +112,9 @@ class GridSceneManager extends ChangeNotifier {
   
   // Get the ghost character
   GhostCharacter? get ghostCharacter => _ghostCharacter;
+  
+  // Get the enemy manager
+  EnemyManager? get enemyManager => _enemyManager;
   
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
@@ -182,7 +188,80 @@ class GridSceneManager extends ChangeNotifier {
     if (_ghostCharacter != null) {
       final pos = _ghostCharacter!.position;
       _cameraTarget = Vector3(pos.x * 2.0, 0.0, pos.z * 2.0);
+      
+      // Update enemy activation based on new player position
+      if (_enemyManager != null) {
+        _enemyManager!.updateEnemyActivation(pos);
+      }
     }
+  }
+  
+  /// Spawns enemies across the world map
+  Future<void> spawnEnemies({
+    double spawnDensity = 0.8,
+    Position? playerSpawn,
+  }) async {
+    if (_enemyManager == null) {
+      throw StateError('Enemy manager not initialized');
+    }
+    
+    // Spawn enemies using the enemy manager
+    await _enemyManager!.spawnEnemies(
+      spawnDensity: spawnDensity,
+      playerSpawn: playerSpawn,
+    );
+    
+    // Add enemy objects to the scene for rendering
+    await _addEnemyObjectsToScene();
+    
+    notifyListeners();
+  }
+  
+  /// Adds enemy objects to the scene for rendering
+  Future<void> _addEnemyObjectsToScene() async {
+    if (_enemyManager == null) return;
+    
+    for (final enemy in _enemyManager!.enemies.values) {
+      await _addEnemyToScene(enemy);
+    }
+  }
+  
+  /// Adds a single enemy to the scene
+  Future<void> _addEnemyToScene(EnemyCharacter enemy) async {
+    final enemyObject = GridObject(
+      modelPath: enemy.modelPath,
+      displayName: enemy.id,
+      gridX: enemy.position.x,
+      gridZ: enemy.position.z,
+      model: enemy.model,
+    );
+    
+    _characterObjects[enemy.id] = enemyObject;
+  }
+  
+  /// Updates enemy positions in the scene (for when enemies move)
+  void updateEnemyPositions() {
+    if (_enemyManager == null) return;
+    
+    for (final enemy in _enemyManager!.enemies.values) {
+      final enemyObject = GridObject(
+        modelPath: enemy.modelPath,
+        displayName: enemy.id,
+        gridX: enemy.position.x,
+        gridZ: enemy.position.z,
+        model: enemy.model,
+      );
+      
+      _characterObjects[enemy.id] = enemyObject;
+    }
+    
+    notifyListeners();
+  }
+  
+  /// Removes an enemy from the scene
+  void removeEnemyFromScene(String enemyId) {
+    _characterObjects.remove(enemyId);
+    notifyListeners();
   }
   
   void _updateCameraTarget() {
@@ -282,6 +361,10 @@ class GridSceneManager extends ChangeNotifier {
   Future<void> initializeWithTileMap(TileMap tileMap) async {
     clearScene();
     _tileMap = tileMap;
+    
+    // Initialize enemy manager
+    _enemyManager = EnemyManager();
+    _enemyManager!.initialize(tileMap);
     
     // Load objects in viewport around camera target
     await _loadObjectsAroundCamera();
@@ -385,10 +468,19 @@ class GridSceneManager extends ChangeNotifier {
     'crypt': {'path': 'assets/graveyard/crypt-small.obj', 'name': 'Crypt'},
     'pumpkin': {'path': 'assets/graveyard/pumpkin-carved.obj', 'name': 'Pumpkin'},
     
-    // Characters (for future use)
+    // Characters
     'zombie': {'path': 'assets/graveyard/character-zombie.obj', 'name': 'Zombie'},
     'skeleton': {'path': 'assets/graveyard/character-skeleton.obj', 'name': 'Skeleton'},
     'ghost': {'path': 'assets/graveyard/character-ghost.obj', 'name': 'Ghost'},
+    'vampire': {'path': 'assets/graveyard/character-vampire.obj', 'name': 'Vampire'},
+    
+    // Human characters (using character assets)
+    'human_male_a': {'path': 'assets/characters/character-male-a.obj', 'name': 'Human Male A'},
+    'human_male_b': {'path': 'assets/characters/character-male-b.obj', 'name': 'Human Male B'},
+    'human_male_c': {'path': 'assets/characters/character-male-c.obj', 'name': 'Human Male C'},
+    'human_female_a': {'path': 'assets/characters/character-female-a.obj', 'name': 'Human Female A'},
+    'human_female_b': {'path': 'assets/characters/character-female-b.obj', 'name': 'Human Female B'},
+    'human_female_c': {'path': 'assets/characters/character-female-c.obj', 'name': 'Human Female C'},
     
     // Decorative items
     'lantern': {'path': 'assets/graveyard/lantern-candle.obj', 'name': 'Lantern'},

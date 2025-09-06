@@ -85,6 +85,16 @@ class _GridSceneViewState extends State<GridSceneView> {
     await _sceneManager.addGhostCharacter(_ghostCharacter);
 
     setState(() {
+      _loadingStatus = 'Spawning enemies across the world...';
+    });
+
+    // Spawn enemies across the world map
+    await _sceneManager.spawnEnemies(
+      spawnDensity: 0.8, // 0.8 enemies per 100 tiles
+      playerSpawn: spawnPosition,
+    );
+
+    setState(() {
       _loadingStatus = 'Setting up input controls...';
     });
 

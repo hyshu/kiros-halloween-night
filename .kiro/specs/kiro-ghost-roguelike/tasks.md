@@ -50,20 +50,28 @@
     - Add character position management and world coordinate conversion
     - _Requirements: 1.2, 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 4. Implement enemy system with proximity-based activation
-  - [ ] 4.1 Create EnemyCharacter class with AI behavior
+- [-] 4. Implement enemy system with proximity-based activation
+  - [x] 4.1 Create EnemyCharacter class with AI behavior
     - Write EnemyCharacter class using human/monster 3D models from assets
     - Implement basic AI movement and state management
     - Add enemy spawning system across the large world map
     - Create enemy collision detection with walls and obstacles
     - _Requirements: 3.1, 3.5_
 
-  - [ ] 4.2 Implement proximity-based activation system
+  - [x] 4.2 Implement proximity-based activation system
     - Create ProximityDetector for distance calculations between Kiro and enemies
     - Write ActivationManager to enable/disable enemy AI based on distance thresholds
     - Implement performance optimization through selective enemy processing
     - Add spatial indexing for efficient proximity queries in large world
     - _Requirements: 3.2, 3.3, 3.4_
+
+  - [x] 4.3 Place enemies in the game world
+    - Integrate EnemyCharacter instances into the world map during generation
+    - Implement enemy spawning system that places enemies at strategic locations
+    - Add enemy positioning logic that avoids walls and maintains proper spacing
+    - Create enemy management system to track all active enemies in the world
+    - Update rendering system to display enemies alongside other game objects
+    - _Requirements: 3.1, 3.5, 10.1_
 
 - [ ] 5. Create candy item system with collection and abilities
   - [ ] 5.1 Implement CandyItem class and inventory system
