@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Set up core game architecture and data models
+- [x] 1. Set up core game architecture and data models
   - Create foundational game classes and interfaces for the roguelike system
   - Define Position, TileType, and Character base classes
   - Implement basic game state management structure
