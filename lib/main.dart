@@ -4,6 +4,9 @@ import 'scene/grid_scene_manager.dart';
 import 'rendering/grid_renderer.dart';
 import 'core/world_generator.dart';
 import 'core/tile_map.dart';
+import 'core/ghost_character.dart';
+import 'core/position.dart';
+import 'managers/input_manager.dart';
 
 void main() => runApp(const App());
 
@@ -31,6 +34,8 @@ class GridSceneView extends StatefulWidget {
 class _GridSceneViewState extends State<GridSceneView> {
   late GridSceneManager _sceneManager;
   late TileMap _tileMap;
+  late GhostCharacter _ghostCharacter;
+  late InputManager _inputManager;
   bool _isLoading = true;
   String _loadingStatus = 'Generating world...';
 
@@ -62,6 +67,36 @@ class _GridSceneViewState extends State<GridSceneView> {
 
     // Initialize the scene with the generated world
     await _sceneManager.initializeWithTileMap(_tileMap);
+
+    setState(() {
+      _loadingStatus = 'Creating Kiro ghost character...';
+    });
+
+    // Create the ghost character at the spawn position
+    final spawnPosition = _tileMap.playerSpawn ?? const Position(10, 10);
+    _ghostCharacter = GhostCharacter(
+      id: 'kiro',
+      position: spawnPosition,
+      health: 100,
+      maxHealth: 100,
+    );
+
+    // Add the ghost character to the scene
+    await _sceneManager.addGhostCharacter(_ghostCharacter);
+
+    setState(() {
+      _loadingStatus = 'Setting up input controls...';
+    });
+
+    // Create input manager
+    _inputManager = InputManager(
+      ghostCharacter: _ghostCharacter,
+      tileMap: _tileMap,
+      onCharacterMoved: () {
+        // Update the scene when character moves
+        _sceneManager.updateGhostCharacterPosition();
+      },
+    );
 
     setState(() {
       _isLoading = false;
@@ -104,9 +139,11 @@ class _GridSceneViewState extends State<GridSceneView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      body: GridRenderer(
-        backgroundColor: const Color(0xFF050510),
-        sceneManager: _sceneManager,
+      body: _inputManager.createKeyboardListener(
+        child: GridRenderer(
+          backgroundColor: const Color(0xFF050510),
+          sceneManager: _sceneManager,
+        ),
       ),
     );
   }

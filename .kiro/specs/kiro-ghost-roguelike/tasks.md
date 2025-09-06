@@ -27,15 +27,15 @@
     - Update camera positioning and controls for large world navigation
     - _Requirements: 2.1, 10.1, 10.2_
 
-- [ ] 3. Create character system with movement and collision
-  - [ ] 3.1 Implement GhostCharacter class for player control
+- [x] 3. Create character system with movement and collision
+  - [x] 3.1 Implement GhostCharacter class for player control
     - Write GhostCharacter class extending base Character with grid-based movement
     - Implement input handling for directional movement controls
     - Add idle state management and animation support
     - Integrate with existing 3D ghost model (assets/graveyard/character-ghost.obj)
     - _Requirements: 1.1, 1.3, 1.4_
 
-  - [ ] 3.2 Add player character to world map with arrow key controls
+  - [x] 3.2 Add player character to world map with arrow key controls
     - Place Kiro ghost character in the generated world map at spawn position
     - Implement arrow key input handling in main.dart for player movement
     - Update GridSceneManager to track and render player character position
@@ -43,7 +43,7 @@
     - Integrate player movement with collision detection system
     - _Requirements: 1.1, 1.2, 10.2_
 
-  - [ ] 3.3 Create collision detection and movement validation system
+  - [x] 3.3 Create collision detection and movement validation system
     - Implement CollisionDetector class with wall and obstacle blocking
     - Write movement validation that prevents passage through impassable terrain
     - Create boundary checking to prevent movement outside world perimeter

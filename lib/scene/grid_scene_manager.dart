@@ -5,6 +5,7 @@ import '../models/model_3d.dart';
 import '../core/tile_map.dart';
 import '../core/tile_type.dart';
 import '../core/position.dart';
+import '../core/ghost_character.dart';
 
 class GridObject {
   final String modelPath;
@@ -35,6 +36,10 @@ class GridSceneManager extends ChangeNotifier {
   TileMap? _tileMap;
   final Map<String, GridObject> _objects = {};
   
+  // Character management
+  GhostCharacter? _ghostCharacter;
+  final Map<String, GridObject> _characterObjects = {};
+  
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
   final double _viewportRadius = 50.0; // Only render objects within this radius
@@ -50,17 +55,22 @@ class GridSceneManager extends ChangeNotifier {
   GridSceneManager() : _tileMap = null;
 
   List<GridObject> get allObjects {
+    final objects = <GridObject>[];
+    
     if (_tileMap != null) {
       // For large world, return only objects within viewport
-      return _getObjectsInViewport();
+      objects.addAll(_getObjectsInViewport());
     } else {
       // Legacy behavior for small grid
-      final objects = <GridObject>[];
       for (var obj in _objects.values) {
         objects.add(obj);
       }
-      return objects;
     }
+    
+    // Add character objects (always visible)
+    objects.addAll(_characterObjects.values);
+    
+    return objects;
   }
   
   List<GridObject> _getObjectsInViewport() {
@@ -97,6 +107,9 @@ class GridSceneManager extends ChangeNotifier {
   // Get camera target for renderer
   Vector3 get cameraTarget => _cameraTarget;
   
+  // Get the ghost character
+  GhostCharacter? get ghostCharacter => _ghostCharacter;
+  
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
     _cameraTarget = newTarget;
@@ -105,6 +118,71 @@ class GridSceneManager extends ChangeNotifier {
       _loadObjectsAroundCamera();
     }
     notifyListeners();
+  }
+  
+  /// Adds the ghost character to the scene
+  Future<void> addGhostCharacter(GhostCharacter character) async {
+    _ghostCharacter = character;
+    
+    // Create a GridObject for the character
+    final characterObject = GridObject(
+      modelPath: character.modelPath,
+      displayName: character.id,
+      gridX: character.position.x,
+      gridZ: character.position.z,
+    );
+    
+    _characterObjects[character.id] = characterObject;
+    
+    // Load the character's 3D model
+    await character.loadModel();
+    if (character.model != null) {
+      _characterObjects[character.id] = GridObject(
+        modelPath: character.modelPath,
+        displayName: character.id,
+        gridX: character.position.x,
+        gridZ: character.position.z,
+        model: character.model,
+      );
+    }
+    
+    // Update camera to follow the character
+    _updateCameraToFollowCharacter();
+    notifyListeners();
+  }
+  
+  /// Updates the ghost character's position in the scene
+  void updateGhostCharacterPosition() {
+    if (_ghostCharacter == null) return;
+    
+    final character = _ghostCharacter!;
+    final characterObject = GridObject(
+      modelPath: character.modelPath,
+      displayName: character.id,
+      gridX: character.position.x,
+      gridZ: character.position.z,
+      model: character.model,
+    );
+    
+    _characterObjects[character.id] = characterObject;
+    
+    // Update camera to follow the character
+    _updateCameraToFollowCharacter();
+    
+    // Reload objects around new position for large world
+    if (_tileMap != null) {
+      _loadObjectsAroundCamera();
+    }
+    
+    notifyListeners();
+  }
+  
+  /// Updates camera to follow the ghost character
+  void _updateCameraToFollowCharacter() {
+    if (_ghostCharacter != null) {
+      final pos = _ghostCharacter!.position;
+      _cameraTarget = Vector3(pos.x * 2.0, 0.0, pos.z * 2.0);
+    }
   }
   
   void _updateCameraTarget() {
