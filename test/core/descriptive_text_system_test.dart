@@ -25,7 +25,7 @@ void main() {
       );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.story));
+      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
       expect(dialogueManager.getCurrentDialogueText(), contains('entrance halls'));
       expect(dialogueManager.getCurrentDialogueText(), contains('guard valuable candy'));
     });

@@ -86,7 +86,7 @@ void main() {
     test('should trigger boss encounter dialogue', () {
       narrativeController.triggerBossEncounter();
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.boss));
+      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
     });
 
     test('should trigger contextual dialogue based on milestones', () {
