@@ -9,6 +9,7 @@ import 'core/position.dart';
 import 'managers/input_manager.dart';
 import 'managers/model_manager.dart';
 import 'widgets/dialogue_ui.dart';
+import 'widgets/inventory_ui.dart';
 import 'l10n/strings.g.dart';
 
 void main() {
@@ -47,6 +48,7 @@ class _GridSceneViewState extends State<GridSceneView> {
   late InputManager _inputManager;
   bool _isLoading = true;
   String _loadingStatus = '';
+  bool _showInventory = false;
 
   @override
   void initState() {
@@ -145,6 +147,11 @@ class _GridSceneViewState extends State<GridSceneView> {
         // Update the scene when character moves
         _sceneManager.updateGhostCharacterPosition();
       },
+      onInventoryToggle: () {
+        setState(() {
+          _showInventory = !_showInventory;
+        });
+      },
     );
     inputManagerStopwatch.stop();
     debugPrint('Input manager setup: ${inputManagerStopwatch.elapsedMilliseconds}ms');
@@ -203,6 +210,19 @@ class _GridSceneViewState extends State<GridSceneView> {
               sceneManager: _sceneManager,
             ),
             DialogueUI(dialogueManager: _sceneManager.dialogueManager),
+            if (_showInventory)
+              InventoryOverlay(
+                inventory: _ghostCharacter.inventory,
+                onUseCandy: (candyId) {
+                  _ghostCharacter.useCandy(candyId);
+                  setState(() {}); // Refresh UI after using candy
+                },
+                onClose: () {
+                  setState(() {
+                    _showInventory = false;
+                  });
+                },
+              ),
           ],
         ),
       ),

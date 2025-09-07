@@ -545,15 +545,6 @@ class WorldGenerator {
     return walkableNeighbors >= 3;
   }
 
-  /// Checks if a position is within any of the generated rooms
-  bool _isPositionInAnyRoom(Position position, List<Room> rooms) {
-    for (final room in rooms) {
-      if (room.contains(position)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   /// Adds candy items throughout the rooms and corridors
   void _addCandyItems(TileMap tileMap) {

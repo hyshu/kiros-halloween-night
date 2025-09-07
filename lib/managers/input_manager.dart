@@ -14,11 +14,15 @@ class InputManager {
   /// Callback for when the character moves successfully
   final VoidCallback? onCharacterMoved;
 
+  /// Callback for when inventory toggle is requested
+  final VoidCallback? onInventoryToggle;
+
   InputManager({
     required GhostCharacter ghostCharacter,
     TileMap? tileMap,
     GridSceneManager? sceneManager,
     this.onCharacterMoved,
+    this.onInventoryToggle,
   }) : _ghostCharacter = ghostCharacter,
        _tileMap = tileMap,
        _sceneManager = sceneManager;
@@ -31,6 +35,7 @@ class InputManager {
       key,
       _tileMap,
       enemyManager: enemyManager,
+      onInventoryToggle: onInventoryToggle,
     );
 
     if (wasHandled && !_ghostCharacter.isIdle) {

@@ -13,6 +13,7 @@ import '../core/enemy_character.dart';
 import '../core/game_loop_manager.dart';
 import '../core/ally_character.dart';
 import '../core/dialogue_manager.dart';
+import '../core/candy_item.dart';
 
 class GridObject {
   final String modelPath;
@@ -793,28 +794,56 @@ class GridSceneManager extends ChangeNotifier {
     if (_tileMap!.isValidPosition(pos)) {
       final tile = _tileMap!.getTileAt(pos);
       if (tile == TileType.candy) {
-        // Show candy collection dialogue with variety
-        _showCandyCollectionMessage();
+        // Create a random candy item
+        final candyType = _getRandomCandyType();
+        final candyId = 'candy_${pos.x}_${pos.z}_${DateTime.now().millisecondsSinceEpoch}';
+        final candy = CandyItem.create(candyType, candyId, position: pos);
 
-        // Remove candy from tile map (mark as floor)
-        _tileMap!.setTileAt(pos, TileType.floor);
+        // Try to add to player's inventory
+        final success = _ghostCharacter!.collectCandy(candy);
+        
+        if (success) {
+          // Show candy collection dialogue with variety
+          _showCandyCollectionMessage(candy);
+
+          // Remove candy from tile map (mark as floor)
+          _tileMap!.setTileAt(pos, TileType.floor);
+        } else {
+          // Show inventory full message
+          _showInventoryFullMessage();
+        }
       }
     }
   }
 
-  /// Shows a randomized candy collection message
-  void _showCandyCollectionMessage() {
+  /// Gets a random candy type for collection
+  CandyType _getRandomCandyType() {
+    final random = Random();
+    final candyTypes = CandyType.values;
+    return candyTypes[random.nextInt(candyTypes.length)];
+  }
+
+  /// Shows a candy collection message with specific candy info
+  void _showCandyCollectionMessage(CandyItem candy) {
     final messages = [
-      'Kiro finds a delicious candy! Sweet energy flows through the ghost.',
-      'A glowing candy catches Kiro\'s attention. Yummy supernatural treat!',
-      'Kiro discovers a magical candy that sparkles with otherworldly flavor.',
-      'The sweet candy makes Kiro glow brighter with ghostly happiness.',
-      'Kiro gobbles up the candy, feeling more spirited than ever!',
+      'Kiro finds a ${candy.name}! ${candy.description}',
+      'A glowing ${candy.name} catches Kiro\'s attention. Sweet supernatural treat!',
+      'Kiro discovers a magical ${candy.name} that sparkles with otherworldly flavor.',
+      'The ${candy.name} makes Kiro glow brighter with ghostly happiness.',
+      'Kiro gobbles up the ${candy.name}, feeling more spirited than ever!',
     ];
 
-    final randomMessage =
-        messages[DateTime.now().millisecondsSinceEpoch % messages.length];
-    _dialogueManager.showItemCollection(randomMessage);
+    final random = Random();
+    final message = messages[random.nextInt(messages.length)];
+
+    _dialogueManager.showItemCollection(message);
+  }
+
+  /// Shows a message when inventory is full
+  void _showInventoryFullMessage() {
+    _dialogueManager.showItemCollection(
+      'Kiro\'s inventory is full! Can\'t pick up more candy.',
+    );
   }
 
   /// Dispose resources when scene manager is destroyed

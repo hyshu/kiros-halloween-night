@@ -71,8 +71,15 @@ class GhostCharacter extends Character {
     LogicalKeyboardKey key,
     TileMap? tileMap, {
     EnemyManager? enemyManager,
+    Function()? onInventoryToggle,
   }) {
     if (_isProcessingInput || !canMove) return false;
+
+    // Handle inventory toggle
+    if (key == LogicalKeyboardKey.keyI) {
+      onInventoryToggle?.call();
+      return true;
+    }
 
     Direction? direction;
     switch (key) {
