@@ -460,15 +460,23 @@ class GridSceneManager extends ChangeNotifier {
   Future<void> _loadObjectsAroundCamera() async {
     if (_tileMap == null) return;
 
+    final loadObjectsStopwatch = Stopwatch()..start();
+
     final cameraX = (_cameraTarget.x / Position.tileSpacing).round();
     final cameraZ = (_cameraTarget.z / Position.tileSpacing).round();
     final radius = (_viewportRadius / Position.tileSpacing).round();
 
+    debugPrint('Loading objects in ${radius * 2}x${radius * 2} viewport around camera ($cameraX, $cameraZ)');
+
     final objectsToPlace = <Future<void>>[];
+    int tilesScanned = 0;
+    int objectsToLoad = 0;
 
     // Load all tiles in the viewport area
+    final scanStopwatch = Stopwatch()..start();
     for (int dz = -radius; dz <= radius; dz++) {
       for (int dx = -radius; dx <= radius; dx++) {
+        tilesScanned++;
         final x = cameraX + dx;
         final z = cameraZ + dz;
         final position = Position(x, z);
@@ -484,6 +492,7 @@ class GridSceneManager extends ChangeNotifier {
         if (modelData?.modelKey != null) {
           final libraryData = _modelLibrary[modelData!.modelKey];
           if (libraryData != null) {
+            objectsToLoad++;
             objectsToPlace.add(
               addObject(
                 modelPath: libraryData['path']!,
@@ -497,9 +506,17 @@ class GridSceneManager extends ChangeNotifier {
         }
       }
     }
+    scanStopwatch.stop();
+    debugPrint('Tile scanning: ${scanStopwatch.elapsedMilliseconds}ms (scanned $tilesScanned tiles, found $objectsToLoad objects to load)');
 
     // Execute all object placements
+    final modelLoadStopwatch = Stopwatch()..start();
     await Future.wait(objectsToPlace);
+    modelLoadStopwatch.stop();
+    debugPrint('Model loading: ${modelLoadStopwatch.elapsedMilliseconds}ms (loaded $objectsToLoad 3D models)');
+
+    loadObjectsStopwatch.stop();
+    debugPrint('Total _loadObjectsAroundCamera: ${loadObjectsStopwatch.elapsedMilliseconds}ms');
   }
 
   /// Get the appropriate model key and rotation for a tile type and position

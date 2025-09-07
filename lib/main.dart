@@ -54,33 +54,45 @@ class _GridSceneViewState extends State<GridSceneView> {
   }
 
   Future<void> _initializeWorldMap() async {
+    final totalStopwatch = Stopwatch()..start();
+    
     setState(() {
       _loadingStatus = 'Generating 200x400 world map...';
     });
 
     // Generate the large world map
+    final worldGenStopwatch = Stopwatch()..start();
     final worldGenerator = WorldGenerator(seed: 42);
     _tileMap = worldGenerator.generateWorld();
+    worldGenStopwatch.stop();
+    debugPrint('World generation: ${worldGenStopwatch.elapsedMilliseconds}ms');
 
     setState(() {
       _loadingStatus = 'Initializing scene manager...';
     });
 
     // Create scene manager with the large world
+    final sceneManagerStopwatch = Stopwatch()..start();
     _sceneManager = GridSceneManager.withTileMap(_tileMap);
+    sceneManagerStopwatch.stop();
+    debugPrint('Scene manager creation: ${sceneManagerStopwatch.elapsedMilliseconds}ms');
 
     setState(() {
       _loadingStatus = 'Loading world objects...';
     });
 
     // Initialize the scene with the generated world
+    final sceneInitStopwatch = Stopwatch()..start();
     await _sceneManager.initializeWithTileMap(_tileMap);
+    sceneInitStopwatch.stop();
+    debugPrint('Scene initialization: ${sceneInitStopwatch.elapsedMilliseconds}ms');
 
     setState(() {
       _loadingStatus = 'Creating Kiro ghost character...';
     });
 
     // Create the ghost character at the spawn position
+    final ghostCharStopwatch = Stopwatch()..start();
     final spawnPosition = _tileMap.playerSpawn ?? const Position(10, 10);
     _ghostCharacter = GhostCharacter(
       id: 'kiro',
@@ -91,22 +103,28 @@ class _GridSceneViewState extends State<GridSceneView> {
 
     // Add the ghost character to the scene
     await _sceneManager.addGhostCharacter(_ghostCharacter);
+    ghostCharStopwatch.stop();
+    debugPrint('Ghost character creation and adding: ${ghostCharStopwatch.elapsedMilliseconds}ms');
 
     setState(() {
       _loadingStatus = 'Spawning enemies across the world...';
     });
 
     // Spawn enemies across the world map
+    final enemySpawnStopwatch = Stopwatch()..start();
     await _sceneManager.spawnEnemies(
       spawnDensity: 0.125, // 0.125 enemies per 100 tiles (approx 100 enemies)
       playerSpawn: spawnPosition,
     );
+    enemySpawnStopwatch.stop();
+    debugPrint('Enemy spawning: ${enemySpawnStopwatch.elapsedMilliseconds}ms');
 
     setState(() {
       _loadingStatus = 'Setting up input controls...';
     });
 
     // Create input manager
+    final inputManagerStopwatch = Stopwatch()..start();
     _inputManager = InputManager(
       ghostCharacter: _ghostCharacter,
       tileMap: _tileMap,
@@ -116,13 +134,21 @@ class _GridSceneViewState extends State<GridSceneView> {
         _sceneManager.updateGhostCharacterPosition();
       },
     );
+    inputManagerStopwatch.stop();
+    debugPrint('Input manager setup: ${inputManagerStopwatch.elapsedMilliseconds}ms');
 
     setState(() {
       _loadingStatus = 'Initializing combat systems...';
     });
 
     // Initialize game loop with combat system
+    final gameLoopStopwatch = Stopwatch()..start();
     _sceneManager.initializeGameLoop();
+    gameLoopStopwatch.stop();
+    debugPrint('Game loop initialization: ${gameLoopStopwatch.elapsedMilliseconds}ms');
+
+    totalStopwatch.stop();
+    debugPrint('=== TOTAL INITIALIZATION TIME: ${totalStopwatch.elapsedMilliseconds}ms ===');
 
     setState(() {
       _isLoading = false;
