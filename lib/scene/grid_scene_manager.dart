@@ -422,33 +422,9 @@ class GridSceneManager extends ChangeNotifier {
   String? _getTileModelKey(TileType tileType, Position position) {
     switch (tileType) {
       case TileType.wall:
-        // Always show walls with variety
-        final variant = (position.x + position.z) % 3;
-        switch (variant) {
-          case 0:
-            return 'fence';
-          case 1:
-            return 'grave';
-          case 2:
-            return 'tree';
-          default:
-            return 'fence';
-        }
+        return _getSmartWallModel(position);
       case TileType.obstacle:
-        // Always show obstacles with variety
-        final variant = (position.x * 3 + position.z * 7) % 4;
-        switch (variant) {
-          case 0:
-            return 'crypt';
-          case 1:
-            return 'grave';
-          case 2:
-            return 'tree';
-          case 3:
-            return 'pumpkin';
-          default:
-            return 'crypt';
-        }
+        return _getSmartObstacleModel(position);
       case TileType.candy:
         // Always show candy items
         final variant = (position.x * 5 + position.z * 13) % 3;
@@ -471,12 +447,144 @@ class GridSceneManager extends ChangeNotifier {
     }
   }
 
+  /// Get smart wall model based on neighboring tiles
+  String _getSmartWallModel(Position position) {
+    if (_tileMap == null) {
+      // Fallback to old behavior if no tile map
+      final variant = (position.x + position.z) % 3;
+      switch (variant) {
+        case 0:
+          return 'fence';
+        case 1:
+          return 'grave';
+        case 2:
+          return 'tree';
+        default:
+          return 'fence';
+      }
+    }
+
+    // Check adjacent tiles (up, down, left, right)
+    final up = Position(position.x, position.z - 1);
+    final down = Position(position.x, position.z + 1);
+    final left = Position(position.x - 1, position.z);
+    final right = Position(position.x + 1, position.z);
+
+    final upTile = _tileMap!.getTileAt(up);
+    final downTile = _tileMap!.getTileAt(down);
+    final leftTile = _tileMap!.getTileAt(left);
+    final rightTile = _tileMap!.getTileAt(right);
+
+    // If any adjacent tile is not a wall, use brick-wall
+    if (upTile != TileType.wall ||
+        downTile != TileType.wall ||
+        leftTile != TileType.wall ||
+        rightTile != TileType.wall) {
+      return 'brick-wall';
+    }
+
+    // Check diagonal neighbors (top-right, top-left, bottom-right, bottom-left)
+    final topRight = Position(position.x + 1, position.z - 1);
+    final topLeft = Position(position.x - 1, position.z - 1);
+    final bottomRight = Position(position.x + 1, position.z + 1);
+    final bottomLeft = Position(position.x - 1, position.z + 1);
+
+    final topRightTile = _tileMap!.getTileAt(topRight);
+    final topLeftTile = _tileMap!.getTileAt(topLeft);
+    final bottomRightTile = _tileMap!.getTileAt(bottomRight);
+    final bottomLeftTile = _tileMap!.getTileAt(bottomLeft);
+
+    // If all adjacent are walls but any diagonal is not wall, use brick-wall-curve-small
+    if (topRightTile != TileType.wall ||
+        topLeftTile != TileType.wall ||
+        bottomRightTile != TileType.wall ||
+        bottomLeftTile != TileType.wall) {
+      return 'brick-wall-curve-small';
+    }
+
+    // Default to gravestone-bevel if completely surrounded by walls
+    return 'gravestone-bevel';
+  }
+
+  /// Get smart obstacle model based on neighboring tiles
+  String _getSmartObstacleModel(Position position) {
+    if (_tileMap == null) {
+      // Fallback to old behavior if no tile map
+      final variant = (position.x * 3 + position.z * 7) % 4;
+      switch (variant) {
+        case 0:
+          return 'crypt';
+        case 1:
+          return 'grave';
+        case 2:
+          return 'tree';
+        case 3:
+          return 'pumpkin';
+        default:
+          return 'crypt';
+      }
+    }
+
+    // Check adjacent tiles (up, down, left, right)
+    final up = Position(position.x, position.z - 1);
+    final down = Position(position.x, position.z + 1);
+    final left = Position(position.x - 1, position.z);
+    final right = Position(position.x + 1, position.z);
+
+    final upTile = _tileMap!.getTileAt(up);
+    final downTile = _tileMap!.getTileAt(down);
+    final leftTile = _tileMap!.getTileAt(left);
+    final rightTile = _tileMap!.getTileAt(right);
+
+    // If any adjacent tile is not a wall, use brick-wall
+    if (upTile != TileType.wall ||
+        downTile != TileType.wall ||
+        leftTile != TileType.wall ||
+        rightTile != TileType.wall) {
+      return 'brick-wall';
+    }
+
+    // Check diagonal neighbors (top-right, top-left, bottom-right, bottom-left)
+    final topRight = Position(position.x + 1, position.z - 1);
+    final topLeft = Position(position.x - 1, position.z - 1);
+    final bottomRight = Position(position.x + 1, position.z + 1);
+    final bottomLeft = Position(position.x - 1, position.z + 1);
+
+    final topRightTile = _tileMap!.getTileAt(topRight);
+    final topLeftTile = _tileMap!.getTileAt(topLeft);
+    final bottomRightTile = _tileMap!.getTileAt(bottomRight);
+    final bottomLeftTile = _tileMap!.getTileAt(bottomLeft);
+
+    // If all adjacent are walls but any diagonal is not wall, use brick-wall-curve-small
+    if (topRightTile != TileType.wall ||
+        topLeftTile != TileType.wall ||
+        bottomRightTile != TileType.wall ||
+        bottomLeftTile != TileType.wall) {
+      return 'brick-wall-curve-small';
+    }
+
+    // Default to gravestone-bevel if completely surrounded by walls
+    return 'gravestone-bevel';
+  }
+
   static const Map<String, Map<String, String>> _modelLibrary = {
     // Walls and barriers
     'grave': {'path': 'assets/graveyard/gravestone-flat.obj', 'name': 'Grave'},
     'cross': {'path': 'assets/graveyard/gravestone-cross.obj', 'name': 'Cross'},
     'tree': {'path': 'assets/graveyard/pine.obj', 'name': 'Tree'},
     'fence': {'path': 'assets/graveyard/fence.obj', 'name': 'Fence'},
+    'brick-wall': {
+      'path': 'assets/graveyard/brick-wall.obj',
+      'name': 'Brick Wall',
+    },
+    'brick-wall-curve-small': {
+      'path': 'assets/graveyard/brick-wall-curve-small.obj',
+      'name': 'Brick Wall Curve Small',
+    },
+    'gravestone-bevel': {
+      'path': 'assets/graveyard/gravestone-bevel.obj',
+      'name': 'Gravestone Bevel',
+    },
 
     // Obstacles and structures
     'crypt': {'path': 'assets/graveyard/crypt-small.obj', 'name': 'Crypt'},
