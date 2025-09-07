@@ -5,6 +5,7 @@ import 'package:flutter_gpu/gpu.dart' as gpu;
 import '../parsers/obj_parser.dart';
 import '../managers/texture_manager.dart';
 import '../managers/model_manager.dart';
+import '../core/character.dart';
 
 class MaterialTextures {
   gpu.Texture? diffuseTexture;
@@ -46,6 +47,11 @@ class Model3D {
   static Future<Model3D> loadFromAsset(String name, String path) async {
     final objModel = await ObjParser.loadFromAsset(path);
     final model = Model3D(name: name, objModel: objModel);
+
+    // In test mode, return minimal model without GPU resources
+    if (Character.isTestMode) {
+      return model;
+    }
 
     final textureManager = TextureManager();
     final basePath = path.substring(0, path.lastIndexOf('/') + 1);

@@ -41,6 +41,13 @@ void main() {
       sceneManager = GridSceneManager.withTileMap(tileMap);
     });
 
+    tearDown(() async {
+      // Clean up scene manager and wait for any pending operations
+      await Future.delayed(Duration(milliseconds: 10));
+      sceneManager.clearScene();
+      await Future.delayed(Duration.zero);
+    });
+
     test('should integrate with scene manager correctly', () async {
       // Add ghost character to scene
       await sceneManager.addGhostCharacter(ghostCharacter);
@@ -84,7 +91,13 @@ void main() {
 
       // Move character
       ghostCharacter.attemptMove(Direction.east, tileMap);
+      
+      // Wait for any pending async operations before updating scene
+      await Future.delayed(Duration.zero);
       sceneManager.updateGhostCharacterPosition();
+      
+      // Wait for any camera update operations
+      await Future.delayed(Duration.zero);
 
       // Camera should follow
       expect(sceneManager.cameraTarget.x, equals(11.0 * Position.tileSpacing));
