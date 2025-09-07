@@ -514,7 +514,7 @@ class GridSceneManager extends ChangeNotifier {
         return (modelKey: _getSmartObstacleModel(position), rotation: 0.0);
       case TileType.candy:
         // Always show candy items
-        final variant = (position.x * 5 + position.z * 13) % 3;
+        final variant = (position.x * 5 + position.z * 13) % 4;
         switch (variant) {
           case 0:
             return (modelKey: 'candy_apple', rotation: 0.0);
@@ -522,14 +522,12 @@ class GridSceneManager extends ChangeNotifier {
             return (modelKey: 'candy_chocolate', rotation: 0.0);
           case 2:
             return (modelKey: 'candy_lollipop', rotation: 0.0);
+          case 3:
+            return (modelKey: 'candy_pumpkin', rotation: 0.0);
           default:
             return (modelKey: 'candy_apple', rotation: 0.0);
         }
       case TileType.floor:
-        // Show decorative items more frequently to visualize pathways
-        if ((position.x * 11 + position.z * 17) % 20 == 0) {
-          return (modelKey: 'lantern', rotation: 0.0);
-        }
         return null; // Most floor tiles remain empty for navigation
     }
   }
@@ -641,7 +639,7 @@ class GridSceneManager extends ChangeNotifier {
   /// Get smart obstacle model based on neighboring tiles
   String _getSmartObstacleModel(Position position) {
     // Fallback to old behavior if no tile map
-    final variant = (position.x * 3 + position.z * 7) % 4;
+    final variant = (position.x * 3 + position.z * 7) % 3;
     switch (variant) {
       case 0:
         return 'crypt';
@@ -649,8 +647,6 @@ class GridSceneManager extends ChangeNotifier {
         return 'grave';
       case 2:
         return 'tree';
-      case 3:
-        return 'pumpkin';
       default:
         return 'crypt';
     }
@@ -677,10 +673,6 @@ class GridSceneManager extends ChangeNotifier {
 
     // Obstacles and structures
     'crypt': {'path': 'assets/graveyard/crypt-small.obj', 'name': 'Crypt'},
-    'pumpkin': {
-      'path': 'assets/graveyard/pumpkin-carved.obj',
-      'name': 'Pumpkin',
-    },
 
     // Characters
     'zombie': {
@@ -739,6 +731,10 @@ class GridSceneManager extends ChangeNotifier {
     'candy_cookie': {'path': 'assets/foods/cookie.obj', 'name': 'Cookie'},
     'candy_donut': {'path': 'assets/foods/donut.obj', 'name': 'Donut'},
     'candy_cupcake': {'path': 'assets/foods/cupcake.obj', 'name': 'Cupcake'},
+    'candy_pumpkin': {
+      'path': 'assets/graveyard/pumpkin-carved.obj',
+      'name': 'Pumpkin',
+    },
   };
 
   /// Adds ally objects to the rendering list
