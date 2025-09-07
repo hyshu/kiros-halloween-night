@@ -217,6 +217,32 @@ class _GridSceneViewState extends State<GridSceneView> {
                   _ghostCharacter.useCandy(candyId);
                   setState(() {}); // Refresh UI after using candy
                 },
+                onGiveCandy: (candyId) {
+                  // TODO: Implement gift system integration
+                  // For now, just show a debug message
+                  debugPrint('Would give candy $candyId to enemy');
+                },
+                checkCanGiveToEnemies: () {
+                  // Check if there are any enemies adjacent to the player
+                  if (_sceneManager.enemyManager == null) return false;
+                  
+                  final playerPos = _ghostCharacter.position;
+                  final enemies = _sceneManager.enemyManager!.enemies.values;
+                  
+                  // Check if any enemy is adjacent (within 1 tile)
+                  for (final enemy in enemies) {
+                    final dx = (playerPos.x - enemy.position.x).abs();
+                    final dz = (playerPos.z - enemy.position.z).abs();
+                    
+                    // Adjacent means exactly 1 tile away in one direction
+                    if ((dx == 1 && dz == 0) || (dx == 0 && dz == 1)) {
+                      if (enemy.isHostile) {
+                        return true;
+                      }
+                    }
+                  }
+                  return false;
+                },
                 onClose: () {
                   setState(() {
                     _showInventory = false;

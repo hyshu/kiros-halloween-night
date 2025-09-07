@@ -2,19 +2,32 @@ import 'package:flutter/material.dart';
 import '../core/inventory.dart';
 import '../core/candy_item.dart';
 import '../l10n/strings.g.dart';
+import 'candy_menu.dart';
 
 /// UI widget for displaying the player's candy inventory
-class InventoryUI extends StatelessWidget {
+class InventoryUI extends StatefulWidget {
   final Inventory inventory;
   final Function(String candyId)? onUseCandy;
+  final Function(String candyId)? onGiveCandy;
+  final Function()? checkCanGiveToEnemies;
+  final Function(CandyItem candy)? onShowCandyMenu;
   final VoidCallback? onClose;
 
   const InventoryUI({
     super.key,
     required this.inventory,
     this.onUseCandy,
+    this.onGiveCandy,
+    this.checkCanGiveToEnemies,
+    this.onShowCandyMenu,
     this.onClose,
   });
+
+  @override
+  State<InventoryUI> createState() => _InventoryUIState();
+}
+
+class _InventoryUIState extends State<InventoryUI> {
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +81,7 @@ class InventoryUI extends StatelessWidget {
           Row(
             children: [
               Text(
-                '${inventory.count}/${inventory.maxCapacity}',
+                '${widget.inventory.count}/${widget.inventory.maxCapacity}',
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
@@ -76,7 +89,7 @@ class InventoryUI extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               IconButton(
-                onPressed: onClose,
+                onPressed: widget.onClose,
                 icon: const Icon(Icons.close, color: Colors.white70),
                 iconSize: 20,
               ),
@@ -88,7 +101,7 @@ class InventoryUI extends StatelessWidget {
   }
 
   Widget _buildStats() {
-    final activeEffects = inventory.activeEffects;
+    final activeEffects = widget.inventory.activeEffects;
     if (activeEffects.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -134,7 +147,7 @@ class InventoryUI extends StatelessWidget {
   }
 
   Widget _buildCandyList() {
-    if (inventory.isEmpty) {
+    if (widget.inventory.isEmpty) {
       return const Center(
         child: Text(
           'No candies in inventory',
@@ -210,7 +223,7 @@ class InventoryUI extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            onTap: () => onUseCandy?.call(candy.id),
+            onTap: () => _showCandyMenu(candy),
           ),
         );
       },
@@ -233,7 +246,7 @@ class InventoryUI extends StatelessWidget {
           SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Tap an item to use it. Press I to close.',
+              'Tap an item for options. Press I to close.',
               style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
           ),
@@ -242,9 +255,13 @@ class InventoryUI extends StatelessWidget {
     );
   }
 
+  void _showCandyMenu(CandyItem candy) {
+    widget.onShowCandyMenu?.call(candy);
+  }
+
   Map<String, List<CandyItem>> _groupCandyByType() {
     final groups = <String, List<CandyItem>>{};
-    for (final candy in inventory.candyItems) {
+    for (final candy in widget.inventory.candyItems) {
       groups.putIfAbsent(candy.name, () => []).add(candy);
     }
     return groups;
@@ -286,28 +303,80 @@ class InventoryUI extends StatelessWidget {
 }
 
 /// Overlay widget that shows the inventory UI
-class InventoryOverlay extends StatelessWidget {
+class InventoryOverlay extends StatefulWidget {
   final Inventory inventory;
   final Function(String candyId)? onUseCandy;
+  final Function(String candyId)? onGiveCandy;
+  final Function()? checkCanGiveToEnemies;
   final VoidCallback? onClose;
 
   const InventoryOverlay({
     super.key,
     required this.inventory,
     this.onUseCandy,
+    this.onGiveCandy,
+    this.checkCanGiveToEnemies,
     this.onClose,
   });
 
   @override
+  State<InventoryOverlay> createState() => _InventoryOverlayState();
+}
+
+class _InventoryOverlayState extends State<InventoryOverlay> {
+  CandyItem? _showingMenuForCandy;
+
+  @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    
     return Container(
+      width: screenSize.width,
+      height: screenSize.height,
       color: Colors.black.withValues(alpha: 0.7),
-      child: Center(
-        child: InventoryUI(
-          inventory: inventory,
-          onUseCandy: onUseCandy,
-          onClose: onClose,
-        ),
+      child: Stack(
+        children: [
+          Center(
+            child: InventoryUI(
+              inventory: widget.inventory,
+              onUseCandy: widget.onUseCandy,
+              onGiveCandy: widget.onGiveCandy,
+              checkCanGiveToEnemies: widget.checkCanGiveToEnemies,
+              onShowCandyMenu: (candy) {
+                setState(() {
+                  _showingMenuForCandy = candy;
+                });
+              },
+              onClose: widget.onClose,
+            ),
+          ),
+          if (_showingMenuForCandy != null)
+            CandyMenu(
+              candy: _showingMenuForCandy!,
+              canGiveToEnemies: widget.checkCanGiveToEnemies?.call() ?? false,
+              onEat: () {
+                widget.onUseCandy?.call(_showingMenuForCandy!.id);
+                setState(() {
+                  _showingMenuForCandy = null;
+                });
+                // Close inventory after eating candy
+                widget.onClose?.call();
+              },
+              onGive: () {
+                widget.onGiveCandy?.call(_showingMenuForCandy!.id);
+                setState(() {
+                  _showingMenuForCandy = null;
+                });
+                // Close inventory after giving candy
+                widget.onClose?.call();
+              },
+              onCancel: () {
+                setState(() {
+                  _showingMenuForCandy = null;
+                });
+              },
+            ),
+        ],
       ),
     );
   }
