@@ -808,6 +808,12 @@ class GridSceneManager extends ChangeNotifier {
 
           // Remove candy from tile map (mark as floor)
           _tileMap!.setTileAt(pos, TileType.floor);
+
+          // Remove the 3D candy object from rendering
+          removeObject(pos.x, pos.z);
+
+          // Notify listeners to update rendering
+          notifyListeners();
         } else {
           // Show inventory full message
           _showInventoryFullMessage();
