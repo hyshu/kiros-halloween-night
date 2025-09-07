@@ -25,7 +25,7 @@ class CandySpawner {
     Random? random,
     this.spawnProbability = 0.02, // 2% chance per floor tile
     this.minDistanceBetweenCandy = 3,
-    this.maxCandyCount = 200,
+    this.maxCandyCount = 100,
   }) : _random = random ?? Random();
 
   /// Spawns candy items randomly across the map during generation

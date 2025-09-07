@@ -91,7 +91,7 @@ class _GridSceneViewState extends State<GridSceneView> {
 
     // Spawn enemies across the world map
     await _sceneManager.spawnEnemies(
-      spawnDensity: 0.8, // 0.8 enemies per 100 tiles
+      spawnDensity: 0.125, // 0.125 enemies per 100 tiles (approx 100 enemies)
       playerSpawn: spawnPosition,
     );
 
