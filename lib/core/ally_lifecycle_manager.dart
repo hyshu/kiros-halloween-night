@@ -5,26 +5,26 @@ import 'health_system.dart';
 class AllyLifecycleManager {
   /// List of allies being managed
   final List<AllyCharacter> _allies = [];
-  
+
   /// Health system for tracking ally health
   final HealthSystem healthSystem;
-  
+
   /// List of allies that became satisfied and should be removed
   final List<AllyCharacter> _satisfiedAllies = [];
-  
+
   /// Callbacks for lifecycle events
   final List<Function(AllyCharacter)> _onAllyAdded = [];
   final List<Function(AllyCharacter)> _onAllyRemoved = [];
   final List<Function(AllyCharacter)> _onAllySatisfied = [];
 
   AllyLifecycleManager({HealthSystem? healthSystem})
-      : healthSystem = healthSystem ?? HealthSystem();
+    : healthSystem = healthSystem ?? HealthSystem();
 
   /// Adds an ally to be managed
   void addAlly(AllyCharacter ally) {
     if (!_allies.contains(ally)) {
       _allies.add(ally);
-      
+
       // Notify listeners
       for (final callback in _onAllyAdded) {
         callback(ally);
@@ -37,7 +37,7 @@ class AllyLifecycleManager {
     if (_allies.remove(ally)) {
       // Clean up health tracking
       healthSystem.removeCharacter(ally.id);
-      
+
       // Notify listeners
       for (final callback in _onAllyRemoved) {
         callback(ally);
@@ -48,23 +48,23 @@ class AllyLifecycleManager {
   /// Updates all allies and handles satisfaction-based removal
   void updateAllies() {
     final alliesToRemove = <AllyCharacter>[];
-    
+
     for (final ally in _allies) {
       // Update ally satisfaction
       _updateAllySatisfaction(ally);
-      
+
       // Check if ally should be removed due to satisfaction
       if (ally.isSatisfied) {
         alliesToRemove.add(ally);
         _satisfiedAllies.add(ally);
-        
+
         // Notify listeners
         for (final callback in _onAllySatisfied) {
           callback(ally);
         }
       }
     }
-    
+
     // Remove satisfied allies
     for (final ally in alliesToRemove) {
       removeAlly(ally);
@@ -74,15 +74,19 @@ class AllyLifecycleManager {
   /// Updates an ally's satisfaction based on various factors
   void _updateAllySatisfaction(AllyCharacter ally) {
     // Satisfaction decreases over time (handled in AllyCharacter.updateAI)
-    
+
     // Additional satisfaction loss based on health
     if (ally.healthPercentage < 0.3) {
       // Low health causes faster satisfaction loss
-      if (DateTime.now().millisecondsSinceEpoch % 100 == 0) { // Occasional check
-        ally.satisfaction = (ally.satisfaction - 1).clamp(0, ally.maxSatisfaction);
+      if (DateTime.now().millisecondsSinceEpoch % 100 == 0) {
+        // Occasional check
+        ally.satisfaction = (ally.satisfaction - 1).clamp(
+          0,
+          ally.maxSatisfaction,
+        );
       }
     }
-    
+
     // Satisfaction loss when taking damage is handled in AllyCharacter.takeDamage
   }
 
@@ -104,7 +108,8 @@ class AllyLifecycleManager {
   List<AllyCharacter> get activeAllies => List.unmodifiable(_allies);
 
   /// Gets all satisfied allies that were removed
-  List<AllyCharacter> get satisfiedAllies => List.unmodifiable(_satisfiedAllies);
+  List<AllyCharacter> get satisfiedAllies =>
+      List.unmodifiable(_satisfiedAllies);
 
   /// Gets the number of active allies
   int get allyCount => _allies.length;
@@ -154,10 +159,16 @@ class AllyLifecycleManager {
       alliesInCombat: alliesInCombat.length,
       alliesWithLowSatisfaction: alliesWithLowSatisfaction.length,
       alliesWithCriticalHealth: alliesWithCriticalHealth.length,
-      averageSatisfaction: _allies.isEmpty ? 0.0 : 
-          _allies.map((a) => a.satisfactionPercentage).reduce((a, b) => a + b) / _allies.length,
-      averageHealth: _allies.isEmpty ? 0.0 :
-          _allies.map((a) => a.healthPercentage).reduce((a, b) => a + b) / _allies.length,
+      averageSatisfaction: _allies.isEmpty
+          ? 0.0
+          : _allies
+                    .map((a) => a.satisfactionPercentage)
+                    .reduce((a, b) => a + b) /
+                _allies.length,
+      averageHealth: _allies.isEmpty
+          ? 0.0
+          : _allies.map((a) => a.healthPercentage).reduce((a, b) => a + b) /
+                _allies.length,
     );
   }
 
@@ -191,11 +202,13 @@ class AllyLifecycleManager {
   /// Gets detailed information about an ally
   AllyInfo? getAllyInfo(AllyCharacter ally) {
     if (!_allies.contains(ally)) return null;
-    
+
     return AllyInfo(
       ally: ally,
       healthStats: healthSystem.getHealthStats(ally.id),
-      timeAsAlly: DateTime.now().difference(DateTime.now()), // Would need to track creation time
+      timeAsAlly: DateTime.now().difference(
+        DateTime.now(),
+      ), // Would need to track creation time
       combatParticipation: 0, // Would need to track combat events
     );
   }
@@ -233,8 +246,8 @@ class AllyLifecycleStats {
   @override
   String toString() {
     return 'AllyLifecycleStats(Active: $activeAllies, Satisfied: $satisfiedAllies, '
-           'Combat: $alliesInCombat, Avg Satisfaction: ${(averageSatisfaction * 100).toStringAsFixed(1)}%, '
-           'Avg Health: ${(averageHealth * 100).toStringAsFixed(1)}%)';
+        'Combat: $alliesInCombat, Avg Satisfaction: ${(averageSatisfaction * 100).toStringAsFixed(1)}%, '
+        'Avg Health: ${(averageHealth * 100).toStringAsFixed(1)}%)';
   }
 }
 
@@ -255,7 +268,8 @@ class AllyInfo {
   /// Gets a summary of the ally's status
   String get statusSummary {
     final health = '${(ally.healthPercentage * 100).toStringAsFixed(0)}%';
-    final satisfaction = '${(ally.satisfactionPercentage * 100).toStringAsFixed(0)}%';
+    final satisfaction =
+        '${(ally.satisfactionPercentage * 100).toStringAsFixed(0)}%';
     return '${ally.id}: Health $health, Satisfaction $satisfaction, State: ${ally.state.displayName}';
   }
 

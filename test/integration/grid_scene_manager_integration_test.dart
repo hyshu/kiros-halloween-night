@@ -6,14 +6,15 @@ import 'package:kiro_halloween_game/core/position.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('GridSceneManager Integration Tests', () {
     test('should create scene manager with tile map', () {
       final tileMap = TileMap();
       tileMap.setPlayerSpawn(Position(10, 10));
       tileMap.setBossLocation(Position(100, 100));
-      
+
       final sceneManager = GridSceneManager.withTileMap(tileMap);
-      
+
       expect(sceneManager.tileMap, equals(tileMap));
       expect(sceneManager.cameraTarget.x, equals(20.0)); // 10 * 2.0
       expect(sceneManager.cameraTarget.z, equals(20.0)); // 10 * 2.0
@@ -22,9 +23,9 @@ void main() {
     test('should initialize with generated world', () {
       final worldGenerator = WorldGenerator(seed: 123, isTestMode: true);
       final tileMap = worldGenerator.generateWorld();
-      
+
       final sceneManager = GridSceneManager.withTileMap(tileMap);
-      
+
       // Should have tile map set
       expect(sceneManager.tileMap, equals(tileMap));
       expect(sceneManager.tileMap!.playerSpawn, isNotNull);
@@ -33,36 +34,45 @@ void main() {
 
     test('should handle viewport-based object rendering', () {
       final tileMap = TileMap();
-      tileMap.setPlayerSpawn(Position(250, 500)); // Center of world
-      
+      tileMap.setPlayerSpawn(Position(100, 200)); // Center of world
+
       final sceneManager = GridSceneManager.withTileMap(tileMap);
-      
+
       // Camera should be positioned at spawn
-      expect(sceneManager.cameraTarget.x, equals(500.0)); // 250 * 2.0
-      expect(sceneManager.cameraTarget.z, equals(1000.0)); // 500 * 2.0
+      expect(sceneManager.cameraTarget.x, equals(200.0)); // 100 * 2.0
+      expect(sceneManager.cameraTarget.z, equals(400.0)); // 200 * 2.0
     });
 
     test('should update camera target', () {
       final tileMap = TileMap();
       final sceneManager = GridSceneManager.withTileMap(tileMap);
-      
+
       final newTarget = Vector3(100, 0, 200);
       sceneManager.updateCameraTarget(newTarget);
-      
+
       expect(sceneManager.cameraTarget, equals(newTarget));
     });
 
     test('should handle large world bounds checking', () {
       final tileMap = TileMap();
       final sceneManager = GridSceneManager.withTileMap(tileMap);
-      
+
       // Should accept valid positions within tile map bounds
       expect(() => sceneManager.getObjectAt(100, 200), returnsNormally);
-      expect(() => sceneManager.getObjectAt(TileMap.worldWidth - 1, TileMap.worldHeight - 1), returnsNormally);
-      
+      expect(
+        () => sceneManager.getObjectAt(
+          TileMap.worldWidth - 1,
+          TileMap.worldHeight - 1,
+        ),
+        returnsNormally,
+      );
+
       // Should return null for positions outside bounds
       expect(sceneManager.getObjectAt(-1, -1), isNull);
-      expect(sceneManager.getObjectAt(TileMap.worldWidth, TileMap.worldHeight), isNull);
+      expect(
+        sceneManager.getObjectAt(TileMap.worldWidth, TileMap.worldHeight),
+        isNull,
+      );
     });
   });
 }

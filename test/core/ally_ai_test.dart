@@ -2,27 +2,23 @@ import 'package:test/test.dart';
 import 'package:kiro_halloween_game/core/ally_ai.dart';
 import 'package:kiro_halloween_game/core/ally_character.dart';
 import 'package:kiro_halloween_game/core/enemy_character.dart';
-import 'package:kiro_halloween_game/core/ghost_character.dart';
+import 'package:kiro_halloween_game/core/ghost_character.dart' as ghost;
 import 'package:kiro_halloween_game/core/position.dart';
 import 'package:kiro_halloween_game/core/tile_map.dart';
 
 void main() {
   group('AllyAI', () {
     late TileMap tileMap;
-    late GhostCharacter player;
+    late ghost.GhostCharacter player;
     late AllyCharacter ally;
     late EnemyCharacter hostileEnemy;
 
     setUp(() {
       // Create a simple test tile map
-      tileMap = TileMap.generate(20, 20);
+      tileMap = TileMap();
 
       // Create test characters
-      player = GhostCharacter(
-        id: 'player',
-        position: Position(10, 10),
-        modelPath: 'test.obj',
-      );
+      player = ghost.GhostCharacter(id: 'player', position: Position(10, 10));
 
       final originalEnemy = EnemyCharacter(
         id: 'original',

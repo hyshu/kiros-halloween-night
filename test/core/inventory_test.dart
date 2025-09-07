@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/inventory.dart';
-import '../../lib/core/candy_item.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/inventory.dart';
+import 'package:kiro_halloween_game/core/candy_item.dart';
 
 void main() {
   group('Inventory', () {
@@ -20,9 +19,9 @@ void main() {
 
     test('should add candy items', () {
       final candy = CandyItem.create(CandyType.candyBar, 'candy_1');
-      
+
       final success = inventory.addCandy(candy);
-      
+
       expect(success, isTrue);
       expect(inventory.count, equals(1));
       expect(inventory.isEmpty, isFalse);
@@ -35,13 +34,13 @@ void main() {
         final candy = CandyItem.create(CandyType.candyBar, 'candy_$i');
         inventory.addCandy(candy);
       }
-      
+
       expect(inventory.isFull, isTrue);
-      
+
       // Try to add one more
       final extraCandy = CandyItem.create(CandyType.chocolate, 'extra');
       final success = inventory.addCandy(extraCandy);
-      
+
       expect(success, isFalse);
       expect(inventory.count, equals(10));
       expect(extraCandy.isCollected, isFalse);
@@ -50,13 +49,13 @@ void main() {
     test('should remove candy items', () {
       final candy1 = CandyItem.create(CandyType.candyBar, 'candy_1');
       final candy2 = CandyItem.create(CandyType.chocolate, 'candy_2');
-      
+
       inventory.addCandy(candy1);
       inventory.addCandy(candy2);
       expect(inventory.count, equals(2));
-      
+
       final removed = inventory.removeCandy(candy1);
-      
+
       expect(removed, isTrue);
       expect(inventory.count, equals(1));
       expect(inventory.getCandyById('candy_1'), isNull);
@@ -66,12 +65,12 @@ void main() {
     test('should remove candy by ID', () {
       final candy = CandyItem.create(CandyType.cookie, 'cookie_1');
       inventory.addCandy(candy);
-      
+
       final removed = inventory.removeCandyById('cookie_1');
-      
+
       expect(removed, equals(candy));
       expect(inventory.count, equals(0));
-      
+
       // Try to remove non-existent candy
       final notFound = inventory.removeCandyById('not_found');
       expect(notFound, isNull);
@@ -80,10 +79,10 @@ void main() {
     test('should get candy by ID', () {
       final candy = CandyItem.create(CandyType.donut, 'donut_1');
       inventory.addCandy(candy);
-      
+
       final found = inventory.getCandyById('donut_1');
       expect(found, equals(candy));
-      
+
       final notFound = inventory.getCandyById('not_found');
       expect(notFound, isNull);
     });
@@ -92,16 +91,16 @@ void main() {
       final candy1 = CandyItem.create(CandyType.candyBar, 'candy_1');
       final candy2 = CandyItem.create(CandyType.candyBar, 'candy_2');
       final candy3 = CandyItem.create(CandyType.chocolate, 'choc_1');
-      
+
       inventory.addCandy(candy1);
       inventory.addCandy(candy2);
       inventory.addCandy(candy3);
-      
+
       final candyBars = inventory.getCandyByType(CandyType.candyBar);
       expect(candyBars.length, equals(2));
       expect(candyBars, contains(candy1));
       expect(candyBars, contains(candy2));
-      
+
       final chocolates = inventory.getCandyByType(CandyType.chocolate);
       expect(chocolates.length, equals(1));
       expect(chocolates, contains(candy3));
@@ -111,38 +110,43 @@ void main() {
       final healthCandy1 = CandyItem.create(CandyType.candyBar, 'candy_1');
       final healthCandy2 = CandyItem.create(CandyType.donut, 'donut_1');
       final speedCandy = CandyItem.create(CandyType.cookie, 'cookie_1');
-      
+
       inventory.addCandy(healthCandy1);
       inventory.addCandy(healthCandy2);
       inventory.addCandy(speedCandy);
-      
+
       final healthCandies = inventory.getCandyByEffect(CandyEffect.healthBoost);
       expect(healthCandies.length, equals(2));
-      
-      final speedCandies = inventory.getCandyByEffect(CandyEffect.speedIncrease);
+
+      final speedCandies = inventory.getCandyByEffect(
+        CandyEffect.speedIncrease,
+      );
       expect(speedCandies.length, equals(1));
     });
 
     test('should use candy and apply effects', () {
       final candy = CandyItem.create(CandyType.cookie, 'cookie_1');
       inventory.addCandy(candy);
-      
+
       expect(inventory.count, equals(1));
-      
+
       final success = inventory.useCandy('cookie_1');
-      
+
       expect(success, isTrue);
       expect(inventory.count, equals(0)); // Candy should be removed
-      expect(inventory.activeEffects.length, equals(1)); // Temporary effect added
+      expect(
+        inventory.activeEffects.length,
+        equals(1),
+      ); // Temporary effect added
     });
 
     test('should track temporary effects', () {
       final speedCandy = CandyItem.create(CandyType.cookie, 'cookie_1');
       inventory.addCandy(speedCandy);
       inventory.useCandy('cookie_1');
-      
+
       expect(inventory.activeEffects.length, equals(1));
-      
+
       final effect = inventory.activeEffects.values.first;
       expect(effect.effect, equals(CandyEffect.speedIncrease));
       expect(effect.remainingDuration, equals(30));
@@ -153,12 +157,14 @@ void main() {
       final speedCandy = CandyItem.create(CandyType.cookie, 'cookie_1');
       inventory.addCandy(speedCandy);
       inventory.useCandy('cookie_1');
-      
-      final initialDuration = inventory.activeEffects.values.first.remainingDuration;
-      
+
+      final initialDuration =
+          inventory.activeEffects.values.first.remainingDuration;
+
       inventory.updateTemporaryEffects();
-      
-      final updatedDuration = inventory.activeEffects.values.first.remainingDuration;
+
+      final updatedDuration =
+          inventory.activeEffects.values.first.remainingDuration;
       expect(updatedDuration, equals(initialDuration - 1));
     });
 
@@ -166,10 +172,10 @@ void main() {
       final speedCandy = CandyItem.create(CandyType.cookie, 'cookie_1');
       inventory.addCandy(speedCandy);
       inventory.useCandy('cookie_1');
-      
+
       // Manually set duration to 1
       inventory.activeEffects.values.first.remainingDuration = 1;
-      
+
       inventory.updateTemporaryEffects();
       expect(inventory.activeEffects.isEmpty, isTrue);
     });
@@ -177,13 +183,15 @@ void main() {
     test('should calculate total ability modifications', () {
       final speedCandy1 = CandyItem.create(CandyType.cookie, 'cookie_1');
       final speedCandy2 = CandyItem.create(CandyType.cookie, 'cookie_2');
-      
+
       inventory.addCandy(speedCandy1);
       inventory.addCandy(speedCandy2);
       inventory.useCandy('cookie_1');
       inventory.useCandy('cookie_2');
-      
-      final totalSpeedBonus = inventory.getTotalAbilityModification('speedMultiplier');
+
+      final totalSpeedBonus = inventory.getTotalAbilityModification(
+        'speedMultiplier',
+      );
       expect(totalSpeedBonus, equals(3.0)); // 1.5 + 1.5
     });
 
@@ -191,7 +199,7 @@ void main() {
       final iceCandy = CandyItem.create(CandyType.iceCream, 'ice_1');
       inventory.addCandy(iceCandy);
       inventory.useCandy('ice_1');
-      
+
       expect(inventory.hasActiveAbility('freezeEnemies'), isTrue);
       expect(inventory.hasActiveAbility('wallVision'), isFalse);
     });
@@ -199,14 +207,14 @@ void main() {
     test('should get available candy for gifting', () {
       final healthCandy = CandyItem.create(CandyType.candyBar, 'candy_1');
       final speedCandy = CandyItem.create(CandyType.cookie, 'cookie_1');
-      
+
       inventory.addCandy(healthCandy);
       inventory.addCandy(speedCandy);
-      
+
       // Before using any candy
       final available1 = inventory.getAvailableForGifting();
       expect(available1.length, equals(2));
-      
+
       // After using speed candy (creates temporary effect)
       inventory.useCandy('cookie_1');
       final available2 = inventory.getAvailableForGifting();
@@ -218,11 +226,11 @@ void main() {
       final candy1 = CandyItem.create(CandyType.candyBar, 'candy_1');
       final candy2 = CandyItem.create(CandyType.candyBar, 'candy_2');
       final candy3 = CandyItem.create(CandyType.chocolate, 'choc_1');
-      
+
       inventory.addCandy(candy1);
       inventory.addCandy(candy2);
       inventory.addCandy(candy3);
-      
+
       final summary = inventory.getInventorySummary();
       expect(summary['Candy Bar'], equals(2));
       expect(summary['Chocolate'], equals(1));
@@ -232,11 +240,11 @@ void main() {
       final zCandy = CandyItem.create(CandyType.popsicle, 'z'); // Popsicle
       final aCandy = CandyItem.create(CandyType.candyBar, 'a'); // Candy Bar
       final mCandy = CandyItem.create(CandyType.muffin, 'm'); // Muffin
-      
+
       inventory.addCandy(zCandy);
       inventory.addCandy(aCandy);
       inventory.addCandy(mCandy);
-      
+
       final sorted = inventory.getCandySortedByName();
       expect(sorted[0].name, equals('Candy Bar'));
       expect(sorted[1].name, equals('Muffin'));
@@ -246,16 +254,16 @@ void main() {
     test('should clear inventory', () {
       final candy1 = CandyItem.create(CandyType.candyBar, 'candy_1');
       final candy2 = CandyItem.create(CandyType.cookie, 'cookie_1');
-      
+
       inventory.addCandy(candy1);
       inventory.addCandy(candy2);
       inventory.useCandy('cookie_1'); // Creates temporary effect
-      
+
       expect(inventory.count, equals(1));
       expect(inventory.activeEffects.length, equals(1));
-      
+
       inventory.clear();
-      
+
       expect(inventory.isEmpty, isTrue);
       expect(inventory.activeEffects.isEmpty, isTrue);
     });
@@ -272,7 +280,7 @@ void main() {
         abilityModifications: {'speedMultiplier': 1.5},
         remainingDuration: 30,
       );
-      
+
       expect(effect.id, equals('speed_1'));
       expect(effect.sourceId, equals('cookie_1'));
       expect(effect.name, equals('Speed Boost'));
@@ -290,7 +298,7 @@ void main() {
         abilityModifications: {},
         remainingDuration: 0,
       );
-      
+
       expect(effect.isExpired, isTrue);
     });
   });

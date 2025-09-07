@@ -2,13 +2,13 @@
 enum TileType {
   /// Empty floor tile that can be walked on
   floor,
-  
+
   /// Wall tile that blocks movement
   wall,
-  
+
   /// Obstacle tile that blocks movement but may have different visuals
   obstacle,
-  
+
   /// Candy item tile that can be collected
   candy;
 

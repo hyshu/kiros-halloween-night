@@ -6,28 +6,28 @@ import 'enemy_character.dart';
 class HealthSystem {
   /// Map to track health changes for characters
   final Map<String, HealthTracker> _healthTrackers = {};
-  
+
   /// List of health change events for feedback
   final List<HealthChangeEvent> _recentEvents = [];
-  
+
   /// Maximum number of recent events to keep
   static const int maxRecentEvents = 50;
 
   /// Applies damage to a character and returns true if they survive
   bool applyDamage(Character character, int damage) {
     if (damage <= 0) return character.isAlive;
-    
+
     // Get or create health tracker
     final tracker = _getOrCreateTracker(character);
-    
+
     // Record the damage
     final previousHealth = character.health;
     final survived = character.takeDamage(damage);
     final actualDamage = previousHealth - character.health;
-    
+
     // Update tracker
     tracker.recordDamage(actualDamage);
-    
+
     // Create health change event
     final event = HealthChangeEvent(
       characterId: character.id,
@@ -37,32 +37,32 @@ class HealthSystem {
       newHealth: character.health,
       timestamp: DateTime.now(),
     );
-    
+
     _addEvent(event);
-    
+
     // Handle special cases for different character types
     if (!survived) {
       _handleCharacterDefeated(character);
     }
-    
+
     return survived;
   }
 
   /// Applies healing to a character
   void applyHealing(Character character, int healing) {
     if (healing <= 0) return;
-    
+
     // Get or create health tracker
     final tracker = _getOrCreateTracker(character);
-    
+
     // Record the healing
     final previousHealth = character.health;
     character.heal(healing);
     final actualHealing = character.health - previousHealth;
-    
+
     // Update tracker
     tracker.recordHealing(actualHealing);
-    
+
     // Create health change event
     final event = HealthChangeEvent(
       characterId: character.id,
@@ -72,7 +72,7 @@ class HealthSystem {
       newHealth: character.health,
       timestamp: DateTime.now(),
     );
-    
+
     _addEvent(event);
   }
 
@@ -82,12 +82,11 @@ class HealthSystem {
   }
 
   /// Gets all health trackers
-  Map<String, HealthTracker> get allHealthTrackers => 
+  Map<String, HealthTracker> get allHealthTrackers =>
       Map.unmodifiable(_healthTrackers);
 
   /// Gets recent health change events
-  List<HealthChangeEvent> get recentEvents => 
-      List.unmodifiable(_recentEvents);
+  List<HealthChangeEvent> get recentEvents => List.unmodifiable(_recentEvents);
 
   /// Gets recent events for a specific character
   List<HealthChangeEvent> getEventsForCharacter(String characterId) {
@@ -123,7 +122,7 @@ class HealthSystem {
   /// Adds a health change event to the recent events list
   void _addEvent(HealthChangeEvent event) {
     _recentEvents.add(event);
-    
+
     // Keep only the most recent events
     if (_recentEvents.length > maxRecentEvents) {
       _recentEvents.removeAt(0);
@@ -139,7 +138,7 @@ class HealthSystem {
       // Enemy becomes satisfied when defeated
       character.setSatisfied();
     }
-    
+
     // Create defeat event
     final event = HealthChangeEvent(
       characterId: character.id,
@@ -149,7 +148,7 @@ class HealthSystem {
       newHealth: 0,
       timestamp: DateTime.now(),
     );
-    
+
     _addEvent(event);
   }
 
@@ -157,7 +156,7 @@ class HealthSystem {
   HealthStats? getHealthStats(String characterId) {
     final tracker = _healthTrackers[characterId];
     if (tracker == null) return null;
-    
+
     return HealthStats(
       characterId: characterId,
       maxHealth: tracker.maxHealth,
@@ -219,7 +218,7 @@ class HealthTracker {
   @override
   String toString() {
     return 'HealthTracker($characterId: $currentHealth/$maxHealth, '
-           'Damage: $totalDamageTaken, Healing: $totalHealingReceived)';
+        'Damage: $totalDamageTaken, Healing: $totalHealingReceived)';
   }
 }
 
@@ -255,8 +254,8 @@ class HealthChangeEvent {
 
   /// Returns true if this event represents a critical health change
   bool get isCritical {
-    return changeType == HealthChangeType.defeated || 
-           (changeType == HealthChangeType.damage && newHealth <= 10);
+    return changeType == HealthChangeType.defeated ||
+        (changeType == HealthChangeType.damage && newHealth <= 10);
   }
 
   @override
@@ -264,11 +263,7 @@ class HealthChangeEvent {
 }
 
 /// Types of health changes
-enum HealthChangeType {
-  damage,
-  healing,
-  defeated;
-}
+enum HealthChangeType { damage, healing, defeated }
 
 /// Health statistics for a character
 class HealthStats {
@@ -296,11 +291,11 @@ class HealthStats {
   double get healthPercentage => currentHealth / maxHealth;
 
   /// Gets the average damage per event
-  double get averageDamagePerEvent => 
+  double get averageDamagePerEvent =>
       damageEvents > 0 ? totalDamageTaken / damageEvents : 0.0;
 
   /// Gets the average healing per event
-  double get averageHealingPerEvent => 
+  double get averageHealingPerEvent =>
       healingEvents > 0 ? totalHealingReceived / healingEvents : 0.0;
 
   /// Gets the net health change
@@ -309,7 +304,7 @@ class HealthStats {
   @override
   String toString() {
     return 'HealthStats($characterId: $currentHealth/$maxHealth, '
-           'Events: ${damageEvents}D/${healingEvents}H, '
-           'Total: ${totalDamageTaken}D/${totalHealingReceived}H)';
+        'Events: ${damageEvents}D/${healingEvents}H, '
+        'Total: ${totalDamageTaken}D/${totalHealingReceived}H)';
   }
 }

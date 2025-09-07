@@ -1,9 +1,9 @@
 import 'package:test/test.dart';
-import '../../lib/core/ally_lifecycle_manager.dart';
-import '../../lib/core/ally_character.dart';
-import '../../lib/core/enemy_character.dart';
-import '../../lib/core/health_system.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/ally_lifecycle_manager.dart';
+import 'package:kiro_halloween_game/core/ally_character.dart';
+import 'package:kiro_halloween_game/core/enemy_character.dart';
+import 'package:kiro_halloween_game/core/health_system.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   group('AllyLifecycleManager', () {
@@ -22,10 +22,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
 
         expect(lifecycleManager.allyCount, equals(0));
 
@@ -41,10 +39,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
 
         lifecycleManager.addAlly(ally);
         lifecycleManager.addAlly(ally); // Try to add again
@@ -58,10 +54,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
 
         lifecycleManager.addAlly(ally);
         expect(lifecycleManager.allyCount, equals(1));
@@ -77,10 +71,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
 
         AllyCharacter? addedAlly;
         lifecycleManager.onAllyAdded((ally) {
@@ -98,10 +90,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
 
         AllyCharacter? removedAlly;
         lifecycleManager.onAllyRemoved((ally) {
@@ -122,7 +112,7 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final ally = AllyCharacter(
           originalEnemy: enemy,
           satisfaction: 0, // Already satisfied
@@ -144,11 +134,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-          satisfaction: 0,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy, satisfaction: 0);
         ally.state = AllyState.satisfied;
 
         AllyCharacter? satisfiedAlly;
@@ -168,22 +155,16 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final enemy2 = EnemyCharacter(
           id: 'enemy2',
           position: Position(6, 6),
           modelPath: 'test.obj',
         );
-        
-        final ally1 = AllyCharacter(
-          originalEnemy: enemy1,
-          satisfaction: 50,
-        );
-        
-        final ally2 = AllyCharacter(
-          originalEnemy: enemy2,
-          satisfaction: 60,
-        );
+
+        final ally1 = AllyCharacter(originalEnemy: enemy1, satisfaction: 50);
+
+        final ally2 = AllyCharacter(originalEnemy: enemy2, satisfaction: 60);
 
         lifecycleManager.addAlly(ally1);
         lifecycleManager.addAlly(ally2);
@@ -200,11 +181,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-          satisfaction: 50,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy, satisfaction: 50);
 
         lifecycleManager.addAlly(ally);
         lifecycleManager.increaseSatisfactionFor(ally, 30);
@@ -218,11 +196,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-          satisfaction: 80,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy, satisfaction: 80);
 
         lifecycleManager.addAlly(ally);
         lifecycleManager.forceSatisfaction(ally);
@@ -237,11 +212,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-          satisfaction: 20,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy, satisfaction: 20);
         ally.state = AllyState.satisfied;
 
         lifecycleManager.addAlly(ally);
@@ -259,18 +231,18 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final enemy2 = EnemyCharacter(
           id: 'enemy2',
           position: Position(6, 6),
           modelPath: 'test.obj',
         );
-        
+
         final ally1 = AllyCharacter(
           originalEnemy: enemy1,
           satisfaction: 20, // Low satisfaction (20%)
         );
-        
+
         final ally2 = AllyCharacter(
           originalEnemy: enemy2,
           satisfaction: 80, // High satisfaction (80%)
@@ -279,7 +251,8 @@ void main() {
         lifecycleManager.addAlly(ally1);
         lifecycleManager.addAlly(ally2);
 
-        final lowSatisfactionAllies = lifecycleManager.alliesWithLowSatisfaction;
+        final lowSatisfactionAllies =
+            lifecycleManager.alliesWithLowSatisfaction;
 
         expect(lowSatisfactionAllies, hasLength(1));
         expect(lowSatisfactionAllies, contains(ally1));
@@ -292,21 +265,17 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final enemy2 = EnemyCharacter(
           id: 'enemy2',
           position: Position(6, 6),
           modelPath: 'test.obj',
         );
-        
-        final ally1 = AllyCharacter(
-          originalEnemy: enemy1,
-        );
+
+        final ally1 = AllyCharacter(originalEnemy: enemy1);
         ally1.health = 5; // Critical health (10% of 50)
-        
-        final ally2 = AllyCharacter(
-          originalEnemy: enemy2,
-        );
+
+        final ally2 = AllyCharacter(originalEnemy: enemy2);
         ally2.health = 40; // Good health (80% of 50)
 
         lifecycleManager.addAlly(ally1);
@@ -325,21 +294,17 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final enemy2 = EnemyCharacter(
           id: 'enemy2',
           position: Position(6, 6),
           modelPath: 'test.obj',
         );
-        
-        final ally1 = AllyCharacter(
-          originalEnemy: enemy1,
-        );
+
+        final ally1 = AllyCharacter(originalEnemy: enemy1);
         ally1.state = AllyState.combat;
-        
-        final ally2 = AllyCharacter(
-          originalEnemy: enemy2,
-        );
+
+        final ally2 = AllyCharacter(originalEnemy: enemy2);
         ally2.state = AllyState.following;
 
         lifecycleManager.addAlly(ally1);
@@ -360,23 +325,17 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final enemy2 = EnemyCharacter(
           id: 'enemy2',
           position: Position(6, 6),
           modelPath: 'test.obj',
         );
-        
-        final ally1 = AllyCharacter(
-          originalEnemy: enemy1,
-          satisfaction: 80,
-        );
+
+        final ally1 = AllyCharacter(originalEnemy: enemy1, satisfaction: 80);
         ally1.health = 40;
-        
-        final ally2 = AllyCharacter(
-          originalEnemy: enemy2,
-          satisfaction: 60,
-        );
+
+        final ally2 = AllyCharacter(originalEnemy: enemy2, satisfaction: 60);
         ally2.health = 30;
 
         lifecycleManager.addAlly(ally1);
@@ -396,10 +355,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
 
         lifecycleManager.addAlly(ally);
 
@@ -416,10 +373,8 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
 
         // Don't add ally to manager
 
@@ -436,13 +391,13 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final enemy2 = EnemyCharacter(
           id: 'enemy2',
           position: Position(6, 6),
           modelPath: 'test.obj',
         );
-        
+
         final ally1 = AllyCharacter(originalEnemy: enemy1);
         final ally2 = AllyCharacter(originalEnemy: enemy2);
 
@@ -470,7 +425,7 @@ void main() {
           position: Position(5, 5),
           modelPath: 'test.obj',
         );
-        
+
         final ally = AllyCharacter(originalEnemy: enemy);
         lifecycleManager.addAlly(ally);
 
@@ -507,7 +462,10 @@ void main() {
       );
 
       expect(stats.totalAlliesEver, equals(0));
-      expect(stats.satisfactionRetentionRate, equals(1.0)); // Perfect retention when no allies
+      expect(
+        stats.satisfactionRetentionRate,
+        equals(1.0),
+      ); // Perfect retention when no allies
     });
   });
 
@@ -518,11 +476,8 @@ void main() {
         position: Position(5, 5),
         modelPath: 'test.obj',
       );
-      
-      final ally = AllyCharacter(
-        originalEnemy: enemy,
-        satisfaction: 75,
-      );
+
+      final ally = AllyCharacter(originalEnemy: enemy, satisfaction: 75);
       ally.health = 40; // 80% health
 
       final info = AllyInfo(

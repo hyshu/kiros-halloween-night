@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/gift_system.dart';
-import '../../lib/core/ghost_character.dart';
-import '../../lib/core/enemy_character.dart';
-import '../../lib/core/candy_item.dart';
-import '../../lib/core/position.dart';
-import '../../lib/core/inventory.dart';
+import 'package:kiro_halloween_game/core/gift_system.dart';
+import 'package:kiro_halloween_game/core/ghost_character.dart';
+import 'package:kiro_halloween_game/core/enemy_character.dart';
+import 'package:kiro_halloween_game/core/candy_item.dart';
+import 'package:kiro_halloween_game/core/position.dart';
+import 'package:kiro_halloween_game/core/inventory.dart';
 
 void main() {
   group('GiftSystem', () {
@@ -40,7 +40,7 @@ void main() {
 
     test('should successfully initiate gift with adjacent hostile enemy', () {
       final success = giftSystem.initiateGift(player, enemy);
-      
+
       expect(success, true);
       expect(giftSystem.isGiftUIActive, true);
       expect(giftSystem.targetEnemy, enemy);
@@ -50,54 +50,54 @@ void main() {
 
     test('should fail to initiate gift with non-adjacent enemy', () {
       enemy.position = Position(10, 10); // Far away
-      
+
       final success = giftSystem.initiateGift(player, enemy);
-      
+
       expect(success, false);
       expect(giftSystem.isGiftUIActive, false);
     });
 
     test('should fail to initiate gift with non-hostile enemy', () {
       enemy.state = EnemyState.ally;
-      
+
       final success = giftSystem.initiateGift(player, enemy);
-      
+
       expect(success, false);
       expect(giftSystem.isGiftUIActive, false);
     });
 
     test('should fail to initiate gift when player has no candy', () {
       player.inventory.clear();
-      
+
       final success = giftSystem.initiateGift(player, enemy);
-      
+
       expect(success, false);
       expect(giftSystem.isGiftUIActive, false);
     });
 
     test('should select candy for gifting', () {
       giftSystem.initiateGift(player, enemy);
-      
+
       giftSystem.selectCandy(candy);
-      
+
       expect(giftSystem.selectedCandy, candy);
     });
 
     test('should not select candy not in available list', () {
       final otherCandy = CandyItem.create(CandyType.chocolate, 'candy2');
       giftSystem.initiateGift(player, enemy);
-      
+
       giftSystem.selectCandy(otherCandy);
-      
+
       expect(giftSystem.selectedCandy, null);
     });
 
     test('should successfully confirm gift and convert enemy', () {
       giftSystem.initiateGift(player, enemy);
       giftSystem.selectCandy(candy);
-      
+
       final success = giftSystem.confirmGift(player);
-      
+
       expect(success, true);
       expect(giftSystem.isGiftUIActive, false);
       expect(enemy.state, EnemyState.ally);
@@ -107,9 +107,9 @@ void main() {
     test('should fail to confirm gift without selection', () {
       giftSystem.initiateGift(player, enemy);
       // Don't select candy
-      
+
       final success = giftSystem.confirmGift(player);
-      
+
       expect(success, false);
       expect(giftSystem.isGiftUIActive, true); // Still active
     });
@@ -117,9 +117,9 @@ void main() {
     test('should cancel gift and reset state', () {
       giftSystem.initiateGift(player, enemy);
       giftSystem.selectCandy(candy);
-      
+
       giftSystem.cancelGift();
-      
+
       expect(giftSystem.isGiftUIActive, false);
       expect(giftSystem.selectedCandy, null);
       expect(giftSystem.targetEnemy, null);
@@ -127,32 +127,30 @@ void main() {
     });
 
     test('should identify adjacent positions correctly', () {
-      final adjacentEnemies = giftSystem.getAdjacentGiftableEnemies(
-        player, 
-        [enemy]
-      );
-      
+      final adjacentEnemies = giftSystem.getAdjacentGiftableEnemies(player, [
+        enemy,
+      ]);
+
       expect(adjacentEnemies, contains(enemy));
     });
 
     test('should not identify non-adjacent positions as adjacent', () {
       enemy.position = Position(7, 7); // Diagonal, not adjacent
-      
-      final adjacentEnemies = giftSystem.getAdjacentGiftableEnemies(
-        player, 
-        [enemy]
-      );
-      
+
+      final adjacentEnemies = giftSystem.getAdjacentGiftableEnemies(player, [
+        enemy,
+      ]);
+
       expect(adjacentEnemies, isEmpty);
     });
 
     test('should check if player can give gifts', () {
       expect(giftSystem.canGiveGifts(player, [enemy]), true);
-      
+
       // No candy
       player.inventory.clear();
       expect(giftSystem.canGiveGifts(player, [enemy]), false);
-      
+
       // No adjacent enemies
       player.inventory.addCandy(candy);
       enemy.position = Position(10, 10);
@@ -163,12 +161,12 @@ void main() {
       final chocolateCandy = CandyItem.create(CandyType.chocolate, 'choc1');
       player.inventory.clear(); // Clear existing candy
       player.inventory.addCandy(chocolateCandy);
-      
+
       final recommended = giftSystem.getRecommendedCandy(
-        enemy, 
-        player.inventory.candyItems
+        enemy,
+        player.inventory.candyItems,
       );
-      
+
       expect(recommended, isNotNull);
       // Should prefer chocolate for humans
       expect(recommended!.name, contains('Chocolate'));
@@ -183,12 +181,12 @@ void main() {
       final specialCandy = CandyItem.create(CandyType.iceCream, 'ice1');
       player.inventory.clear(); // Clear existing candy
       player.inventory.addCandy(specialCandy);
-      
+
       final recommended = giftSystem.getRecommendedCandy(
-        monsterEnemy, 
-        player.inventory.candyItems
+        monsterEnemy,
+        player.inventory.candyItems,
       );
-      
+
       expect(recommended, isNotNull);
       // Should prefer special ability candy for monsters
       expect(recommended!.effect, CandyEffect.specialAbility);

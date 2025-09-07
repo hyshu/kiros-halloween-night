@@ -1,15 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/world_generator.dart';
-import '../../lib/core/tile_map.dart';
-import '../../lib/core/tile_type.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/world_generator.dart';
+import 'package:kiro_halloween_game/core/tile_map.dart';
+import 'package:kiro_halloween_game/core/tile_type.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   group('WorldGenerator', () {
     late WorldGenerator generator;
 
     setUp(() {
-      generator = WorldGenerator(seed: 12345, isTestMode: true); // Use test mode for faster tests
+      generator = WorldGenerator(
+        seed: 12345,
+        isTestMode: true,
+      ); // Use test mode for faster tests
     });
 
     group('generateWorld', () {
@@ -45,8 +48,11 @@ void main() {
         // Check all perimeter positions are walls
         final perimeterPositions = world.getPerimeterPositions();
         for (final position in perimeterPositions) {
-          expect(world.getTileAt(position), TileType.wall,
-              reason: 'Perimeter position $position should be a wall');
+          expect(
+            world.getTileAt(position),
+            TileType.wall,
+            reason: 'Perimeter position $position should be a wall',
+          );
         }
       });
 
@@ -55,12 +61,20 @@ void main() {
 
         // Check for room-based structure with better sampling
         final samplePositions = <Position>[
-          // Sample room interiors
-          Position(60, 60), Position(210, 160), Position(360, 310), Position(110, 410),
+          // Sample room interiors (using actual test room locations)
+          Position(27, 25), // Inside first test room (20,20) + center
+          Position(86, 67), // Inside second test room (80,60) + center
+          Position(149, 107), // Inside third test room (140,100) + center
+          Position(58, 186), // Inside fourth test room (50,180) + center
           // Sample walls around rooms
-          Position(50, 50), Position(200, 150), Position(350, 300), Position(100, 400),
-          // Sample corridor areas  
-          Position(125, 100), Position(250, 200), Position(200, 350),
+          Position(15, 15), // Wall area
+          Position(70, 50), // Wall area
+          Position(130, 90), // Wall area
+          Position(40, 170), // Wall area
+          // Sample corridor areas (between rooms)
+          Position(50, 100), // Corridor area
+          Position(95, 150), // Corridor area
+          Position(70, 250), // Corridor area
         ];
 
         final tileTypes = <TileType>{};
@@ -70,14 +84,30 @@ void main() {
           }
         }
 
-        expect(tileTypes, contains(TileType.floor), reason: 'World should contain floor tiles');
-        expect(tileTypes, contains(TileType.wall), reason: 'World should contain wall tiles');
-        
+        expect(
+          tileTypes,
+          contains(TileType.floor),
+          reason: 'World should contain floor tiles',
+        );
+        expect(
+          tileTypes,
+          contains(TileType.wall),
+          reason: 'World should contain wall tiles',
+        );
+
         // Check for obstacles and candy in generated world
         final obstacles = world.getPositionsOfType(TileType.obstacle);
         final candies = world.getPositionsOfType(TileType.candy);
-        expect(obstacles.isNotEmpty, isTrue, reason: 'World should contain obstacles');
-        expect(candies.isNotEmpty, isTrue, reason: 'World should contain candy');
+        expect(
+          obstacles.isNotEmpty,
+          isTrue,
+          reason: 'World should contain obstacles',
+        );
+        expect(
+          candies.isNotEmpty,
+          isTrue,
+          reason: 'World should contain candy',
+        );
       });
     });
 
@@ -87,8 +117,11 @@ void main() {
         final spawn = world.playerSpawn!;
         final boss = world.bossLocation!;
 
-        expect(_hasPath(world, spawn, boss), isTrue,
-            reason: 'There should be a navigable path from spawn to boss');
+        expect(
+          _hasPath(world, spawn, boss),
+          isTrue,
+          reason: 'There should be a navigable path from spawn to boss',
+        );
       });
 
       test('should handle path validation correctly', () {
@@ -117,13 +150,14 @@ void main() {
         // Isolate boss with walls
         world.setTileAt(boss, TileType.floor);
         world.setBossLocation(boss);
-        
+
         // Surround boss with walls (except perimeter which is already walls)
         for (int dz = -1; dz <= 1; dz++) {
           for (int dx = -1; dx <= 1; dx++) {
             if (dx == 0 && dz == 0) continue; // Skip boss position
             final wallPos = Position(boss.x + dx, boss.z + dz);
-            if (world.isValidPosition(wallPos) && !world.isPerimeterPosition(wallPos)) {
+            if (world.isValidPosition(wallPos) &&
+                !world.isPerimeterPosition(wallPos)) {
               world.setTileAt(wallPos, TileType.wall);
             }
           }
@@ -139,10 +173,10 @@ void main() {
 
         // Check that world has room-based structure (rooms connected by corridors)
         final samplePositions = [
-          Position(60, 60),   // Inside first test room
-          Position(210, 160), // Inside second test room  
-          Position(360, 310), // Inside third test room
-          Position(110, 410), // Inside fourth test room
+          Position(27, 25), // Inside first test room (20,20) + center
+          Position(86, 67), // Inside second test room (80,60) + center
+          Position(149, 107), // Inside third test room (140,100) + center
+          Position(58, 186), // Inside fourth test room (50,180) + center
         ];
 
         final tileTypes = <TileType>{};
@@ -151,10 +185,13 @@ void main() {
             tileTypes.add(world.getTileAt(pos));
           }
         }
-        
-        expect(tileTypes, contains(TileType.floor), 
-            reason: 'World should contain floor tiles in rooms');
-        
+
+        expect(
+          tileTypes,
+          contains(TileType.floor),
+          reason: 'World should contain floor tiles in rooms',
+        );
+
         // Verify that the world generation completed successfully
         expect(world.playerSpawn, isNotNull);
         expect(world.bossLocation, isNotNull);
@@ -162,7 +199,7 @@ void main() {
 
       test('should not modify perimeter walls during generation', () {
         final world = generator.generateWorld();
-        
+
         // All perimeter positions should remain walls
         final perimeterPositions = world.getPerimeterPositions();
         for (final position in perimeterPositions) {
@@ -196,7 +233,11 @@ void main() {
         final world = generator.generateWorld();
 
         final candyPositions = world.getPositionsOfType(TileType.candy);
-        expect(candyPositions, isNotEmpty, reason: 'World should contain candy items');
+        expect(
+          candyPositions,
+          isNotEmpty,
+          reason: 'World should contain candy items',
+        );
       });
 
       test('should not place candy on spawn or boss locations', () {
@@ -223,7 +264,7 @@ void main() {
       test('should create world with specified spawn and boss locations', () {
         final spawn = Position(10, 10);
         final boss = Position(50, 50);
-        
+
         final world = generator.generateTestWorld(
           spawnLocation: spawn,
           bossLocation: boss,
@@ -238,7 +279,7 @@ void main() {
       test('should ensure path when ensurePath is true', () {
         final spawn = Position(10, 10);
         final boss = Position(100, 100);
-        
+
         final world = generator.generateTestWorld(
           spawnLocation: spawn,
           bossLocation: boss,
@@ -251,7 +292,7 @@ void main() {
       test('should maintain perimeter walls in test world', () {
         final spawn = Position(10, 10);
         final boss = Position(50, 50);
-        
+
         final world = generator.generateTestWorld(
           spawnLocation: spawn,
           bossLocation: boss,
@@ -280,11 +321,14 @@ void main() {
           Position(250, 500),
           Position(400, 800),
         ];
-        
+
         for (final pos in samplePositions) {
           if (world1.isValidPosition(pos) && world2.isValidPosition(pos)) {
-            expect(world1.getTileAt(pos), equals(world2.getTileAt(pos)),
-                reason: 'Tile at $pos should be identical in both worlds');
+            expect(
+              world1.getTileAt(pos),
+              equals(world2.getTileAt(pos)),
+              reason: 'Tile at $pos should be identical in both worlds',
+            );
           }
         }
       });
@@ -299,9 +343,12 @@ void main() {
         // At least spawn or boss should be different
         final spawnDifferent = world1.playerSpawn != world2.playerSpawn;
         final bossDifferent = world1.bossLocation != world2.bossLocation;
-        
-        expect(spawnDifferent || bossDifferent, isTrue,
-            reason: 'Different seeds should produce different worlds');
+
+        expect(
+          spawnDifferent || bossDifferent,
+          isTrue,
+          reason: 'Different seeds should produce different worlds',
+        );
       });
     });
   });
@@ -310,18 +357,18 @@ void main() {
 /// Helper function to check if a path exists between two positions using BFS
 bool _hasPath(TileMap tileMap, Position start, Position end) {
   if (start == end) return true;
-  
+
   final visited = <Position>{};
   final queue = <Position>[start];
   visited.add(start);
-  
+
   while (queue.isNotEmpty) {
     final current = queue.removeAt(0);
-    
+
     if (current == end) {
       return true;
     }
-    
+
     for (final neighbor in tileMap.getWalkableAdjacentPositions(current)) {
       if (!visited.contains(neighbor)) {
         visited.add(neighbor);
@@ -329,6 +376,6 @@ bool _hasPath(TileMap tileMap, Position start, Position end) {
       }
     }
   }
-  
+
   return false;
 }

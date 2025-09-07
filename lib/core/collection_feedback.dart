@@ -7,16 +7,16 @@ import 'position.dart';
 enum FeedbackType {
   /// Simple text message
   text,
-  
+
   /// Floating text that moves upward
   floatingText,
-  
+
   /// Particle effect
   particles,
-  
+
   /// Screen flash
   flash,
-  
+
   /// Sound effect (placeholder for future audio system)
   sound,
 }
@@ -25,25 +25,25 @@ enum FeedbackType {
 class CollectionFeedback {
   /// Type of feedback to display
   final FeedbackType type;
-  
+
   /// Message to display
   final String message;
-  
+
   /// Position where the feedback should appear
   final Position position;
-  
+
   /// Duration of the feedback in milliseconds
   final int durationMs;
-  
+
   /// Color of the feedback (as hex string)
   final String color;
-  
+
   /// Size multiplier for the feedback
   final double scale;
-  
+
   /// Whether the feedback is currently active
   bool isActive;
-  
+
   /// Time when the feedback was created
   final DateTime createdAt;
 
@@ -88,14 +88,15 @@ class CollectionFeedback {
 class CollectionFeedbackManager extends ChangeNotifier {
   /// List of active feedback items
   final List<CollectionFeedback> _activeFeedback = [];
-  
+
   /// Maximum number of active feedback items
   final int maxActiveFeedback;
 
   CollectionFeedbackManager({this.maxActiveFeedback = 20});
 
   /// Gets all active feedback items
-  List<CollectionFeedback> get activeFeedback => List.unmodifiable(_activeFeedback);
+  List<CollectionFeedback> get activeFeedback =>
+      List.unmodifiable(_activeFeedback);
 
   /// Processes a candy collection event and creates appropriate feedback
   void processCollectionEvent(CandyCollectionEvent event) {
@@ -104,7 +105,7 @@ class CollectionFeedbackManager extends ChangeNotifier {
     } else {
       _createFailedCollectionFeedback(event);
     }
-    
+
     _cleanupExpiredFeedback();
     notifyListeners();
   }
@@ -114,7 +115,7 @@ class CollectionFeedbackManager extends ChangeNotifier {
     final candy = event.candy;
     final message = _getCollectionMessage(candy);
     final color = _getEffectColor(candy.effect);
-    
+
     // Create floating text feedback
     final feedback = CollectionFeedback(
       type: FeedbackType.floatingText,
@@ -124,9 +125,9 @@ class CollectionFeedbackManager extends ChangeNotifier {
       color: color,
       scale: 1.2,
     );
-    
+
     _addFeedback(feedback);
-    
+
     // Create additional particle effect for special candy
     if (_isSpecialCandy(candy)) {
       final particleFeedback = CollectionFeedback(
@@ -137,7 +138,7 @@ class CollectionFeedbackManager extends ChangeNotifier {
         color: '#FFD700', // Gold
         scale: 1.5,
       );
-      
+
       _addFeedback(particleFeedback);
     }
   }
@@ -152,7 +153,7 @@ class CollectionFeedbackManager extends ChangeNotifier {
       color: '#FF4444', // Red
       scale: 1.0,
     );
-    
+
     _addFeedback(feedback);
   }
 
@@ -195,14 +196,14 @@ class CollectionFeedbackManager extends ChangeNotifier {
   /// Checks if a candy is considered special (rare effects)
   bool _isSpecialCandy(CandyItem candy) {
     return candy.effect == CandyEffect.specialAbility ||
-           candy.effect == CandyEffect.maxHealthIncrease ||
-           (candy.effect == CandyEffect.healthBoost && candy.value >= 25);
+        candy.effect == CandyEffect.maxHealthIncrease ||
+        (candy.effect == CandyEffect.healthBoost && candy.value >= 25);
   }
 
   /// Adds feedback to the active list
   void _addFeedback(CollectionFeedback feedback) {
     _activeFeedback.add(feedback);
-    
+
     // Remove oldest feedback if we exceed the maximum
     while (_activeFeedback.length > maxActiveFeedback) {
       _activeFeedback.removeAt(0);
@@ -217,7 +218,7 @@ class CollectionFeedbackManager extends ChangeNotifier {
   /// Updates all active feedback (should be called regularly)
   void update() {
     _cleanupExpiredFeedback();
-    
+
     if (_activeFeedback.isNotEmpty) {
       notifyListeners();
     }
@@ -240,7 +241,7 @@ class CollectionFeedbackManager extends ChangeNotifier {
       color: color,
       scale: scale,
     );
-    
+
     _addFeedback(feedback);
     notifyListeners();
   }
@@ -262,5 +263,6 @@ class CollectionFeedbackManager extends ChangeNotifier {
   }
 
   @override
-  String toString() => 'CollectionFeedbackManager(${_activeFeedback.length} active)';
+  String toString() =>
+      'CollectionFeedbackManager(${_activeFeedback.length} active)';
 }

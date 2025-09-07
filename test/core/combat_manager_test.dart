@@ -1,9 +1,9 @@
 import 'package:test/test.dart';
-import '../../lib/core/combat_manager.dart';
-import '../../lib/core/health_system.dart';
-import '../../lib/core/ally_character.dart';
-import '../../lib/core/enemy_character.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/combat_manager.dart';
+import 'package:kiro_halloween_game/core/health_system.dart';
+import 'package:kiro_halloween_game/core/ally_character.dart';
+import 'package:kiro_halloween_game/core/enemy_character.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   group('CombatManager', () {
@@ -17,84 +17,104 @@ void main() {
 
     group('Combat Detection', () {
       test('should detect combat between adjacent ally and hostile enemy', () {
-        // Create ally and enemy at adjacent positions
-        final enemy = EnemyCharacter(
-          id: 'enemy1',
+        // Create original enemy for ally conversion
+        final originalEnemy = EnemyCharacter(
+          id: 'original_enemy',
+          position: Position(0, 0),
+          modelPath: 'test.obj',
+        );
+
+        // Create hostile enemy to fight
+        final hostileEnemy = EnemyCharacter(
+          id: 'hostile_enemy',
           position: Position(5, 5),
           modelPath: 'test.obj',
           state: EnemyState.hostile,
         );
-        enemy.activate(); // Make enemy proximity active
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
-        ally.position = Position(5, 6); // Adjacent to enemy
+        hostileEnemy.activate(); // Make enemy proximity active
 
-        final results = combatManager.processCombat([ally], [enemy]);
+        final ally = AllyCharacter(originalEnemy: originalEnemy);
+        ally.position = Position(5, 6); // Adjacent to hostile enemy
+
+        final results = combatManager.processCombat([ally], [hostileEnemy]);
 
         expect(results, isNotEmpty);
         expect(combatManager.activeCombats, hasLength(1));
       });
 
       test('should not detect combat between distant characters', () {
-        // Create ally and enemy at distant positions
-        final enemy = EnemyCharacter(
-          id: 'enemy1',
+        // Create original enemy for ally conversion
+        final originalEnemy = EnemyCharacter(
+          id: 'original_enemy',
+          position: Position(0, 0),
+          modelPath: 'test.obj',
+        );
+
+        // Create hostile enemy to fight (distant)
+        final hostileEnemy = EnemyCharacter(
+          id: 'hostile_enemy',
           position: Position(5, 5),
           modelPath: 'test.obj',
           state: EnemyState.hostile,
         );
-        enemy.activate();
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
-        ally.position = Position(10, 10); // Far from enemy
+        hostileEnemy.activate();
 
-        final results = combatManager.processCombat([ally], [enemy]);
+        final ally = AllyCharacter(originalEnemy: originalEnemy);
+        ally.position = Position(10, 10); // Far from hostile enemy
+
+        final results = combatManager.processCombat([ally], [hostileEnemy]);
 
         expect(results, isEmpty);
         expect(combatManager.activeCombats, isEmpty);
       });
 
       test('should not detect combat with inactive enemies', () {
-        // Create ally and inactive enemy at adjacent positions
-        final enemy = EnemyCharacter(
-          id: 'enemy1',
+        // Create original enemy for ally conversion
+        final originalEnemy = EnemyCharacter(
+          id: 'original_enemy',
+          position: Position(0, 0),
+          modelPath: 'test.obj',
+        );
+
+        // Create hostile but inactive enemy
+        final inactiveEnemy = EnemyCharacter(
+          id: 'inactive_enemy',
           position: Position(5, 5),
           modelPath: 'test.obj',
           state: EnemyState.hostile,
         );
         // Don't activate enemy
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: originalEnemy);
         ally.position = Position(5, 6);
 
-        final results = combatManager.processCombat([ally], [enemy]);
+        final results = combatManager.processCombat([ally], [inactiveEnemy]);
 
         expect(results, isEmpty);
         expect(combatManager.activeCombats, isEmpty);
       });
 
       test('should not detect combat with non-hostile enemies', () {
-        // Create ally and satisfied enemy at adjacent positions
-        final enemy = EnemyCharacter(
-          id: 'enemy1',
+        // Create original enemy for ally conversion
+        final originalEnemy = EnemyCharacter(
+          id: 'original_enemy',
+          position: Position(0, 0),
+          modelPath: 'test.obj',
+        );
+
+        // Create satisfied (non-hostile) enemy
+        final satisfiedEnemy = EnemyCharacter(
+          id: 'satisfied_enemy',
           position: Position(5, 5),
           modelPath: 'test.obj',
           state: EnemyState.satisfied,
         );
-        enemy.activate();
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+        satisfiedEnemy.activate();
+
+        final ally = AllyCharacter(originalEnemy: originalEnemy);
         ally.position = Position(5, 6);
 
-        final results = combatManager.processCombat([ally], [enemy]);
+        final results = combatManager.processCombat([ally], [satisfiedEnemy]);
 
         expect(results, isEmpty);
         expect(combatManager.activeCombats, isEmpty);
@@ -112,7 +132,7 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy.activate();
-        
+
         final ally = AllyCharacter(
           originalEnemy: EnemyCharacter(
             id: 'original',
@@ -130,7 +150,7 @@ void main() {
 
         expect(results, hasLength(1));
         final result = results.first;
-        
+
         // Both characters should have taken some damage
         expect(result.allyDamageDealt, greaterThan(0));
         expect(result.enemyDamageDealt, greaterThan(0));
@@ -148,7 +168,7 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy.activate();
-        
+
         final ally = AllyCharacter(
           originalEnemy: EnemyCharacter(
             id: 'original',
@@ -163,7 +183,7 @@ void main() {
 
         expect(results, hasLength(1));
         final result = results.first;
-        
+
         // Enemy should be defeated due to low health
         expect(result.enemyDefeated, isTrue);
         expect(enemy.isSatisfied, isTrue);
@@ -178,7 +198,7 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy1.activate();
-        
+
         final enemy2 = EnemyCharacter(
           id: 'enemy2',
           position: Position(7, 7),
@@ -186,7 +206,7 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy2.activate();
-        
+
         final ally1 = AllyCharacter(
           originalEnemy: EnemyCharacter(
             id: 'original1',
@@ -195,7 +215,7 @@ void main() {
           ),
         );
         ally1.position = Position(5, 6);
-        
+
         final ally2 = AllyCharacter(
           originalEnemy: EnemyCharacter(
             id: 'original2',
@@ -205,7 +225,10 @@ void main() {
         );
         ally2.position = Position(7, 8);
 
-        final results = combatManager.processCombat([ally1, ally2], [enemy1, enemy2]);
+        final results = combatManager.processCombat(
+          [ally1, ally2],
+          [enemy1, enemy2],
+        );
 
         expect(results, hasLength(2));
         expect(combatManager.activeCombats, hasLength(2));
@@ -221,10 +244,8 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy.activate();
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
         ally.position = Position(5, 6);
 
         expect(combatManager.isInCombat(ally), isFalse);
@@ -244,10 +265,8 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy.activate();
-        
-        final ally = AllyCharacter(
-          originalEnemy: enemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: enemy);
         ally.position = Position(5, 6);
 
         combatManager.processCombat([ally], [enemy]);
@@ -269,7 +288,7 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy.activate();
-        
+
         final ally = AllyCharacter(
           originalEnemy: EnemyCharacter(
             id: 'original',
@@ -300,7 +319,7 @@ void main() {
           state: EnemyState.hostile,
         );
         enemy.activate();
-        
+
         final ally = AllyCharacter(
           originalEnemy: EnemyCharacter(
             id: 'original',
@@ -328,10 +347,8 @@ void main() {
         position: Position(5, 5),
         modelPath: 'test.obj',
       );
-      
-      final ally = AllyCharacter(
-        originalEnemy: enemy,
-      );
+
+      final ally = AllyCharacter(originalEnemy: enemy);
 
       final encounter = CombatEncounter(
         ally: ally,
@@ -348,10 +365,8 @@ void main() {
         position: Position(5, 5),
         modelPath: 'test.obj',
       );
-      
-      final ally = AllyCharacter(
-        originalEnemy: enemy,
-      );
+
+      final ally = AllyCharacter(originalEnemy: enemy);
 
       final encounter = CombatEncounter(
         ally: ally,
@@ -360,7 +375,7 @@ void main() {
       );
 
       expect(encounter.involves(ally, enemy), isTrue);
-      
+
       final otherEnemy = EnemyCharacter(
         id: 'enemy2',
         position: Position(6, 6),
@@ -377,10 +392,8 @@ void main() {
         position: Position(5, 5),
         modelPath: 'test.obj',
       );
-      
-      final ally = AllyCharacter(
-        originalEnemy: enemy,
-      );
+
+      final ally = AllyCharacter(originalEnemy: enemy);
 
       // Ally victory
       final allyVictory = CombatResult(
@@ -434,10 +447,8 @@ void main() {
         position: Position(5, 5),
         modelPath: 'test.obj',
       );
-      
-      final ally = AllyCharacter(
-        originalEnemy: enemy,
-      );
+
+      final ally = AllyCharacter(originalEnemy: enemy);
 
       final result = CombatResult(
         ally: ally,

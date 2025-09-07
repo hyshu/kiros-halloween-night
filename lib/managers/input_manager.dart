@@ -8,10 +8,10 @@ import '../core/tile_map.dart';
 class InputManager {
   final GhostCharacter _ghostCharacter;
   final TileMap? _tileMap;
-  
+
   /// Callback for when the character moves successfully
   final VoidCallback? onCharacterMoved;
-  
+
   InputManager({
     required GhostCharacter ghostCharacter,
     TileMap? tileMap,
@@ -23,15 +23,15 @@ class InputManager {
   /// Returns true if the key was handled
   bool handleKeyPress(LogicalKeyboardKey key) {
     final wasHandled = _ghostCharacter.handleInput(key, _tileMap);
-    
+
     if (wasHandled && !_ghostCharacter.isIdle) {
       // Character moved successfully
       onCharacterMoved?.call();
     }
-    
+
     return wasHandled;
   }
-  
+
   /// Creates a KeyboardListener widget that handles input
   Widget createKeyboardListener({
     required Widget child,
@@ -52,7 +52,7 @@ class InputManager {
       child: child,
     );
   }
-  
+
   /// Updates the tile map reference (useful when world changes)
   void updateTileMap(TileMap? newTileMap) {
     // This would require making _tileMap mutable, but for now

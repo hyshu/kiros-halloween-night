@@ -4,30 +4,33 @@ import 'position.dart';
 
 /// Base class for all characters in the game
 abstract class Character {
+  /// Global flag to skip model loading in test environments
+  static bool isTestMode = false;
+
   /// Unique identifier for this character
   final String id;
-  
+
   /// Current position in the game grid
   Position position;
-  
+
   /// Path to the 3D model asset
   final String modelPath;
-  
+
   /// Current health points
   int health;
-  
+
   /// Maximum health points
   final int maxHealth;
-  
+
   /// Whether this character is currently active (for performance optimization)
   bool isActive;
-  
+
   /// Whether this character can move
   bool canMove;
-  
+
   /// The loaded 3D model (null until loaded)
   Model3D? model;
-  
+
   /// Whether the character is currently idle
   bool isIdle;
 
@@ -59,7 +62,7 @@ abstract class Character {
   /// Returns true if the move was successful
   bool moveTo(Position newPosition) {
     if (!canMove) return false;
-    
+
     position = newPosition;
     isIdle = false;
     return true;
@@ -88,7 +91,12 @@ abstract class Character {
   /// Loads the 3D model for this character
   Future<void> loadModel() async {
     if (model != null) return;
-    
+
+    // Skip model loading in test mode
+    if (isTestMode) {
+      return;
+    }
+
     try {
       model = await Model3D.loadFromAsset(id, modelPath);
     } catch (e) {

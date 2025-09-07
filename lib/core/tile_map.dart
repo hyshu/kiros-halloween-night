@@ -5,24 +5,25 @@ import 'tile_type.dart';
 class TileMap {
   /// World width in tiles
   static const int worldWidth = 200;
-  
-  /// World height in tiles  
+
+  /// World height in tiles
   static const int worldHeight = 400;
-  
+
   /// The 2D grid of tiles
   final List<List<TileType>> _tiles;
-  
+
   /// Boss location in the world
   Position? _bossLocation;
-  
+
   /// Player spawn location
   Position? _playerSpawn;
 
   /// Creates a new TileMap with all tiles initialized to floor
-  TileMap() : _tiles = List.generate(
-    worldHeight,
-    (z) => List.generate(worldWidth, (x) => TileType.floor),
-  ) {
+  TileMap()
+    : _tiles = List.generate(
+        worldHeight,
+        (z) => List.generate(worldWidth, (x) => TileType.floor),
+      ) {
     _initializePerimeterWalls();
   }
 
@@ -52,21 +53,21 @@ class TileMap {
     if (!isValidPosition(position)) {
       throw ArgumentError('Position $position is out of bounds');
     }
-    
+
     // Prevent modification of perimeter walls
     if (_isPerimeterPosition(position) && tileType != TileType.wall) {
       throw ArgumentError('Cannot modify perimeter wall at $position');
     }
-    
+
     _tiles[position.z][position.x] = tileType;
   }
 
   /// Returns true if the position is within the world bounds
   bool isValidPosition(Position position) {
-    return position.x >= 0 && 
-           position.x < worldWidth && 
-           position.z >= 0 && 
-           position.z < worldHeight;
+    return position.x >= 0 &&
+        position.x < worldWidth &&
+        position.z >= 0 &&
+        position.z < worldHeight;
   }
 
   /// Returns true if the position is walkable (not blocked by walls or obstacles)
@@ -108,8 +109,8 @@ class TileMap {
     final adjacent = <Position>[];
     final directions = [
       Position(0, -1), // North
-      Position(1, 0),  // East
-      Position(0, 1),  // South
+      Position(1, 0), // East
+      Position(0, 1), // South
       Position(-1, 0), // West
     ];
 
@@ -151,7 +152,8 @@ class TileMap {
   (int width, int height) get dimensions => (worldWidth, worldHeight);
 
   /// Gets a copy of the tile grid (for read-only access)
-  List<List<TileType>> get tiles => _tiles.map((row) => List<TileType>.from(row)).toList();
+  List<List<TileType>> get tiles =>
+      _tiles.map((row) => List<TileType>.from(row)).toList();
 
   /// Validates that the entire perimeter consists of walls with no gaps
   bool validatePerimeterWalls() {
@@ -171,19 +173,19 @@ class TileMap {
   /// Gets all perimeter positions
   List<Position> getPerimeterPositions() {
     final positions = <Position>[];
-    
+
     // Top and bottom edges
     for (int x = 0; x < worldWidth; x++) {
       positions.add(Position(x, 0)); // Top edge
       positions.add(Position(x, worldHeight - 1)); // Bottom edge
     }
-    
+
     // Left and right edges (excluding corners already added)
     for (int z = 1; z < worldHeight - 1; z++) {
       positions.add(Position(0, z)); // Left edge
       positions.add(Position(worldWidth - 1, z)); // Right edge
     }
-    
+
     return positions;
   }
 
@@ -194,7 +196,7 @@ class TileMap {
       _tiles[0][x] = TileType.wall; // Top edge
       _tiles[worldHeight - 1][x] = TileType.wall; // Bottom edge
     }
-    
+
     // Set left and right edges to walls
     for (int z = 0; z < worldHeight; z++) {
       _tiles[z][0] = TileType.wall; // Left edge
@@ -205,12 +207,12 @@ class TileMap {
   /// Validates that all perimeter positions are walls
   void _validatePerimeterWalls() {
     final perimeterPositions = getPerimeterPositions();
-    
+
     for (final position in perimeterPositions) {
       if (getTileAt(position) != TileType.wall) {
         throw StateError(
           'Perimeter validation failed: position $position is not a wall '
-          '(found ${getTileAt(position).displayName})'
+          '(found ${getTileAt(position).displayName})',
         );
       }
     }
@@ -218,15 +220,15 @@ class TileMap {
 
   /// Returns true if the position is on the world perimeter
   bool _isPerimeterPosition(Position position) {
-    return position.x == 0 || 
-           position.x == worldWidth - 1 || 
-           position.z == 0 || 
-           position.z == worldHeight - 1;
+    return position.x == 0 ||
+        position.x == worldWidth - 1 ||
+        position.z == 0 ||
+        position.z == worldHeight - 1;
   }
 
   @override
   String toString() {
     return 'TileMap(${worldWidth}x$worldHeight, '
-           'boss: $bossLocation, spawn: $playerSpawn)';
+        'boss: $bossLocation, spawn: $playerSpawn)';
   }
 }

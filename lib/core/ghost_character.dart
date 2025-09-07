@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:vector_math/vector_math.dart';
 
 import 'character.dart';
 import 'position.dart';
@@ -14,38 +13,34 @@ import 'ally_character.dart';
 class GhostCharacter extends Character {
   /// Abilities granted by collected candy
   final Map<String, dynamic> abilities = {};
-  
+
   /// Player's candy inventory
   final Inventory inventory;
-  
+
   /// Ally manager for handling converted enemies
   final AllyManager allyManager;
-  
+
   /// Movement input state
   bool _isProcessingInput = false;
-  
+
   /// Last movement direction for animation purposes
   Direction? lastMovementDirection;
 
   GhostCharacter({
-    required String id,
-    required Position position,
-    int health = 100,
-    int maxHealth = 100,
+    required super.id,
+    required super.position,
+    super.health = 100,
+    super.maxHealth = 100,
     Inventory? inventory,
     AllyManager? allyManager,
   }) : inventory = inventory ?? Inventory(),
        allyManager = allyManager ?? AllyManager(),
        super(
-          id: id,
-          position: position,
-          modelPath: 'assets/graveyard/character-ghost.obj',
-          health: health,
-          maxHealth: maxHealth,
-          isActive: true,
-          canMove: true,
-          isIdle: true,
-        ) {
+         modelPath: 'assets/graveyard/character-ghost.obj',
+         isActive: true,
+         canMove: true,
+         isIdle: true,
+       ) {
     // Set this character as the player for the ally manager
     this.allyManager.setPlayer(this);
   }
@@ -54,7 +49,7 @@ class GhostCharacter extends Character {
   /// Returns true if the key was recognized (regardless of movement success)
   bool handleInput(LogicalKeyboardKey key, TileMap? tileMap) {
     if (_isProcessingInput || !canMove) return false;
-    
+
     Direction? direction;
     switch (key) {
       case LogicalKeyboardKey.arrowUp:
@@ -76,22 +71,22 @@ class GhostCharacter extends Character {
       default:
         return false; // Key not handled
     }
-    
+
     // Key was recognized, attempt movement
     attemptMove(direction, tileMap);
     return true; // Key was handled, regardless of movement success
   }
-  
+
   /// Attempts to move in the specified direction
   /// Returns true if the move was successful
   bool attemptMove(Direction direction, TileMap? tileMap) {
     if (_isProcessingInput || !canMove) return false;
-    
+
     _isProcessingInput = true;
-    
+
     try {
       final newPosition = _getNewPosition(direction);
-      
+
       // Validate movement with tile map if available
       if (tileMap != null) {
         if (!_canMoveTo(newPosition, tileMap)) {
@@ -99,7 +94,7 @@ class GhostCharacter extends Character {
           return false;
         }
       }
-      
+
       // Perform the movement
       final success = moveTo(newPosition);
       if (success) {
@@ -109,13 +104,13 @@ class GhostCharacter extends Character {
       } else {
         setIdle();
       }
-      
+
       return success;
     } finally {
       _isProcessingInput = false;
     }
   }
-  
+
   /// Gets the new position based on direction
   Position _getNewPosition(Direction direction) {
     switch (direction) {
@@ -129,14 +124,14 @@ class GhostCharacter extends Character {
         return position.add(1, 0);
     }
   }
-  
+
   /// Checks if movement to the new position is valid
   bool _canMoveTo(Position newPosition, TileMap tileMap) {
     // Check bounds
     if (!tileMap.isValidPosition(newPosition)) {
       return false;
     }
-    
+
     // Check tile type - can't move through walls or obstacles
     final tileType = tileMap.getTileAt(newPosition);
     switch (tileType) {
@@ -148,18 +143,18 @@ class GhostCharacter extends Character {
         return true;
     }
   }
-  
+
   /// Moves all allied characters to follow Kiro
   void _moveAllies(Direction direction, TileMap? tileMap) {
     // Allies are now managed by the AllyManager
     // Their movement is handled in their own AI update cycle
     // This method is kept for compatibility but allies move independently
   }
-  
+
   /// Adds an ability from collected candy
   void addAbility(String abilityName, dynamic value) {
     abilities[abilityName] = value;
-    
+
     // Apply ability effects
     switch (abilityName) {
       case 'healthBoost':
@@ -178,18 +173,18 @@ class GhostCharacter extends Character {
         break;
     }
   }
-  
+
   /// Removes an ability (when candy effect expires or is consumed)
   void removeAbility(String abilityName) {
     abilities.remove(abilityName);
   }
-  
+
   /// Gets the current value of an ability
   T? getAbility<T>(String abilityName) {
     final value = abilities[abilityName];
     return value is T ? value : null;
   }
-  
+
   /// Checks if the character has a specific ability
   bool hasAbility(String abilityName) {
     return abilities.containsKey(abilityName);
@@ -213,21 +208,23 @@ class GhostCharacter extends Character {
 
     // Use the candy (this will handle temporary effects and remove from inventory)
     final success = inventory.useCandy(candyId);
-    
+
     if (success) {
       // Apply immediate effects after removal
       switch (effect) {
         case CandyEffect.healthBoost:
           heal(value);
           break;
-          
+
         case CandyEffect.maxHealthIncrease:
           // Note: This would require modifying the base Character class
           // For now, we'll store it as an ability
-          addAbility('maxHealthBonus', 
-              (getAbility<int>('maxHealthBonus') ?? 0) + value);
+          addAbility(
+            'maxHealthBonus',
+            (getAbility<int>('maxHealthBonus') ?? 0) + value,
+          );
           break;
-          
+
         case CandyEffect.speedIncrease:
         case CandyEffect.allyStrength:
         case CandyEffect.specialAbility:
@@ -236,7 +233,7 @@ class GhostCharacter extends Character {
           break;
       }
     }
-    
+
     return success;
   }
 
@@ -254,7 +251,7 @@ class GhostCharacter extends Character {
   /// Updates temporary effects from candy (call each turn)
   void updateCandyEffects() {
     inventory.updateTemporaryEffects();
-    
+
     // Apply ally combat bonuses from candy effects
     final allyBonus = effectiveAllyDamageBonus;
     if (allyBonus > 0) {
@@ -288,28 +285,29 @@ class GhostCharacter extends Character {
   int get luckBonus {
     return inventory.getTotalAbilityModification('luck').round();
   }
-  
+
   /// Sets the character to idle state with proper animation state
   @override
   void setIdle() {
     super.setIdle();
     lastMovementDirection = null;
   }
-  
+
   /// Gets the current facing direction for animation purposes
   Direction? get facingDirection => lastMovementDirection;
-  
+
   /// Returns true if the character is currently moving
   bool get isMoving => !isIdle && _isProcessingInput;
-  
+
   /// Gets the number of active allies
   int get allyCount => allyManager.count;
-  
+
   /// Gets all active allies
   List<AllyCharacter> get allies => allyManager.allies;
-  
+
   @override
-  String toString() => 'GhostCharacter($id) at $position [Health: $health/$maxHealth, Inventory: ${inventory.count} items, Allies: ${allyManager.count}, Abilities: ${abilities.keys.join(', ')}]';
+  String toString() =>
+      'GhostCharacter($id) at $position [Health: $health/$maxHealth, Inventory: ${inventory.count} items, Allies: ${allyManager.count}, Abilities: ${abilities.keys.join(', ')}]';
 }
 
 /// Represents movement directions
@@ -318,7 +316,7 @@ enum Direction {
   south,
   east,
   west;
-  
+
   /// Returns the opposite direction
   Direction get opposite {
     switch (this) {
@@ -332,7 +330,7 @@ enum Direction {
         return Direction.east;
     }
   }
-  
+
   /// Returns a human-readable name
   String get displayName {
     switch (this) {

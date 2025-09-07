@@ -1,8 +1,8 @@
 import 'package:test/test.dart';
-import '../../lib/core/health_system.dart';
-import '../../lib/core/ally_character.dart';
-import '../../lib/core/enemy_character.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/health_system.dart';
+import 'package:kiro_halloween_game/core/ally_character.dart';
+import 'package:kiro_halloween_game/core/enemy_character.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   group('HealthSystem', () {
@@ -53,7 +53,10 @@ void main() {
 
         // Check defeat event was recorded
         final events = healthSystem.getEventsForCharacter(enemy.id);
-        expect(events.any((e) => e.changeType == HealthChangeType.defeated), isTrue);
+        expect(
+          events.any((e) => e.changeType == HealthChangeType.defeated),
+          isTrue,
+        );
       });
 
       test('should not apply negative damage', () {
@@ -72,7 +75,10 @@ void main() {
         expect(enemy.health, equals(initialHealth));
 
         final tracker = healthSystem.getHealthTracker(enemy.id);
-        expect(tracker, isNull); // No tracker should be created for invalid damage
+        expect(
+          tracker,
+          isNull,
+        ); // No tracker should be created for invalid damage
       });
 
       test('should handle ally satisfaction when defeated', () {
@@ -81,10 +87,8 @@ void main() {
           position: Position(0, 0),
           modelPath: 'test.obj',
         );
-        
-        final ally = AllyCharacter(
-          originalEnemy: originalEnemy,
-        );
+
+        final ally = AllyCharacter(originalEnemy: originalEnemy);
         ally.health = 10;
 
         final survived = healthSystem.applyDamage(ally, 15);
@@ -130,7 +134,10 @@ void main() {
         expect(enemy.health, equals(50)); // Capped at max health
 
         final tracker = healthSystem.getHealthTracker(enemy.id);
-        expect(tracker!.totalHealingReceived, equals(5)); // Only actual healing recorded
+        expect(
+          tracker!.totalHealingReceived,
+          equals(5),
+        ); // Only actual healing recorded
       });
 
       test('should not apply negative healing', () {
@@ -148,7 +155,10 @@ void main() {
         expect(enemy.health, equals(initialHealth));
 
         final tracker = healthSystem.getHealthTracker(enemy.id);
-        expect(tracker, isNull); // No tracker should be created for invalid healing
+        expect(
+          tracker,
+          isNull,
+        ); // No tracker should be created for invalid healing
       });
     });
 
@@ -277,8 +287,12 @@ void main() {
         final events = healthSystem.getEventsForCharacter(enemy.id);
         expect(events, hasLength(2));
 
-        final damageEvent = events.firstWhere((e) => e.changeType == HealthChangeType.damage);
-        final healingEvent = events.firstWhere((e) => e.changeType == HealthChangeType.healing);
+        final damageEvent = events.firstWhere(
+          (e) => e.changeType == HealthChangeType.damage,
+        );
+        final healingEvent = events.firstWhere(
+          (e) => e.changeType == HealthChangeType.healing,
+        );
 
         expect(damageEvent.description, contains('took'));
         expect(damageEvent.description, contains('damage'));

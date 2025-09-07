@@ -1,18 +1,17 @@
 import 'ally_character.dart';
 import 'enemy_character.dart';
-import 'position.dart';
 
 /// System for detecting and managing combat encounters between allies and enemies
 class CombatDetectionSystem {
   /// Combat detection range
   static const int combatRange = 1;
-  
+
   /// Extended detection range for potential combat
   static const int detectionRange = 4;
-  
+
   /// List of currently detected combat encounters
   final List<CombatEncounter> _detectedEncounters = [];
-  
+
   /// List of potential combat encounters (enemies within detection range)
   final List<PotentialCombatEncounter> _potentialEncounters = [];
 
@@ -23,15 +22,17 @@ class CombatDetectionSystem {
   ) {
     _detectedEncounters.clear();
     _potentialEncounters.clear();
-    
+
     for (final ally in allies) {
       if (!ally.isAlive || ally.isSatisfied) continue;
-      
+
       for (final enemy in hostileEnemies) {
-        if (!enemy.isAlive || !enemy.isHostile || !enemy.isProximityActive) continue;
-        
+        if (!enemy.isAlive || !enemy.isHostile || !enemy.isProximityActive) {
+          continue;
+        }
+
         final distance = ally.position.distanceTo(enemy.position);
-        
+
         if (distance <= combatRange) {
           // Direct combat encounter
           final encounter = CombatEncounter(
@@ -54,7 +55,7 @@ class CombatDetectionSystem {
         }
       }
     }
-    
+
     return List.unmodifiable(_detectedEncounters);
   }
 
@@ -90,17 +91,19 @@ class CombatDetectionSystem {
   ) {
     EnemyCharacter? closestEnemy;
     double closestDistance = double.infinity;
-    
+
     for (final enemy in hostileEnemies) {
-      if (!enemy.isAlive || !enemy.isHostile || !enemy.isProximityActive) continue;
-      
+      if (!enemy.isAlive || !enemy.isHostile || !enemy.isProximityActive) {
+        continue;
+      }
+
       final distance = ally.position.distanceTo(enemy.position).toDouble();
       if (distance < closestDistance) {
         closestDistance = distance;
         closestEnemy = enemy;
       }
     }
-    
+
     return closestEnemy;
   }
 
@@ -112,9 +115,9 @@ class CombatDetectionSystem {
   ) {
     return hostileEnemies.where((enemy) {
       return enemy.isAlive &&
-             enemy.isHostile &&
-             enemy.isProximityActive &&
-             ally.position.distanceTo(enemy.position) <= range;
+          enemy.isHostile &&
+          enemy.isProximityActive &&
+          ally.position.distanceTo(enemy.position) <= range;
     }).toList();
   }
 
@@ -126,42 +129,43 @@ class CombatDetectionSystem {
   ) {
     // Simple prediction based on current distance and movement patterns
     final currentDistance = ally.position.distanceTo(enemy.position);
-    
+
     if (currentDistance <= combatRange) {
       return true; // Already in combat range
     }
-    
+
     if (currentDistance > detectionRange) {
       return false; // Too far to engage
     }
-    
+
     // Estimate if they'll be in combat range within the specified turns
     // This is a simplified prediction - in a full implementation, you'd consider
     // movement patterns, obstacles, and AI behavior
     final estimatedApproachRate = 1.0; // Assume 1 tile per turn approach
-    final turnsToContact = (currentDistance - combatRange) / estimatedApproachRate;
-    
+    final turnsToContact =
+        (currentDistance - combatRange) / estimatedApproachRate;
+
     return turnsToContact <= turnsAhead;
   }
 
   /// Gets combat statistics for monitoring and debugging
   CombatDetectionStats getStats() {
-    final directCombats = _detectedEncounters.where(
-      (e) => e.encounterType == CombatEncounterType.direct
-    ).length;
-    
+    final directCombats = _detectedEncounters
+        .where((e) => e.encounterType == CombatEncounterType.direct)
+        .length;
+
     final potentialCombats = _potentialEncounters.length;
-    
+
     final uniqueAlliesInCombat = _detectedEncounters
         .map((e) => e.ally.id)
         .toSet()
         .length;
-    
+
     final uniqueEnemiesInCombat = _detectedEncounters
         .map((e) => e.enemy.id)
         .toSet()
         .length;
-    
+
     return CombatDetectionStats(
       directCombatEncounters: directCombats,
       potentialCombatEncounters: potentialCombats,
@@ -211,15 +215,15 @@ class CombatEncounter {
   @override
   String toString() {
     return 'CombatEncounter(${ally.id} vs ${enemy.id}, '
-           'distance: $distance, type: ${encounterType.name})';
+        'distance: $distance, type: ${encounterType.name})';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is CombatEncounter &&
-           other.ally == ally &&
-           other.enemy == enemy;
+        other.ally == ally &&
+        other.enemy == enemy;
   }
 
   @override
@@ -247,20 +251,21 @@ class PotentialCombatEncounter {
   bool get isValid => ally.isAlive && enemy.isAlive && enemy.isHostile;
 
   /// Estimates turns until potential combat based on distance
-  int get estimatedTurnsToCombat => (distance - CombatDetectionSystem.combatRange).clamp(0, 10);
+  int get estimatedTurnsToCombat =>
+      (distance - CombatDetectionSystem.combatRange).clamp(0, 10);
 
   @override
   String toString() {
     return 'PotentialCombatEncounter(${ally.id} vs ${enemy.id}, '
-           'distance: $distance, ETA: ${estimatedTurnsToCombat} turns)';
+        'distance: $distance, ETA: $estimatedTurnsToCombat turns)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is PotentialCombatEncounter &&
-           other.ally == ally &&
-           other.enemy == enemy;
+        other.ally == ally &&
+        other.enemy == enemy;
   }
 
   @override
@@ -269,8 +274,8 @@ class PotentialCombatEncounter {
 
 /// Types of combat encounters
 enum CombatEncounterType {
-  direct,     // Characters are adjacent (within combat range)
-  potential;  // Characters are within detection range
+  direct, // Characters are adjacent (within combat range)
+  potential; // Characters are within detection range
 
   String get displayName {
     switch (this) {
@@ -313,7 +318,7 @@ class CombatDetectionStats {
   @override
   String toString() {
     return 'CombatDetectionStats(Direct: $directCombatEncounters, '
-           'Potential: $potentialCombatEncounters, '
-           'Allies: $uniqueAlliesInCombat, Enemies: $uniqueEnemiesInCombat)';
+        'Potential: $potentialCombatEncounters, '
+        'Allies: $uniqueAlliesInCombat, Enemies: $uniqueEnemiesInCombat)';
   }
 }

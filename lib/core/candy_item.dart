@@ -6,19 +6,19 @@ import 'position.dart';
 enum CandyEffect {
   /// Restores health points
   healthBoost,
-  
+
   /// Increases movement speed temporarily
   speedIncrease,
-  
+
   /// Increases maximum health permanently
   maxHealthIncrease,
-  
+
   /// Increases ally combat strength
   allyStrength,
-  
+
   /// Provides special abilities like seeing through walls
   specialAbility,
-  
+
   /// General stat modifications
   statModification,
 }
@@ -27,31 +27,31 @@ enum CandyEffect {
 class CandyItem {
   /// Unique identifier for this candy item
   final String id;
-  
+
   /// Display name of the candy
   final String name;
-  
+
   /// Path to the 3D model asset from assets/foods
   final String modelPath;
-  
+
   /// Type of effect this candy provides
   final CandyEffect effect;
-  
+
   /// Numerical value for the effect (e.g., health points, speed multiplier)
   final int value;
-  
+
   /// Additional ability modifications this candy provides
   final Map<String, dynamic> abilityModifications;
-  
+
   /// Description of what this candy does
   final String description;
-  
+
   /// Position in the world (if placed on the map)
   Position? position;
-  
+
   /// The loaded 3D model (null until loaded)
   Model3D? model;
-  
+
   /// Whether this candy has been collected
   bool isCollected = false;
 
@@ -80,7 +80,7 @@ class CandyItem {
           description: 'A sweet candy bar that restores 20 health points',
           position: position,
         );
-        
+
       case CandyType.chocolate:
         return CandyItem(
           id: id,
@@ -88,10 +88,11 @@ class CandyItem {
           modelPath: 'assets/foods/chocolate.obj',
           effect: CandyEffect.maxHealthIncrease,
           value: 10,
-          description: 'Rich chocolate that permanently increases max health by 10',
+          description:
+              'Rich chocolate that permanently increases max health by 10',
           position: position,
         );
-        
+
       case CandyType.cookie:
         return CandyItem(
           id: id,
@@ -100,10 +101,11 @@ class CandyItem {
           effect: CandyEffect.speedIncrease,
           value: 2,
           abilityModifications: {'speedMultiplier': 1.5, 'duration': 30},
-          description: 'A crispy cookie that increases movement speed for 30 turns',
+          description:
+              'A crispy cookie that increases movement speed for 30 turns',
           position: position,
         );
-        
+
       case CandyType.cupcake:
         return CandyItem(
           id: id,
@@ -112,10 +114,11 @@ class CandyItem {
           effect: CandyEffect.allyStrength,
           value: 5,
           abilityModifications: {'allyDamageBonus': 5, 'duration': 20},
-          description: 'A delicious cupcake that boosts ally combat strength for 20 turns',
+          description:
+              'A delicious cupcake that boosts ally combat strength for 20 turns',
           position: position,
         );
-        
+
       case CandyType.donut:
         return CandyItem(
           id: id,
@@ -126,7 +129,7 @@ class CandyItem {
           description: 'A glazed donut that restores 15 health points',
           position: position,
         );
-        
+
       case CandyType.iceCream:
         return CandyItem(
           id: id,
@@ -135,10 +138,11 @@ class CandyItem {
           effect: CandyEffect.specialAbility,
           value: 1,
           abilityModifications: {'freezeEnemies': true, 'duration': 10},
-          description: 'Cool ice cream that freezes nearby enemies for 10 turns',
+          description:
+              'Cool ice cream that freezes nearby enemies for 10 turns',
           position: position,
         );
-        
+
       case CandyType.lollipop:
         return CandyItem(
           id: id,
@@ -150,7 +154,7 @@ class CandyItem {
           description: 'A colorful lollipop that increases luck for 25 turns',
           position: position,
         );
-        
+
       case CandyType.popsicle:
         return CandyItem(
           id: id,
@@ -161,7 +165,7 @@ class CandyItem {
           description: 'A refreshing popsicle that restores 12 health points',
           position: position,
         );
-        
+
       case CandyType.gingerbread:
         return CandyItem(
           id: id,
@@ -170,10 +174,11 @@ class CandyItem {
           effect: CandyEffect.specialAbility,
           value: 1,
           abilityModifications: {'wallVision': true, 'duration': 15},
-          description: 'Magical gingerbread that allows seeing through walls for 15 turns',
+          description:
+              'Magical gingerbread that allows seeing through walls for 15 turns',
           position: position,
         );
-        
+
       case CandyType.muffin:
         return CandyItem(
           id: id,
@@ -203,7 +208,7 @@ class CandyItem {
   /// Loads the 3D model for this candy item
   Future<void> loadModel() async {
     if (model != null) return;
-    
+
     try {
       model = await Model3D.loadFromAsset(id, modelPath);
     } catch (e) {
@@ -229,10 +234,7 @@ class CandyItem {
   }
 
   /// Returns a copy of this candy item with a new ID and position
-  CandyItem copyWith({
-    String? id,
-    Position? position,
-  }) {
+  CandyItem copyWith({String? id, Position? position}) {
     return CandyItem(
       id: id ?? this.id,
       name: name,

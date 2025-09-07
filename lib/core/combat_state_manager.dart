@@ -1,34 +1,34 @@
 import 'ally_character.dart';
 import 'enemy_character.dart';
-import 'combat_manager.dart';
-import 'combat_detection_system.dart';
+import 'combat_manager.dart' as cm;
+import 'combat_detection_system.dart' as cds;
 import 'combat_feedback_system.dart';
 import 'ally_ai.dart';
 
 /// Manages the overall state of combat encounters and coordinates combat systems
 class CombatStateManager {
   /// Combat manager for handling combat resolution
-  final CombatManager combatManager;
-  
+  final cm.CombatManager combatManager;
+
   /// Combat detection system for finding encounters
-  final CombatDetectionSystem detectionSystem;
-  
+  final cds.CombatDetectionSystem detectionSystem;
+
   /// Combat feedback system for generating messages
   final CombatFeedbackSystem feedbackSystem;
-  
+
   /// Current game tick counter
   int _currentTick = 0;
-  
+
   /// Combat statistics
   final CombatStateStats _stats = CombatStateStats();
 
   CombatStateManager({
-    CombatManager? combatManager,
-    CombatDetectionSystem? detectionSystem,
+    cm.CombatManager? combatManager,
+    cds.CombatDetectionSystem? detectionSystem,
     CombatFeedbackSystem? feedbackSystem,
-  }) : combatManager = combatManager ?? CombatManager(),
-        detectionSystem = detectionSystem ?? CombatDetectionSystem(),
-        feedbackSystem = feedbackSystem ?? CombatFeedbackSystem();
+  }) : combatManager = combatManager ?? cm.CombatManager(),
+       detectionSystem = detectionSystem ?? cds.CombatDetectionSystem(),
+       feedbackSystem = feedbackSystem ?? CombatFeedbackSystem();
 
   /// Processes a complete combat turn for all characters
   CombatTurnResult processCombatTurn(
@@ -36,28 +36,38 @@ class CombatStateManager {
     List<EnemyCharacter> hostileEnemies,
   ) {
     _currentTick++;
-    
+
     // 1. Update ally AI
-    AllyAI.updateAlliesAI(allies, _getDummyPlayer(), hostileEnemies, _getDummyTileMap());
-    
+    AllyAI.updateAlliesAI(
+      allies,
+      _getDummyPlayer(),
+      hostileEnemies,
+      _getDummyTileMap(),
+    );
+
     // 2. Detect combat encounters
-    final encounters = detectionSystem.detectCombatEncounters(allies, hostileEnemies);
-    
+    final encounters = detectionSystem.detectCombatEncounters(
+      allies,
+      hostileEnemies,
+    );
+
     // 3. Process combat for detected encounters
     final combatResults = _processCombatEncounters(encounters);
-    
+
     // 4. Generate feedback messages
-    final feedbackMessages = feedbackSystem.generateCombatFeedback(combatResults);
-    
+    final feedbackMessages = feedbackSystem.generateCombatFeedback(
+      combatResults,
+    );
+
     // 5. Handle state changes
     final stateChanges = _handleStateChanges(allies, hostileEnemies);
-    
+
     // 6. Update statistics
     _updateStats(encounters, combatResults, stateChanges);
-    
+
     // 7. Clean up
     detectionSystem.clearDetectedEncounters();
-    
+
     return CombatTurnResult(
       tick: _currentTick,
       encounters: encounters,
@@ -69,23 +79,28 @@ class CombatStateManager {
   }
 
   /// Processes combat for detected encounters
-  List<CombatResult> _processCombatEncounters(List<CombatEncounter> encounters) {
-    final results = <CombatResult>[];
-    
+  List<cm.CombatResult> _processCombatEncounters(
+    List<cds.CombatEncounter> encounters,
+  ) {
+    final results = <cm.CombatResult>[];
+
     // Group encounters by ally-enemy pairs to avoid duplicate processing
     final processedPairs = <String>{};
-    
+
     for (final encounter in encounters) {
       final pairKey = '${encounter.ally.id}-${encounter.enemy.id}';
       if (processedPairs.contains(pairKey)) continue;
-      
+
       processedPairs.add(pairKey);
-      
+
       // Process combat between this ally and enemy
-      final combatResults = combatManager.processCombat([encounter.ally], [encounter.enemy]);
+      final combatResults = combatManager.processCombat(
+        [encounter.ally],
+        [encounter.enemy],
+      );
       results.addAll(combatResults);
     }
-    
+
     return results;
   }
 
@@ -95,56 +110,64 @@ class CombatStateManager {
     List<EnemyCharacter> hostileEnemies,
   ) {
     final stateChanges = <StateChange>[];
-    
+
     // Check for ally state changes
     for (final ally in allies) {
       final previousState = ally.state;
-      
+
       // State changes are handled by AllyAI, but we can detect them here
       if (ally.isSatisfied && previousState != AllyState.satisfied) {
-        stateChanges.add(StateChange(
-          character: ally,
-          previousState: previousState.name,
-          newState: AllyState.satisfied.name,
-          reason: 'Ally became satisfied',
-          timestamp: DateTime.now(),
-        ));
-        
+        stateChanges.add(
+          StateChange(
+            character: ally,
+            previousState: previousState.name,
+            newState: AllyState.satisfied.name,
+            reason: 'Ally became satisfied',
+            timestamp: DateTime.now(),
+          ),
+        );
+
         // Generate feedback for satisfaction
-        feedbackSystem.generateAllyStateChangeFeedback(ally, previousState, AllyState.satisfied);
+        feedbackSystem.generateAllyStateChangeFeedback(
+          ally,
+          previousState,
+          AllyState.satisfied,
+        );
       }
     }
-    
+
     // Check for enemy state changes (defeated enemies)
     for (final enemy in hostileEnemies) {
       if (!enemy.isAlive && enemy.isHostile) {
-        stateChanges.add(StateChange(
-          character: enemy,
-          previousState: 'hostile',
-          newState: 'defeated',
-          reason: 'Enemy was defeated in combat',
-          timestamp: DateTime.now(),
-        ));
-        
+        stateChanges.add(
+          StateChange(
+            character: enemy,
+            previousState: 'hostile',
+            newState: 'defeated',
+            reason: 'Enemy was defeated in combat',
+            timestamp: DateTime.now(),
+          ),
+        );
+
         // Generate feedback for enemy defeat
         feedbackSystem.generateEnemyDefeatedFeedback(enemy);
       }
     }
-    
+
     return stateChanges;
   }
 
   /// Updates combat statistics
   void _updateStats(
-    List<CombatEncounter> encounters,
-    List<CombatResult> combatResults,
+    List<cds.CombatEncounter> encounters,
+    List<cm.CombatResult> combatResults,
     List<StateChange> stateChanges,
   ) {
     _stats.totalTicks = _currentTick;
     _stats.totalEncounters += encounters.length;
     _stats.totalCombatResults += combatResults.length;
     _stats.totalStateChanges += stateChanges.length;
-    
+
     // Count victories and defeats
     for (final result in combatResults) {
       if (result.isAllyVictory) {
@@ -155,7 +178,7 @@ class CombatStateManager {
         _stats.mutualDefeats++;
       }
     }
-    
+
     // Count satisfied allies
     _stats.alliesSatisfied += stateChanges
         .where((change) => change.newState == 'satisfied')
@@ -168,12 +191,16 @@ class CombatStateManager {
     List<EnemyCharacter> hostileEnemies,
   ) {
     final alliesInCombat = allies.where((ally) => ally.isInCombat).toList();
-    final enemiesInCombat = hostileEnemies.where((enemy) => 
-        detectionSystem.isEnemyInCombat(enemy)).toList();
-    
-    final activeCombats = combatManager.activeCombats;
+    final enemiesInCombat = hostileEnemies
+        .where((enemy) => detectionSystem.isEnemyInCombat(enemy))
+        .toList();
+
+    final activeCombats = detectionSystem.detectCombatEncounters(
+      allies,
+      hostileEnemies,
+    );
     final potentialEncounters = detectionSystem.getPotentialEncounters();
-    
+
     return CombatState(
       tick: _currentTick,
       alliesInCombat: alliesInCombat,
@@ -210,8 +237,8 @@ class CombatStateManager {
 /// Represents the result of processing a combat turn
 class CombatTurnResult {
   final int tick;
-  final List<CombatEncounter> encounters;
-  final List<CombatResult> combatResults;
+  final List<cds.CombatEncounter> encounters;
+  final List<cm.CombatResult> combatResults;
   final List<CombatFeedbackMessage> feedbackMessages;
   final List<StateChange> stateChanges;
   final CombatStateStats stats;
@@ -229,31 +256,33 @@ class CombatTurnResult {
   bool get hadCombat => combatResults.isNotEmpty;
 
   /// Returns true if any allies were defeated this turn
-  bool get hadAllyDefeats => combatResults.any((result) => result.isEnemyVictory);
+  bool get hadAllyDefeats =>
+      combatResults.any((result) => result.isEnemyVictory);
 
   /// Returns true if any enemies were defeated this turn
-  bool get hadEnemyDefeats => combatResults.any((result) => result.isAllyVictory);
+  bool get hadEnemyDefeats =>
+      combatResults.any((result) => result.isAllyVictory);
 
   /// Gets a summary of this turn's events
   String get summary {
     final parts = <String>[];
-    
+
     if (encounters.isNotEmpty) {
       parts.add('${encounters.length} combat encounters');
     }
-    
+
     if (combatResults.isNotEmpty) {
       parts.add('${combatResults.length} combat results');
     }
-    
+
     if (stateChanges.isNotEmpty) {
       parts.add('${stateChanges.length} state changes');
     }
-    
+
     if (parts.isEmpty) {
       return 'No combat activity';
     }
-    
+
     return 'Turn $tick: ${parts.join(', ')}';
   }
 
@@ -304,8 +333,8 @@ class CombatState {
   final int tick;
   final List<AllyCharacter> alliesInCombat;
   final List<EnemyCharacter> enemiesInCombat;
-  final List<CombatEncounter> activeCombats;
-  final List<PotentialCombatEncounter> potentialEncounters;
+  final List<cds.CombatEncounter> activeCombats;
+  final List<cds.PotentialCombatEncounter> potentialEncounters;
   final List<CombatFeedbackMessage> recentFeedback;
 
   CombatState({
@@ -324,7 +353,8 @@ class CombatState {
   bool get hasPotentialCombat => potentialEncounters.isNotEmpty;
 
   /// Gets the total number of characters in combat
-  int get totalCharactersInCombat => alliesInCombat.length + enemiesInCombat.length;
+  int get totalCharactersInCombat =>
+      alliesInCombat.length + enemiesInCombat.length;
 
   /// Gets recent combat-related feedback
   List<CombatFeedbackMessage> get recentCombatFeedback =>
@@ -333,8 +363,8 @@ class CombatState {
   @override
   String toString() {
     return 'CombatState(Tick: $tick, Active: ${activeCombats.length}, '
-           'Potential: ${potentialEncounters.length}, '
-           'Allies: ${alliesInCombat.length}, Enemies: ${enemiesInCombat.length})';
+        'Potential: ${potentialEncounters.length}, '
+        'Allies: ${alliesInCombat.length}, Enemies: ${enemiesInCombat.length})';
   }
 }
 
@@ -394,6 +424,6 @@ class CombatStateStats {
   @override
   String toString() {
     return 'CombatStateStats(Ticks: $totalTicks, Encounters: $totalEncounters, '
-           'Results: $totalCombatResults, Victory Rate: ${(allyVictoryRate * 100).toStringAsFixed(1)}%)';
+        'Results: $totalCombatResults, Victory Rate: ${(allyVictoryRate * 100).toStringAsFixed(1)}%)';
   }
 }

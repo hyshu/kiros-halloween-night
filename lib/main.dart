@@ -122,24 +122,16 @@ class _GridSceneViewState extends State<GridSceneView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(
-                color: Colors.deepPurple,
-              ),
+              const CircularProgressIndicator(color: Colors.deepPurple),
               const SizedBox(height: 20),
               Text(
                 _loadingStatus,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 10),
               const Text(
                 'Creating rooms and narrow corridors...',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),

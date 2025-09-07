@@ -10,10 +10,10 @@ import 'enemy_spawner.dart';
 class AllyManager extends ChangeNotifier {
   /// List of all active allies
   final List<AllyCharacter> _allies = [];
-  
+
   /// Maximum number of allies that can be active at once
   final int maxAllies;
-  
+
   /// Reference to the player character
   GhostCharacter? _player;
 
@@ -21,20 +21,20 @@ class AllyManager extends ChangeNotifier {
 
   /// Gets an unmodifiable list of all allies
   List<AllyCharacter> get allies => List.unmodifiable(_allies);
-  
+
   /// Gets the current number of allies
   int get count => _allies.length;
-  
+
   /// Gets whether the maximum number of allies has been reached
   bool get isAtMaxCapacity => _allies.length >= maxAllies;
-  
+
   /// Gets the remaining ally capacity
   int get remainingCapacity => maxAllies - _allies.length;
 
   /// Sets the player character reference
   void setPlayer(GhostCharacter player) {
     _player = player;
-    
+
     // Update all existing allies to follow the new player
     for (final ally in _allies) {
       ally.setFollowTarget(player);
@@ -47,18 +47,18 @@ class AllyManager extends ChangeNotifier {
     if (isAtMaxCapacity) {
       return false;
     }
-    
+
     // Create new ally from enemy
     final ally = AllyCharacter(originalEnemy: enemy);
-    
+
     // Set follow target if player is available
     if (_player != null) {
       ally.setFollowTarget(_player!);
     }
-    
+
     // Add to allies list
     _allies.add(ally);
-    
+
     notifyListeners();
     return true;
   }
@@ -95,17 +95,17 @@ class AllyManager extends ChangeNotifier {
   /// Updates all allies (called each game tick)
   void updateAllies(TileMap tileMap, List<EnemyCharacter> hostileEnemies) {
     final satisfiedAllies = <AllyCharacter>[];
-    
+
     // Update each ally
     for (final ally in _allies) {
       ally.updateAI(tileMap, hostileEnemies);
-      
+
       // Check if ally is satisfied and should be removed
       if (ally.isSatisfied) {
         satisfiedAllies.add(ally);
       }
     }
-    
+
     // Remove satisfied allies
     for (final ally in satisfiedAllies) {
       removeAlly(ally);
@@ -155,28 +155,33 @@ class AllyManager extends ChangeNotifier {
 
   /// Gets the total combat strength of all allies
   int getTotalCombatStrength() {
-    return _allies.fold(0, (total, ally) => total + ally.effectiveCombatStrength);
+    return _allies.fold(
+      0,
+      (total, ally) => total + ally.effectiveCombatStrength,
+    );
   }
 
   /// Gets allies grouped by their original enemy type
   Map<EnemyType, List<AllyCharacter>> getAlliesByType() {
     final grouped = <EnemyType, List<AllyCharacter>>{};
-    
+
     for (final ally in _allies) {
       final type = ally.enemyType;
       grouped[type] = (grouped[type] ?? [])..add(ally);
     }
-    
+
     return grouped;
   }
 
   /// Gets the average satisfaction level of all allies
   double getAverageSatisfaction() {
     if (_allies.isEmpty) return 0.0;
-    
-    final totalSatisfaction = _allies.fold(0.0, 
-      (total, ally) => total + ally.satisfactionPercentage);
-    
+
+    final totalSatisfaction = _allies.fold(
+      0.0,
+      (total, ally) => total + ally.satisfactionPercentage,
+    );
+
     return totalSatisfaction / _allies.length;
   }
 
@@ -223,11 +228,11 @@ class AllyManager extends ChangeNotifier {
       'totalCombatStrength': getTotalCombatStrength(),
       'byType': {},
     };
-    
+
     for (final entry in typeGroups.entries) {
       summary['byType'][entry.key.displayName] = entry.value.length;
     }
-    
+
     return summary;
   }
 
@@ -235,7 +240,7 @@ class AllyManager extends ChangeNotifier {
   String toString() {
     final summary = getAllySummary();
     return 'AllyManager(${summary['total']}/${summary['maxCapacity']} allies, '
-           'Combat: ${summary['inCombat']}, Following: ${summary['following']}, '
-           'Avg Satisfaction: ${(summary['averageSatisfaction'] * 100).toStringAsFixed(1)}%)';
+        'Combat: ${summary['inCombat']}, Following: ${summary['following']}, '
+        'Avg Satisfaction: ${(summary['averageSatisfaction'] * 100).toStringAsFixed(1)}%)';
   }
 }

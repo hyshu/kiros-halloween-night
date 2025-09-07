@@ -7,23 +7,25 @@ import 'combat_manager.dart';
 class CombatFeedbackSystem {
   /// List of recent combat feedback messages
   final List<CombatFeedbackMessage> _recentMessages = [];
-  
+
   /// Maximum number of recent messages to keep
   static const int maxRecentMessages = 20;
-  
+
   /// Random number generator for message variation
   static final Random _random = Random();
 
   /// Generates feedback for combat results
-  List<CombatFeedbackMessage> generateCombatFeedback(List<CombatResult> combatResults) {
+  List<CombatFeedbackMessage> generateCombatFeedback(
+    List<CombatResult> combatResults,
+  ) {
     final messages = <CombatFeedbackMessage>[];
-    
+
     for (final result in combatResults) {
       final message = _createCombatMessage(result);
       messages.add(message);
       _addMessage(message);
     }
-    
+
     return messages;
   }
 
@@ -34,8 +36,12 @@ class CombatFeedbackSystem {
     AllyState newState,
   ) {
     if (previousState == newState) return null;
-    
-    final message = _createAllyStateChangeMessage(ally, previousState, newState);
+
+    final message = _createAllyStateChangeMessage(
+      ally,
+      previousState,
+      newState,
+    );
     _addMessage(message);
     return message;
   }
@@ -55,7 +61,7 @@ class CombatFeedbackSystem {
   ) {
     final difference = newSatisfaction - previousSatisfaction;
     if (difference.abs() < 10) return null; // Only report significant changes
-    
+
     final message = _createSatisfactionChangeMessage(ally, difference);
     _addMessage(message);
     return message;
@@ -75,24 +81,37 @@ class CombatFeedbackSystem {
   CombatFeedbackMessage _createCombatMessage(CombatResult result) {
     final allyName = _getCharacterDisplayName(result.ally);
     final enemyName = _getCharacterDisplayName(result.enemy);
-    
+
     String messageText;
     CombatFeedbackType messageType;
-    
+
     if (result.isAllyVictory) {
-      messageText = _getVictoryMessage(allyName, enemyName, result.allyDamageDealt);
+      messageText = _getVictoryMessage(
+        allyName,
+        enemyName,
+        result.allyDamageDealt,
+      );
       messageType = CombatFeedbackType.allyVictory;
     } else if (result.isEnemyVictory) {
-      messageText = _getDefeatMessage(allyName, enemyName, result.enemyDamageDealt);
+      messageText = _getDefeatMessage(
+        allyName,
+        enemyName,
+        result.enemyDamageDealt,
+      );
       messageType = CombatFeedbackType.allyDefeat;
     } else if (result.isMutualDefeat) {
       messageText = _getMutualDefeatMessage(allyName, enemyName);
       messageType = CombatFeedbackType.mutualDefeat;
     } else {
-      messageText = _getOngoingCombatMessage(allyName, enemyName, result.allyDamageDealt, result.enemyDamageDealt);
+      messageText = _getOngoingCombatMessage(
+        allyName,
+        enemyName,
+        result.allyDamageDealt,
+        result.enemyDamageDealt,
+      );
       messageType = CombatFeedbackType.ongoingCombat;
     }
-    
+
     return CombatFeedbackMessage(
       text: messageText,
       type: messageType,
@@ -112,25 +131,34 @@ class CombatFeedbackSystem {
     final allyName = _getCharacterDisplayName(ally);
     String messageText;
     CombatFeedbackType messageType;
-    
+
     switch (newState) {
       case AllyState.combat:
-        messageText = _getStateChangeMessages('combat')[_random.nextInt(3)]
-            .replaceAll('{ally}', allyName);
+        final messages = _getStateChangeMessages('combat');
+        messageText = messages[_random.nextInt(messages.length)].replaceAll(
+          '{ally}',
+          allyName,
+        );
         messageType = CombatFeedbackType.stateChange;
         break;
       case AllyState.following:
-        messageText = _getStateChangeMessages('following')[_random.nextInt(3)]
-            .replaceAll('{ally}', allyName);
+        final messages = _getStateChangeMessages('following');
+        messageText = messages[_random.nextInt(messages.length)].replaceAll(
+          '{ally}',
+          allyName,
+        );
         messageType = CombatFeedbackType.stateChange;
         break;
       case AllyState.satisfied:
-        messageText = _getStateChangeMessages('satisfied')[_random.nextInt(3)]
-            .replaceAll('{ally}', allyName);
+        final messages = _getStateChangeMessages('satisfied');
+        messageText = messages[_random.nextInt(messages.length)].replaceAll(
+          '{ally}',
+          allyName,
+        );
         messageType = CombatFeedbackType.allySatisfied;
         break;
     }
-    
+
     return CombatFeedbackMessage(
       text: messageText,
       type: messageType,
@@ -147,7 +175,7 @@ class CombatFeedbackSystem {
       '$enemyName falls to the ground, defeated.',
       '$enemyName is no longer a threat.',
     ];
-    
+
     return CombatFeedbackMessage(
       text: messages[_random.nextInt(messages.length)],
       type: CombatFeedbackType.enemyDefeated,
@@ -164,7 +192,7 @@ class CombatFeedbackSystem {
     final allyName = _getCharacterDisplayName(ally);
     String messageText;
     CombatFeedbackType messageType;
-    
+
     if (satisfactionChange > 0) {
       final messages = [
         '$allyName looks more content.',
@@ -182,7 +210,7 @@ class CombatFeedbackSystem {
       messageText = messages[_random.nextInt(messages.length)];
       messageType = CombatFeedbackType.satisfactionDecrease;
     }
-    
+
     return CombatFeedbackMessage(
       text: messageText,
       type: messageType,
@@ -198,13 +226,13 @@ class CombatFeedbackSystem {
   ) {
     final allyName = _getCharacterDisplayName(ally);
     final enemyName = _getCharacterDisplayName(enemy);
-    
+
     final messages = [
       '$allyName engages $enemyName in combat!',
       '$allyName moves to attack $enemyName!',
       '$allyName confronts $enemyName!',
     ];
-    
+
     return CombatFeedbackMessage(
       text: messages[_random.nextInt(messages.length)],
       type: CombatFeedbackType.combatEngagement,
@@ -245,7 +273,12 @@ class CombatFeedbackSystem {
   }
 
   /// Gets ongoing combat message variations
-  String _getOngoingCombatMessage(String allyName, String enemyName, int allyDamage, int enemyDamage) {
+  String _getOngoingCombatMessage(
+    String allyName,
+    String enemyName,
+    int allyDamage,
+    int enemyDamage,
+  ) {
     final messages = [
       '$allyName and $enemyName exchange blows!',
       'The battle between $allyName and $enemyName continues!',
@@ -255,36 +288,28 @@ class CombatFeedbackSystem {
   }
 
   /// Gets state change message variations
-  Map<String, List<String>> _getStateChangeMessages(String state) {
+  List<String> _getStateChangeMessages(String state) {
     switch (state) {
       case 'combat':
-        return {
-          'combat': [
-            '{ally} enters combat mode!',
-            '{ally} prepares for battle!',
-            '{ally} readies for combat!',
-          ]
-        };
+        return [
+          '{ally} enters combat mode!',
+          '{ally} prepares for battle!',
+          '{ally} readies for combat!',
+        ];
       case 'following':
-        return {
-          'following': [
-            '{ally} returns to following you.',
-            '{ally} comes back to your side.',
-            '{ally} resumes following.',
-          ]
-        };
+        return [
+          '{ally} returns to following you.',
+          '{ally} comes back to your side.',
+          '{ally} resumes following.',
+        ];
       case 'satisfied':
-        return {
-          'satisfied': [
-            '{ally} looks satisfied and wanders away.',
-            '{ally} seems content and departs.',
-            '{ally} appears fulfilled and leaves.',
-          ]
-        };
+        return [
+          '{ally} looks satisfied and wanders away.',
+          '{ally} seems content and departs.',
+          '{ally} appears fulfilled and leaves.',
+        ];
       default:
-        return {
-          'default': ['{ally} changes state.']
-        };
+        return ['{ally} changes state.'];
     }
   }
 
@@ -301,7 +326,7 @@ class CombatFeedbackSystem {
   /// Adds a message to the recent messages list
   void _addMessage(CombatFeedbackMessage message) {
     _recentMessages.add(message);
-    
+
     // Keep only the most recent messages
     if (_recentMessages.length > maxRecentMessages) {
       _recentMessages.removeAt(0);
@@ -309,7 +334,8 @@ class CombatFeedbackSystem {
   }
 
   /// Gets all recent combat feedback messages
-  List<CombatFeedbackMessage> get recentMessages => List.unmodifiable(_recentMessages);
+  List<CombatFeedbackMessage> get recentMessages =>
+      List.unmodifiable(_recentMessages);
 
   /// Gets recent messages of a specific type
   List<CombatFeedbackMessage> getMessagesByType(CombatFeedbackType type) {
@@ -332,7 +358,7 @@ class CombatFeedbackSystem {
   }
 
   /// Gets the most recent message
-  CombatFeedbackMessage? get latestMessage => 
+  CombatFeedbackMessage? get latestMessage =>
       _recentMessages.isNotEmpty ? _recentMessages.last : null;
 }
 

@@ -5,10 +5,10 @@ import 'candy_item.dart';
 class Inventory extends ChangeNotifier {
   /// List of candy items in the inventory
   final List<CandyItem> _candyItems = [];
-  
+
   /// Maximum number of candy items that can be held
   final int maxCapacity;
-  
+
   /// Active temporary effects from consumed candy
   final Map<String, TemporaryEffect> _activeEffects = {};
 
@@ -16,21 +16,22 @@ class Inventory extends ChangeNotifier {
 
   /// Gets an unmodifiable list of all candy items
   List<CandyItem> get candyItems => List.unmodifiable(_candyItems);
-  
+
   /// Gets the current number of candy items
   int get count => _candyItems.length;
-  
+
   /// Gets whether the inventory is full
   bool get isFull => _candyItems.length >= maxCapacity;
-  
+
   /// Gets whether the inventory is empty
   bool get isEmpty => _candyItems.isEmpty;
-  
+
   /// Gets the remaining capacity
   int get remainingCapacity => maxCapacity - _candyItems.length;
-  
+
   /// Gets all active temporary effects
-  Map<String, TemporaryEffect> get activeEffects => Map.unmodifiable(_activeEffects);
+  Map<String, TemporaryEffect> get activeEffects =>
+      Map.unmodifiable(_activeEffects);
 
   /// Adds a candy item to the inventory
   /// Returns true if successful, false if inventory is full
@@ -38,7 +39,7 @@ class Inventory extends ChangeNotifier {
     if (isFull) {
       return false;
     }
-    
+
     _candyItems.add(candy);
     candy.collect();
     notifyListeners();
@@ -111,10 +112,10 @@ class Inventory extends ChangeNotifier {
 
     // Apply the candy's effect
     _applyCandyEffect(candy);
-    
+
     // Remove the candy from inventory after use
     removeCandy(candy);
-    
+
     return true;
   }
 
@@ -124,11 +125,11 @@ class Inventory extends ChangeNotifier {
       case CandyEffect.healthBoost:
         // Health boost is applied immediately by the character
         break;
-        
+
       case CandyEffect.maxHealthIncrease:
         // Max health increase is applied immediately by the character
         break;
-        
+
       case CandyEffect.speedIncrease:
       case CandyEffect.allyStrength:
       case CandyEffect.specialAbility:
@@ -153,7 +154,7 @@ class Inventory extends ChangeNotifier {
       abilityModifications: Map.from(candy.abilityModifications),
       remainingDuration: candy.effectDuration,
     );
-    
+
     _activeEffects[effectId] = effect;
     notifyListeners();
   }
@@ -161,21 +162,21 @@ class Inventory extends ChangeNotifier {
   /// Updates all temporary effects (call this each turn)
   void updateTemporaryEffects() {
     final expiredEffects = <String>[];
-    
+
     for (final entry in _activeEffects.entries) {
       final effect = entry.value;
       effect.remainingDuration--;
-      
+
       if (effect.remainingDuration <= 0) {
         expiredEffects.add(entry.key);
       }
     }
-    
+
     // Remove expired effects
     for (final effectId in expiredEffects) {
       _activeEffects.remove(effectId);
     }
-    
+
     if (expiredEffects.isNotEmpty) {
       notifyListeners();
     }
@@ -184,14 +185,14 @@ class Inventory extends ChangeNotifier {
   /// Gets the total value of a specific ability modification from all active effects
   double getTotalAbilityModification(String abilityName) {
     double total = 0.0;
-    
+
     for (final effect in _activeEffects.values) {
       final value = effect.abilityModifications[abilityName];
       if (value is num) {
         total += value.toDouble();
       }
     }
-    
+
     return total;
   }
 
@@ -227,11 +228,11 @@ class Inventory extends ChangeNotifier {
   /// Gets a summary of the inventory contents
   Map<String, int> getInventorySummary() {
     final summary = <String, int>{};
-    
+
     for (final candy in _candyItems) {
       summary[candy.name] = (summary[candy.name] ?? 0) + 1;
     }
-    
+
     return summary;
   }
 
@@ -249,22 +250,22 @@ class Inventory extends ChangeNotifier {
 class TemporaryEffect {
   /// Unique identifier for this effect
   final String id;
-  
+
   /// ID of the candy item that created this effect
   final String sourceId;
-  
+
   /// Display name of the effect
   final String name;
-  
+
   /// Type of effect
   final CandyEffect effect;
-  
+
   /// Numerical value of the effect
   final int value;
-  
+
   /// Additional ability modifications
   final Map<String, dynamic> abilityModifications;
-  
+
   /// Remaining duration in turns
   int remainingDuration;
 

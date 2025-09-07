@@ -8,16 +8,16 @@ import 'position.dart';
 class SpatialIndex {
   /// Size of each spatial grid cell (in tiles)
   final int cellSize;
-  
+
   /// Width of the world in cells
   final int worldWidthInCells;
-  
+
   /// Height of the world in cells
   final int worldHeightInCells;
-  
+
   /// Grid of spatial cells containing character lists
   late final List<List<SpatialCell>> _grid;
-  
+
   /// Map of character IDs to their current cell coordinates
   final Map<String, CellCoordinate> _characterCellMap = {};
 
@@ -34,24 +34,29 @@ class SpatialIndex {
   void _initializeGrid() {
     _grid = List.generate(
       worldHeightInCells,
-      (z) => List.generate(
-        worldWidthInCells,
-        (x) => SpatialCell(x: x, z: z),
-      ),
+      (z) => List.generate(worldWidthInCells, (x) => SpatialCell(x: x, z: z)),
     );
   }
 
   /// Converts world position to cell coordinate
   CellCoordinate _positionToCell(Position position) {
-    final cellX = (position.x / cellSize).floor().clamp(0, worldWidthInCells - 1);
-    final cellZ = (position.z / cellSize).floor().clamp(0, worldHeightInCells - 1);
+    final cellX = (position.x / cellSize).floor().clamp(
+      0,
+      worldWidthInCells - 1,
+    );
+    final cellZ = (position.z / cellSize).floor().clamp(
+      0,
+      worldHeightInCells - 1,
+    );
     return CellCoordinate(cellX, cellZ);
   }
 
   /// Gets the spatial cell at the given cell coordinate
   SpatialCell? _getCell(CellCoordinate coord) {
-    if (coord.x < 0 || coord.x >= worldWidthInCells ||
-        coord.z < 0 || coord.z >= worldHeightInCells) {
+    if (coord.x < 0 ||
+        coord.x >= worldWidthInCells ||
+        coord.z < 0 ||
+        coord.z >= worldHeightInCells) {
       return null;
     }
     return _grid[coord.z][coord.x];
@@ -61,11 +66,11 @@ class SpatialIndex {
   void addCharacter(Character character) {
     final cellCoord = _positionToCell(character.position);
     final cell = _getCell(cellCoord);
-    
+
     if (cell != null) {
       // Remove from old cell if it exists
       removeCharacter(character.id);
-      
+
       // Add to new cell
       cell.addCharacter(character);
       _characterCellMap[character.id] = cellCoord;
@@ -86,7 +91,7 @@ class SpatialIndex {
   void updateCharacterPosition(Character character) {
     final newCellCoord = _positionToCell(character.position);
     final oldCellCoord = _characterCellMap[character.id];
-    
+
     // Only update if the character moved to a different cell
     if (oldCellCoord == null || oldCellCoord != newCellCoord) {
       addCharacter(character); // This will handle removal from old cell
@@ -95,27 +100,27 @@ class SpatialIndex {
 
   /// Gets all characters within a radius of a position
   List<T> getCharactersInRadius<T extends Character>(
-    Position center, 
+    Position center,
     int radius, {
     Type? characterType,
   }) {
     final result = <T>[];
-    final cellRadius = (radius / cellSize).ceil() + 1; // Add buffer for edge cases
+    final cellRadius =
+        (radius / cellSize).ceil() + 1; // Add buffer for edge cases
     final centerCell = _positionToCell(center);
-    
+
     // Check all cells within the radius
     for (int dz = -cellRadius; dz <= cellRadius; dz++) {
       for (int dx = -cellRadius; dx <= cellRadius; dx++) {
-        final cellCoord = CellCoordinate(
-          centerCell.x + dx,
-          centerCell.z + dz,
-        );
-        
+        final cellCoord = CellCoordinate(centerCell.x + dx, centerCell.z + dz);
+
         final cell = _getCell(cellCoord);
         if (cell != null) {
           // Get characters from this cell and filter by distance
-          final cellCharacters = cell.getCharacters<T>(characterType: characterType);
-          
+          final cellCharacters = cell.getCharacters<T>(
+            characterType: characterType,
+          );
+
           for (final character in cellCharacters) {
             final distance = center.distanceTo(character.position);
             if (distance <= radius) {
@@ -125,15 +130,15 @@ class SpatialIndex {
         }
       }
     }
-    
+
     return result;
   }
 
   /// Gets all enemies within a radius of a position
   List<EnemyCharacter> getEnemiesInRadius(Position center, int radius) {
     return getCharactersInRadius<EnemyCharacter>(
-      center, 
-      radius, 
+      center,
+      radius,
       characterType: EnemyCharacter,
     );
   }
@@ -145,11 +150,11 @@ class SpatialIndex {
   }) {
     final cellCoord = _positionToCell(position);
     final cell = _getCell(cellCoord);
-    
+
     if (cell != null) {
       return cell.getCharacters<T>(characterType: characterType);
     }
-    
+
     return [];
   }
 
@@ -160,42 +165,39 @@ class SpatialIndex {
   }) {
     final result = <T>[];
     final centerCell = _positionToCell(center);
-    
+
     // Check 3x3 grid of cells
     for (int dz = -1; dz <= 1; dz++) {
       for (int dx = -1; dx <= 1; dx++) {
-        final cellCoord = CellCoordinate(
-          centerCell.x + dx,
-          centerCell.z + dz,
-        );
-        
+        final cellCoord = CellCoordinate(centerCell.x + dx, centerCell.z + dz);
+
         final cell = _getCell(cellCoord);
         if (cell != null) {
           result.addAll(cell.getCharacters<T>(characterType: characterType));
         }
       }
     }
-    
+
     return result;
   }
 
   /// Gets the closest character to a position within a maximum radius
   T? getClosestCharacter<T extends Character>(
-    Position position, 
+    Position position,
     int maxRadius, {
     Type? characterType,
   }) {
     final candidates = getCharactersInRadius<T>(
-      position, 
-      maxRadius, 
+      position,
+      maxRadius,
       characterType: characterType,
     );
-    
+
     if (candidates.isEmpty) return null;
-    
+
     T? closest;
     double closestDistance = double.infinity;
-    
+
     for (final character in candidates) {
       final distance = position.distanceTo(character.position).toDouble();
       if (distance < closestDistance) {
@@ -203,7 +205,7 @@ class SpatialIndex {
         closest = character;
       }
     }
-    
+
     return closest;
   }
 
@@ -223,27 +225,28 @@ class SpatialIndex {
     int occupiedCells = 0;
     int maxCharactersInCell = 0;
     final cellOccupancy = <int, int>{};
-    
+
     for (final row in _grid) {
       for (final cell in row) {
         final characterCount = cell.characterCount;
         totalCharacters += characterCount;
-        
+
         if (characterCount > 0) {
           occupiedCells++;
           maxCharactersInCell = max(maxCharactersInCell, characterCount);
         }
-        
-        cellOccupancy[characterCount] = (cellOccupancy[characterCount] ?? 0) + 1;
+
+        cellOccupancy[characterCount] =
+            (cellOccupancy[characterCount] ?? 0) + 1;
       }
     }
-    
+
     final totalCells = worldWidthInCells * worldHeightInCells;
     final occupancyPercentage = (occupiedCells / totalCells) * 100.0;
-    final averageCharactersPerOccupiedCell = occupiedCells > 0 
-        ? totalCharacters / occupiedCells 
+    final averageCharactersPerOccupiedCell = occupiedCells > 0
+        ? totalCharacters / occupiedCells
         : 0.0;
-    
+
     return SpatialIndexStats(
       totalCells: totalCells,
       occupiedCells: occupiedCells,
@@ -259,7 +262,7 @@ class SpatialIndex {
   SpatialDebugInfo getDebugInfo(Position position) {
     final cellCoord = _positionToCell(position);
     final cell = _getCell(cellCoord);
-    
+
     return SpatialDebugInfo(
       position: position,
       cellCoordinate: cellCoord,
@@ -273,10 +276,10 @@ class SpatialIndex {
 class SpatialCell {
   /// X coordinate of this cell in the grid
   final int x;
-  
+
   /// Z coordinate of this cell in the grid
   final int z;
-  
+
   /// Characters currently in this cell
   final Map<String, Character> _characters = {};
 
@@ -295,11 +298,11 @@ class SpatialCell {
   /// Gets all characters in this cell, optionally filtered by type
   List<T> getCharacters<T extends Character>({Type? characterType}) {
     final characters = _characters.values.toList();
-    
+
     if (characterType != null) {
       return characters.whereType<T>().toList();
     }
-    
+
     return characters.cast<T>();
   }
 
@@ -363,7 +366,7 @@ class SpatialIndexStats {
   @override
   String toString() {
     return 'SpatialIndexStats(cells: $totalCells, occupied: $occupiedCells, '
-           'characters: $totalCharacters, occupancy: ${occupancyPercentage.toStringAsFixed(1)}%)';
+        'characters: $totalCharacters, occupancy: ${occupancyPercentage.toStringAsFixed(1)}%)';
   }
 }
 
@@ -384,6 +387,6 @@ class SpatialDebugInfo {
   @override
   String toString() {
     return 'SpatialDebugInfo(pos: $position, cell: $cellCoordinate, '
-           'inCell: $charactersInCell, adjacent: $charactersInAdjacentCells)';
+        'inCell: $charactersInCell, adjacent: $charactersInAdjacentCells)';
   }
 }

@@ -1,27 +1,27 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 
 import 'enemy_character.dart';
 import 'position.dart';
 import 'tile_map.dart';
-import 'tile_type.dart';
 
 /// Manages enemy spawning across the large world map
 class EnemySpawner {
   /// Random number generator for spawning decisions
   static final Random _random = Random();
-  
+
   /// Counter for generating unique enemy IDs
   static int _enemyIdCounter = 0;
-  
+
   /// Default spawn density (enemies per 100 tiles)
   static const double defaultSpawnDensity = 0.8;
-  
+
   /// Minimum distance between enemies
   static const int minEnemyDistance = 3;
-  
+
   /// Minimum distance from player spawn
   static const int minPlayerDistance = 10;
-  
+
   /// Maximum attempts to find a valid spawn position
   static const int maxSpawnAttempts = 50;
 
@@ -35,27 +35,27 @@ class EnemySpawner {
     final enemies = <EnemyCharacter>[];
     final (width, height) = tileMap.dimensions;
     final totalTiles = width * height;
-    
+
     // Calculate number of enemies to spawn
     final enemyCount = (totalTiles * spawnDensity / 100).round();
-    
-    print('Spawning $enemyCount enemies across ${width}x$height world...');
-    
+
+    debugPrint('Spawning $enemyCount enemies across ${width}x$height world...');
+
     // Get all walkable positions
     final walkablePositions = _getWalkablePositions(tileMap);
-    
+
     // Filter positions based on distance constraints
     final validPositions = _filterValidSpawnPositions(
       walkablePositions,
       playerSpawn,
       tileMap,
     );
-    
+
     if (validPositions.isEmpty) {
-      print('Warning: No valid spawn positions found for enemies');
+      debugPrint('Warning: No valid spawn positions found for enemies');
       return enemies;
     }
-    
+
     // Spawn enemies
     for (int i = 0; i < enemyCount && validPositions.isNotEmpty; i++) {
       final enemy = _spawnSingleEnemy(validPositions, enemies, tileMap);
@@ -63,8 +63,8 @@ class EnemySpawner {
         enemies.add(enemy);
       }
     }
-    
-    print('Successfully spawned ${enemies.length} enemies');
+
+    debugPrint('Successfully spawned ${enemies.length} enemies');
     return enemies;
   }
 
@@ -80,10 +80,10 @@ class EnemySpawner {
     final regionWidth = bottomRight.x - topLeft.x + 1;
     final regionHeight = bottomRight.z - topLeft.z + 1;
     final regionTiles = regionWidth * regionHeight;
-    
+
     // Calculate number of enemies to spawn in this region
     final enemyCount = (regionTiles * spawnDensity / 100).round();
-    
+
     // Get walkable positions in the region
     final walkablePositions = <Position>[];
     for (int z = topLeft.z; z <= bottomRight.z; z++) {
@@ -94,13 +94,13 @@ class EnemySpawner {
         }
       }
     }
-    
+
     // Filter positions to avoid existing enemies
     final validPositions = _filterPositionsFromExistingEnemies(
       walkablePositions,
       existingEnemies ?? [],
     );
-    
+
     // Spawn enemies
     for (int i = 0; i < enemyCount && validPositions.isNotEmpty; i++) {
       final enemy = _spawnSingleEnemy(validPositions, enemies, tileMap);
@@ -108,7 +108,7 @@ class EnemySpawner {
         enemies.add(enemy);
       }
     }
-    
+
     return enemies;
   }
 
@@ -122,7 +122,7 @@ class EnemySpawner {
     if (!tileMap.isWalkable(position)) {
       return null;
     }
-    
+
     final enemy = _createEnemy(position, enemyType, aiType);
     return enemy;
   }
@@ -131,7 +131,7 @@ class EnemySpawner {
   static List<Position> _getWalkablePositions(TileMap tileMap) {
     final positions = <Position>[];
     final (width, height) = tileMap.dimensions;
-    
+
     for (int z = 0; z < height; z++) {
       for (int x = 0; x < width; x++) {
         final position = Position(x, z);
@@ -140,7 +140,7 @@ class EnemySpawner {
         }
       }
     }
-    
+
     return positions;
   }
 
@@ -151,13 +151,13 @@ class EnemySpawner {
     TileMap tileMap,
   ) {
     final validPositions = <Position>[];
-    
+
     for (final position in positions) {
       // Skip perimeter positions (too close to walls)
       if (tileMap.isPerimeterPosition(position)) {
         continue;
       }
-      
+
       // Check distance from player spawn
       if (playerSpawn != null) {
         final distanceFromPlayer = position.distanceTo(playerSpawn);
@@ -165,7 +165,7 @@ class EnemySpawner {
           continue;
         }
       }
-      
+
       // Check distance from boss location
       final bossLocation = tileMap.bossLocation;
       if (bossLocation != null) {
@@ -174,10 +174,10 @@ class EnemySpawner {
           continue; // Keep area around boss clear
         }
       }
-      
+
       validPositions.add(position);
     }
-    
+
     return validPositions;
   }
 
@@ -187,22 +187,22 @@ class EnemySpawner {
     List<EnemyCharacter> existingEnemies,
   ) {
     final validPositions = <Position>[];
-    
+
     for (final position in positions) {
       bool tooClose = false;
-      
+
       for (final enemy in existingEnemies) {
         if (position.distanceTo(enemy.position) < minEnemyDistance) {
           tooClose = true;
           break;
         }
       }
-      
+
       if (!tooClose) {
         validPositions.add(position);
       }
     }
-    
+
     return validPositions;
   }
 
@@ -213,12 +213,12 @@ class EnemySpawner {
     TileMap tileMap,
   ) {
     if (validPositions.isEmpty) return null;
-    
+
     // Try multiple times to find a good position
     for (int attempt = 0; attempt < maxSpawnAttempts; attempt++) {
       final randomIndex = _random.nextInt(validPositions.length);
       final position = validPositions[randomIndex];
-      
+
       // Check distance from existing enemies
       bool tooClose = false;
       for (final enemy in existingEnemies) {
@@ -227,20 +227,20 @@ class EnemySpawner {
           break;
         }
       }
-      
+
       if (!tooClose) {
         // Remove this position from valid positions
         validPositions.removeAt(randomIndex);
-        
+
         // Create and return the enemy
         return _createEnemy(position);
       }
-      
+
       // Remove the invalid position and try again
       validPositions.removeAt(randomIndex);
       if (validPositions.isEmpty) break;
     }
-    
+
     return null;
   }
 
@@ -253,7 +253,7 @@ class EnemySpawner {
     final id = 'enemy_${_enemyIdCounter++}';
     final selectedEnemyType = enemyType ?? _getRandomEnemyType();
     final selectedAIType = aiType ?? _getRandomAIType();
-    
+
     switch (selectedEnemyType) {
       case EnemyType.human:
         return EnemyCharacter.human(
@@ -265,7 +265,7 @@ class EnemySpawner {
           aiType: selectedAIType,
           activationRadius: _getActivationRadius(selectedAIType),
         );
-      
+
       case EnemyType.monster:
         return EnemyCharacter.monster(
           id: id,
@@ -303,16 +303,16 @@ class EnemySpawner {
       case EnemyAIType.aggressive:
         return 12; // Aggressive enemies detect from farther away
       case EnemyAIType.wanderer:
-        return 8;  // Standard detection range
+        return 8; // Standard detection range
       case EnemyAIType.guard:
-        return 6;  // Guards have shorter detection range
+        return 6; // Guards have shorter detection range
     }
   }
 
   /// Spawns boss enemy at the specified location
   static EnemyCharacter spawnBoss(Position position) {
     final id = 'boss_${_enemyIdCounter++}';
-    
+
     return EnemyCharacter.monster(
       id: id,
       position: position,

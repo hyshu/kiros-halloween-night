@@ -7,13 +7,13 @@ import 'tile_type.dart';
 class GameManager extends ChangeNotifier {
   /// The current game state
   final GameState _gameState = GameState();
-  
+
   /// Singleton instance
   static GameManager? _instance;
-  
+
   /// Private constructor for singleton pattern
   GameManager._();
-  
+
   /// Gets the singleton instance
   static GameManager get instance {
     _instance ??= GameManager._();
@@ -26,10 +26,10 @@ class GameManager extends ChangeNotifier {
   /// Initializes the game manager
   Future<void> initialize() async {
     _gameState.setPhase(GamePhase.initializing);
-    
+
     // Initialize core systems here
     // This will be expanded in future tasks
-    
+
     notifyListeners();
   }
 
@@ -44,24 +44,24 @@ class GameManager extends ChangeNotifier {
   /// Handles player input for movement
   bool handlePlayerMovement(Position newPosition) {
     if (!_gameState.canCharactersMove) return false;
-    
+
     final player = _gameState.playerCharacter;
     if (player == null) return false;
-    
+
     // Basic movement validation (will be expanded with collision detection)
     if (player.moveTo(newPosition)) {
       _gameState.nextTurn();
       notifyListeners();
       return true;
     }
-    
+
     return false;
   }
 
   /// Updates the game state (called each frame)
   void update(double deltaTime) {
     if (!_gameState.isRunning) return;
-    
+
     // Update active characters
     final activeCharacters = _gameState.getActiveCharacters();
     for (final character in activeCharacters) {
@@ -69,7 +69,7 @@ class GameManager extends ChangeNotifier {
       // For now, just ensure character is properly initialized
       character.setIdle();
     }
-    
+
     // Check for game end conditions
     _checkGameEndConditions();
   }
@@ -81,7 +81,7 @@ class GameManager extends ChangeNotifier {
       _gameState.endGameWithDefeat();
       return;
     }
-    
+
     // Victory conditions will be implemented in future tasks
   }
 
@@ -98,7 +98,7 @@ class GameManager extends ChangeNotifier {
     if (!isValidPosition(position)) {
       return TileType.wall;
     }
-    
+
     return TileType.floor;
   }
 
@@ -106,7 +106,7 @@ class GameManager extends ChangeNotifier {
   bool isPositionBlocked(Position position) {
     final tileType = getTileTypeAt(position);
     if (tileType.blocksMovement) return true;
-    
+
     // Check if any character is at this position
     final charactersAtPosition = _gameState.getCharactersAt(position);
     return charactersAtPosition.isNotEmpty;

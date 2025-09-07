@@ -6,64 +6,64 @@ import 'position.dart';
 enum GamePhase {
   /// Game is initializing
   initializing,
-  
+
   /// Player is exploring the world
   exploration,
-  
+
   /// Combat is taking place
   combat,
-  
+
   /// Dialogue is being displayed
   dialogue,
-  
+
   /// Boss battle is active
   bossBattle,
-  
+
   /// Game has been completed
   victory,
-  
+
   /// Game has ended in defeat
   gameOver,
-  
+
   /// Game is paused
-  paused
+  paused,
 }
 
 /// Manages the overall state of the game
 class GameState extends ChangeNotifier {
   /// Current phase of the game
   GamePhase _currentPhase = GamePhase.initializing;
-  
+
   /// All characters currently in the game
   final Map<String, Character> _characters = {};
-  
+
   /// The player character (Kiro the ghost)
   Character? _playerCharacter;
-  
+
   /// Whether the game is currently running
   bool _isRunning = false;
-  
+
   /// Current turn number (for turn-based mechanics)
   int _turnNumber = 0;
-  
+
   /// Game start time
   DateTime? _gameStartTime;
 
   /// Gets the current game phase
   GamePhase get currentPhase => _currentPhase;
-  
+
   /// Gets all characters in the game
   Map<String, Character> get characters => Map.unmodifiable(_characters);
-  
+
   /// Gets the player character
   Character? get playerCharacter => _playerCharacter;
-  
+
   /// Gets whether the game is running
   bool get isRunning => _isRunning;
-  
+
   /// Gets the current turn number
   int get turnNumber => _turnNumber;
-  
+
   /// Gets the game duration (null if not started)
   Duration? get gameDuration {
     if (_gameStartTime == null) return null;
@@ -160,9 +160,7 @@ class GameState extends ChangeNotifier {
 
   /// Gets all active characters (for performance optimization)
   List<Character> getActiveCharacters() {
-    return _characters.values
-        .where((character) => character.isActive)
-        .toList();
+    return _characters.values.where((character) => character.isActive).toList();
   }
 
   /// Advances to the next turn
@@ -173,15 +171,14 @@ class GameState extends ChangeNotifier {
 
   /// Returns true if the game can accept input
   bool get canAcceptInput {
-    return _isRunning && 
-           _currentPhase != GamePhase.paused && 
-           _currentPhase != GamePhase.initializing;
+    return _isRunning &&
+        _currentPhase != GamePhase.paused &&
+        _currentPhase != GamePhase.initializing;
   }
 
   /// Returns true if the game is in a state where characters can move
   bool get canCharactersMove {
-    return canAcceptInput && 
-           _currentPhase == GamePhase.exploration;
+    return canAcceptInput && _currentPhase == GamePhase.exploration;
   }
 
   /// Returns true if combat is active
@@ -194,7 +191,6 @@ class GameState extends ChangeNotifier {
   bool get isBossBattleActive => _currentPhase == GamePhase.bossBattle;
 
   /// Returns true if the game has ended
-  bool get isGameEnded => 
-      _currentPhase == GamePhase.victory || 
-      _currentPhase == GamePhase.gameOver;
+  bool get isGameEnded =>
+      _currentPhase == GamePhase.victory || _currentPhase == GamePhase.gameOver;
 }

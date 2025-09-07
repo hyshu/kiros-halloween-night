@@ -1,14 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math.dart';
-import '../../lib/core/candy_item.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/candy_item.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   group('CandyItem', () {
     test('should create candy bar with correct properties', () {
       final position = Position(5, 10);
-      final candy = CandyItem.create(CandyType.candyBar, 'candy_1', position: position);
-      
+      final candy = CandyItem.create(
+        CandyType.candyBar,
+        'candy_1',
+        position: position,
+      );
+
       expect(candy.id, equals('candy_1'));
       expect(candy.name, equals('Candy Bar'));
       expect(candy.modelPath, equals('assets/foods/candy-bar.obj'));
@@ -21,7 +25,7 @@ void main() {
 
     test('should create chocolate with max health increase effect', () {
       final candy = CandyItem.create(CandyType.chocolate, 'choc_1');
-      
+
       expect(candy.name, equals('Chocolate'));
       expect(candy.effect, equals(CandyEffect.maxHealthIncrease));
       expect(candy.value, equals(10));
@@ -30,7 +34,7 @@ void main() {
 
     test('should create cookie with speed increase and temporary effect', () {
       final candy = CandyItem.create(CandyType.cookie, 'cookie_1');
-      
+
       expect(candy.name, equals('Cookie'));
       expect(candy.effect, equals(CandyEffect.speedIncrease));
       expect(candy.value, equals(2));
@@ -41,7 +45,7 @@ void main() {
 
     test('should create ice cream with special ability', () {
       final candy = CandyItem.create(CandyType.iceCream, 'ice_1');
-      
+
       expect(candy.name, equals('Ice Cream'));
       expect(candy.effect, equals(CandyEffect.specialAbility));
       expect(candy.abilityModifications['freezeEnemies'], isTrue);
@@ -50,11 +54,15 @@ void main() {
 
     test('should return correct world position', () {
       final position = Position(3, 7);
-      final candy = CandyItem.create(CandyType.donut, 'donut_1', position: position);
-      
+      final candy = CandyItem.create(
+        CandyType.donut,
+        'donut_1',
+        position: position,
+      );
+
       final worldPos = candy.worldPosition;
       final expectedPos = position.toWorldCoordinates();
-      
+
       expect(worldPos.x, equals(expectedPos.$1));
       expect(worldPos.y, equals(expectedPos.$2));
       expect(worldPos.z, equals(expectedPos.$3));
@@ -62,14 +70,14 @@ void main() {
 
     test('should return identity matrix when no position set', () {
       final candy = CandyItem.create(CandyType.lollipop, 'lolly_1');
-      
+
       final worldPos = candy.worldPosition;
       expect(worldPos, equals(Vector3.zero()));
     });
 
     test('should mark candy as collected', () {
       final candy = CandyItem.create(CandyType.muffin, 'muffin_1');
-      
+
       expect(candy.isCollected, isFalse);
       candy.collect();
       expect(candy.isCollected, isTrue);
@@ -78,16 +86,20 @@ void main() {
     test('should create copy with new id and position', () {
       final originalPosition = Position(1, 2);
       final newPosition = Position(5, 6);
-      final original = CandyItem.create(CandyType.cupcake, 'cup_1', position: originalPosition);
-      
+      final original = CandyItem.create(
+        CandyType.cupcake,
+        'cup_1',
+        position: originalPosition,
+      );
+
       final copy = original.copyWith(id: 'cup_2', position: newPosition);
-      
+
       expect(copy.id, equals('cup_2'));
       expect(copy.position, equals(newPosition));
       expect(copy.name, equals(original.name));
       expect(copy.effect, equals(original.effect));
       expect(copy.value, equals(original.value));
-      
+
       // Original should be unchanged
       expect(original.id, equals('cup_1'));
       expect(original.position, equals(originalPosition));
@@ -96,7 +108,7 @@ void main() {
     test('should handle all candy types', () {
       for (final type in CandyType.values) {
         final candy = CandyItem.create(type, 'test_${type.name}');
-        
+
         expect(candy.id, equals('test_${type.name}'));
         expect(candy.name, isNotEmpty);
         expect(candy.modelPath, startsWith('assets/foods/'));
@@ -119,7 +131,7 @@ void main() {
         CandyType.gingerbread: 'assets/foods/ginger-bread.obj',
         CandyType.muffin: 'assets/foods/muffin.obj',
       };
-      
+
       for (final entry in expectedPaths.entries) {
         final candy = CandyItem.create(entry.key, 'test');
         expect(candy.modelPath, equals(entry.value));
@@ -133,18 +145,24 @@ void main() {
         CandyType.popsicle,
         CandyType.muffin,
       ];
-      
+
       for (final type in healthBoostTypes) {
         final candy = CandyItem.create(type, 'test');
         expect(candy.effect, equals(CandyEffect.healthBoost));
       }
-      
-      expect(CandyItem.create(CandyType.chocolate, 'test').effect, 
-             equals(CandyEffect.maxHealthIncrease));
-      expect(CandyItem.create(CandyType.cookie, 'test').effect, 
-             equals(CandyEffect.speedIncrease));
-      expect(CandyItem.create(CandyType.cupcake, 'test').effect, 
-             equals(CandyEffect.allyStrength));
+
+      expect(
+        CandyItem.create(CandyType.chocolate, 'test').effect,
+        equals(CandyEffect.maxHealthIncrease),
+      );
+      expect(
+        CandyItem.create(CandyType.cookie, 'test').effect,
+        equals(CandyEffect.speedIncrease),
+      );
+      expect(
+        CandyItem.create(CandyType.cupcake, 'test').effect,
+        equals(CandyEffect.allyStrength),
+      );
     });
   });
 }

@@ -1,16 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'candy_item.dart';
 import 'ghost_character.dart';
-import 'inventory.dart';
 
 /// Manages the application and tracking of candy-based abilities and effects
 class AbilityManager extends ChangeNotifier {
   /// The ghost character this manager is associated with
   final GhostCharacter character;
-  
+
   /// Permanent stat modifications
   final Map<String, int> _permanentStats = {};
-  
+
   /// Cached effective stats (recalculated when effects change)
   Map<String, dynamic>? _cachedStats;
 
@@ -28,28 +27,28 @@ class AbilityManager extends ChangeNotifier {
       case CandyEffect.healthBoost:
         _applyHealthBoost(candy.value);
         break;
-        
+
       case CandyEffect.maxHealthIncrease:
         _applyMaxHealthIncrease(candy.value);
         break;
-        
+
       case CandyEffect.speedIncrease:
         _applyTemporaryEffect(candy);
         break;
-        
+
       case CandyEffect.allyStrength:
         _applyTemporaryEffect(candy);
         break;
-        
+
       case CandyEffect.specialAbility:
         _applySpecialAbility(candy);
         break;
-        
+
       case CandyEffect.statModification:
         _applyStatModification(candy);
         break;
     }
-    
+
     _invalidateCache();
     notifyListeners();
   }
@@ -61,9 +60,8 @@ class AbilityManager extends ChangeNotifier {
 
   /// Applies a permanent max health increase
   void _applyMaxHealthIncrease(int amount) {
-    _permanentStats['maxHealth'] = 
-        (_permanentStats['maxHealth'] ?? 0) + amount;
-    
+    _permanentStats['maxHealth'] = (_permanentStats['maxHealth'] ?? 0) + amount;
+
     // Also heal the character by the same amount
     character.heal(amount);
   }
@@ -79,17 +77,17 @@ class AbilityManager extends ChangeNotifier {
   void _applySpecialAbility(CandyItem candy) {
     // Special abilities are handled through the inventory's temporary effect system
     // but we can add any immediate special ability logic here
-    
+
     final abilityType = candy.abilityModifications.keys.first;
     switch (abilityType) {
       case 'freezeEnemies':
         // Freeze effect is handled by the inventory system
         break;
-        
+
       case 'wallVision':
         // Wall vision effect is handled by the inventory system
         break;
-        
+
       default:
         // Unknown special ability
         break;
@@ -107,17 +105,19 @@ class AbilityManager extends ChangeNotifier {
     final baseMaxHealth = character.maxHealth;
     final permanentBonus = _permanentStats['maxHealth'] ?? 0;
     final temporaryBonus = character.inventory
-        .getTotalAbilityModification('maxHealthBonus').round();
-    
+        .getTotalAbilityModification('maxHealthBonus')
+        .round();
+
     return baseMaxHealth + permanentBonus + temporaryBonus;
   }
 
   /// Gets the effective movement speed including bonuses
   double getEffectiveSpeed() {
     const baseSpeed = 1.0;
-    final speedMultiplier = character.inventory
-        .getTotalAbilityModification('speedMultiplier');
-    
+    final speedMultiplier = character.inventory.getTotalAbilityModification(
+      'speedMultiplier',
+    );
+
     return baseSpeed * (1.0 + speedMultiplier);
   }
 
@@ -125,8 +125,9 @@ class AbilityManager extends ChangeNotifier {
   int getEffectiveAllyDamageBonus() {
     final permanentBonus = _permanentStats['allyDamage'] ?? 0;
     final temporaryBonus = character.inventory
-        .getTotalAbilityModification('allyDamageBonus').round();
-    
+        .getTotalAbilityModification('allyDamageBonus')
+        .round();
+
     return permanentBonus + temporaryBonus;
   }
 
@@ -134,8 +135,9 @@ class AbilityManager extends ChangeNotifier {
   int getEffectiveLuck() {
     final permanentLuck = _permanentStats['luck'] ?? 0;
     final temporaryLuck = character.inventory
-        .getTotalAbilityModification('luck').round();
-    
+        .getTotalAbilityModification('luck')
+        .round();
+
     return permanentLuck + temporaryLuck;
   }
 
@@ -147,16 +149,16 @@ class AbilityManager extends ChangeNotifier {
   /// Gets all currently active abilities
   List<String> getActiveAbilities() {
     final abilities = <String>[];
-    
+
     // Check for special abilities
     if (hasActiveAbility('wallVision')) abilities.add('Wall Vision');
     if (hasActiveAbility('freezeEnemies')) abilities.add('Freeze Enemies');
-    
+
     // Check for stat bonuses
     if (getEffectiveSpeed() > 1.0) abilities.add('Speed Boost');
     if (getEffectiveAllyDamageBonus() > 0) abilities.add('Ally Strength');
     if (getEffectiveLuck() > 0) abilities.add('Luck Boost');
-    
+
     return abilities;
   }
 
@@ -175,7 +177,7 @@ class AbilityManager extends ChangeNotifier {
   void updateEffects() {
     character.updateCandyEffects();
     _invalidateCache();
-    
+
     // Notify listeners if any effects changed
     notifyListeners();
   }
@@ -222,7 +224,7 @@ class AbilityManager extends ChangeNotifier {
       'wallVision': hasActiveAbility('wallVision'),
       'freezeEnemies': hasActiveAbility('freezeEnemies'),
     };
-    
+
     return Map.from(_cachedStats!);
   }
 

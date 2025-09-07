@@ -1,6 +1,8 @@
 import 'package:test/test.dart';
+import 'package:kiro_halloween_game/core/character.dart';
 import 'package:kiro_halloween_game/core/combat_manager.dart';
 import 'package:kiro_halloween_game/core/health_system.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   group('Simple Combat Tests', () {
@@ -62,22 +64,24 @@ void main() {
 }
 
 /// Simple mock character for testing
-class MockCharacter {
-  final String id;
-  int health;
-  final int maxHealth;
+class MockCharacter extends Character {
+  MockCharacter(String id, int health, int maxHealth)
+    : super(
+        id: id,
+        position: Position(0, 0),
+        modelPath: 'test_model',
+        health: health,
+        maxHealth: maxHealth,
+      );
 
-  MockCharacter(this.id, this.health, this.maxHealth);
-
+  @override
   bool takeDamage(int damage) {
     health = (health - damage).clamp(0, maxHealth);
     return health > 0;
   }
 
+  @override
   void heal(int amount) {
     health = (health + amount).clamp(0, maxHealth);
   }
-
-  bool get isAlive => health > 0;
-  double get healthPercentage => health / maxHealth;
 }

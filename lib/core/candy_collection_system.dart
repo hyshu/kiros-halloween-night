@@ -9,16 +9,16 @@ import 'tile_type.dart';
 class CandyCollectionEvent {
   /// The candy item that was collected
   final CandyItem candy;
-  
+
   /// The position where the candy was collected
   final Position position;
-  
+
   /// The character who collected the candy
   final GhostCharacter character;
-  
+
   /// Whether the collection was successful
   final bool successful;
-  
+
   /// Reason for failure (if not successful)
   final String? failureReason;
 
@@ -44,13 +44,13 @@ class CandyCollectionEvent {
 class CandyCollectionSystem extends ChangeNotifier {
   /// Map of candy items by their position
   final Map<Position, CandyItem> _candyByPosition = {};
-  
+
   /// List of all candy items in the world
   final List<CandyItem> _allCandy = [];
-  
+
   /// Recent collection events for feedback
   final List<CandyCollectionEvent> _recentEvents = [];
-  
+
   /// Maximum number of recent events to keep
   final int maxRecentEvents;
 
@@ -58,10 +58,11 @@ class CandyCollectionSystem extends ChangeNotifier {
 
   /// Gets all candy items in the world
   List<CandyItem> get allCandy => List.unmodifiable(_allCandy);
-  
+
   /// Gets recent collection events
-  List<CandyCollectionEvent> get recentEvents => List.unmodifiable(_recentEvents);
-  
+  List<CandyCollectionEvent> get recentEvents =>
+      List.unmodifiable(_recentEvents);
+
   /// Gets the number of candy items remaining in the world
   int get remainingCandyCount => _allCandy.where((c) => !c.isCollected).length;
 
@@ -107,28 +108,31 @@ class CandyCollectionSystem extends ChangeNotifier {
 
   /// Attempts to collect candy at the character's current position
   /// Returns the collection event (successful or failed)
-  CandyCollectionEvent? attemptCollection(GhostCharacter character, TileMap tileMap) {
+  CandyCollectionEvent? attemptCollection(
+    GhostCharacter character,
+    TileMap tileMap,
+  ) {
     final position = character.position;
     final candy = getCandyAt(position);
-    
+
     if (candy == null) {
       return null; // No candy at this position
     }
-    
+
     // Attempt to add candy to character's inventory
     final success = character.collectCandy(candy);
-    
+
     CandyCollectionEvent event;
     if (success) {
       // Mark candy as collected
       candy.collect();
-      
+
       // Update tile map to remove candy tile
       tileMap.setTileAt(position, TileType.floor);
-      
+
       // Remove from position tracking
       _candyByPosition.remove(position);
-      
+
       event = CandyCollectionEvent(
         candy: candy,
         position: position,
@@ -144,24 +148,27 @@ class CandyCollectionSystem extends ChangeNotifier {
         failureReason: 'Inventory full',
       );
     }
-    
+
     // Add to recent events
     _addRecentEvent(event);
-    
+
     // Notify listeners about the collection attempt
     notifyListeners();
-    
+
     return event;
   }
 
   /// Processes character movement and handles automatic candy collection
   /// Should be called whenever a character moves to a new position
-  CandyCollectionEvent? processMovement(GhostCharacter character, TileMap tileMap) {
+  CandyCollectionEvent? processMovement(
+    GhostCharacter character,
+    TileMap tileMap,
+  ) {
     // Check if the character moved to a candy tile
     if (tileMap.getTileAt(character.position) == TileType.candy) {
       return attemptCollection(character, tileMap);
     }
-    
+
     return null;
   }
 
@@ -169,7 +176,7 @@ class CandyCollectionSystem extends ChangeNotifier {
   List<CandyItem> getCandyByType(CandyType type) {
     return _allCandy.where((candy) {
       if (candy.isCollected) return false;
-      
+
       // Match by model path since we don't store type directly
       final expectedPath = CandyItem.create(type, 'temp').modelPath;
       return candy.modelPath == expectedPath;
@@ -187,7 +194,7 @@ class CandyCollectionSystem extends ChangeNotifier {
   List<CandyItem> getCandyNearPosition(Position center, int maxDistance) {
     return _allCandy.where((candy) {
       if (candy.isCollected || candy.position == null) return false;
-      
+
       final distance = _calculateDistance(center, candy.position!);
       return distance <= maxDistance;
     }).toList();
@@ -201,7 +208,7 @@ class CandyCollectionSystem extends ChangeNotifier {
   /// Adds an event to the recent events list
   void _addRecentEvent(CandyCollectionEvent event) {
     _recentEvents.add(event);
-    
+
     // Keep only the most recent events
     while (_recentEvents.length > maxRecentEvents) {
       _recentEvents.removeAt(0);
@@ -213,15 +220,16 @@ class CandyCollectionSystem extends ChangeNotifier {
     final totalCandy = _allCandy.length;
     final collectedCandy = _allCandy.where((c) => c.isCollected).length;
     final remainingCandy = totalCandy - collectedCandy;
-    
+
     final collectedByType = <String, int>{};
     final collectedByEffect = <String, int>{};
-    
+
     for (final candy in _allCandy.where((c) => c.isCollected)) {
       collectedByType[candy.name] = (collectedByType[candy.name] ?? 0) + 1;
-      collectedByEffect[candy.effect.name] = (collectedByEffect[candy.effect.name] ?? 0) + 1;
+      collectedByEffect[candy.effect.name] =
+          (collectedByEffect[candy.effect.name] ?? 0) + 1;
     }
-    
+
     return {
       'totalCandy': totalCandy,
       'collectedCandy': collectedCandy,
@@ -273,7 +281,7 @@ class CandyCollectionSystem extends ChangeNotifier {
   bool hasRecentCollection({int withinLastEvents = 5}) {
     final recentCount = withinLastEvents.clamp(0, _recentEvents.length);
     final recentEvents = _recentEvents.skip(_recentEvents.length - recentCount);
-    
+
     return recentEvents.any((event) => event.successful);
   }
 

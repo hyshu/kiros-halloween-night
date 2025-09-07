@@ -10,25 +10,25 @@ import 'spatial_index.dart';
 class ActivationManager {
   /// The proximity detector for distance calculations
   final ProximityDetector _proximityDetector;
-  
+
   /// The spatial index for efficient proximity queries
   final SpatialIndex _spatialIndex;
-  
+
   /// Maximum number of enemies that can be active simultaneously
   final int maxActiveEnemies;
-  
+
   /// Minimum time (in game ticks) between activation updates
   final int updateCooldown;
-  
+
   /// Current cooldown counter
   int _currentCooldown = 0;
-  
+
   /// List of all enemies in the game
   final List<EnemyCharacter> _allEnemies = [];
-  
+
   /// Set of currently active enemy IDs for quick lookup
   final Set<String> _activeEnemyIds = {};
-  
+
   /// Performance metrics for monitoring
   ActivationMetrics _metrics = const ActivationMetrics();
 
@@ -45,7 +45,7 @@ class ActivationManager {
     if (!_allEnemies.any((e) => e.id == enemy.id)) {
       _allEnemies.add(enemy);
       _spatialIndex.addCharacter(enemy);
-      
+
       // Start enemies as inactive
       enemy.deactivate();
     }
@@ -68,19 +68,19 @@ class ActivationManager {
     _currentCooldown = updateCooldown;
 
     final startTime = DateTime.now();
-    
+
     // Update spatial index positions for moved enemies
     _updateSpatialPositions();
-    
+
     // Get enemies that should be activated
     final enemiesToActivate = _getEnemiesForActivation(player);
-    
+
     // Get enemies that should be deactivated
     final enemiesToDeactivate = _getEnemiesForDeactivation(player);
-    
+
     // Apply activation changes
     _applyActivationChanges(enemiesToActivate, enemiesToDeactivate);
-    
+
     // Update metrics
     final processingTime = DateTime.now().difference(startTime);
     _updateMetrics(processingTime);
@@ -97,55 +97,56 @@ class ActivationManager {
   List<EnemyCharacter> _getEnemiesForActivation(GhostCharacter player) {
     // Use spatial index to get nearby enemies efficiently
     final nearbyEnemies = _spatialIndex.getEnemiesInRadius(
-      player.position, 
+      player.position,
       ProximityDetector.maxProximityDistance,
     );
-    
+
     final candidatesForActivation = <EnemyCharacter>[];
-    
+
     for (final enemy in nearbyEnemies) {
       // Skip already active enemies
       if (enemy.isProximityActive) continue;
-      
+
       // Check if enemy should be activated
       if (_proximityDetector.shouldActivateEnemy(player, enemy)) {
         candidatesForActivation.add(enemy);
       }
     }
-    
+
     // Sort by priority (closest and most threatening first)
-    final prioritizedCandidates = _proximityDetector.getEnemiesByProximityPriority(
-      player, 
-      candidatesForActivation,
-    );
-    
+    final prioritizedCandidates = _proximityDetector
+        .getEnemiesByProximityPriority(player, candidatesForActivation);
+
     // Limit the number of new activations to maintain performance
     final availableSlots = maxActiveEnemies - _activeEnemyIds.length;
-    final maxNewActivations = min(availableSlots, 10); // Max 10 new activations per update
-    
+    final maxNewActivations = min(
+      availableSlots,
+      10,
+    ); // Max 10 new activations per update
+
     return prioritizedCandidates.take(maxNewActivations).toList();
   }
 
   /// Gets enemies that should be deactivated based on distance
   List<EnemyCharacter> _getEnemiesForDeactivation(GhostCharacter player) {
     final enemiesToDeactivate = <EnemyCharacter>[];
-    
+
     for (final enemy in _allEnemies) {
       // Skip already inactive enemies
       if (!enemy.isProximityActive) continue;
-      
+
       // Check if enemy should be deactivated
       if (_proximityDetector.shouldDeactivateEnemy(player, enemy)) {
         enemiesToDeactivate.add(enemy);
       }
     }
-    
+
     return enemiesToDeactivate;
   }
 
   /// Applies activation and deactivation changes
   void _applyActivationChanges(
-    List<EnemyCharacter> toActivate, 
+    List<EnemyCharacter> toActivate,
     List<EnemyCharacter> toDeactivate,
   ) {
     // Deactivate enemies first to free up slots
@@ -153,7 +154,7 @@ class ActivationManager {
       enemy.deactivate();
       _activeEnemyIds.remove(enemy.id);
     }
-    
+
     // Activate new enemies
     for (final enemy in toActivate) {
       enemy.activate();
@@ -168,8 +169,8 @@ class ActivationManager {
       activeEnemies: _activeEnemyIds.length,
       inactiveEnemies: _allEnemies.length - _activeEnemyIds.length,
       lastUpdateDuration: processingTime,
-      activationPercentage: _allEnemies.isNotEmpty 
-          ? (_activeEnemyIds.length / _allEnemies.length) * 100.0 
+      activationPercentage: _allEnemies.isNotEmpty
+          ? (_activeEnemyIds.length / _allEnemies.length) * 100.0
           : 0.0,
     );
   }
@@ -180,7 +181,7 @@ class ActivationManager {
       (e) => e.id == enemyId,
       orElse: () => throw ArgumentError('Enemy not found: $enemyId'),
     );
-    
+
     if (!enemy.isProximityActive && _activeEnemyIds.length < maxActiveEnemies) {
       enemy.activate();
       _activeEnemyIds.add(enemy.id);
@@ -193,7 +194,7 @@ class ActivationManager {
       (e) => e.id == enemyId,
       orElse: () => throw ArgumentError('Enemy not found: $enemyId'),
     );
-    
+
     if (enemy.isProximityActive) {
       enemy.deactivate();
       _activeEnemyIds.remove(enemy.id);
@@ -255,7 +256,7 @@ class ActivationManager {
         .where((e) => e.isSatisfied)
         .map((e) => e.id)
         .toList();
-    
+
     for (final enemyId in satisfiedEnemies) {
       removeEnemy(enemyId);
     }
@@ -266,12 +267,12 @@ class ActivationManager {
     final spatialDebug = _spatialIndex.getDebugInfo(player.position);
     final proximityInfo = getProximityInfo(player);
     final closestEnemy = getClosestActiveEnemy(player);
-    
+
     return ActivationDebugInfo(
       playerPosition: player.position,
       spatialInfo: spatialDebug,
       proximityInfo: proximityInfo,
-      closestActiveEnemyDistance: closestEnemy != null 
+      closestActiveEnemyDistance: closestEnemy != null
           ? _proximityDetector.calculateDistance(player, closestEnemy)
           : null,
       activationMetrics: _metrics,
@@ -283,16 +284,16 @@ class ActivationManager {
 class ActivationMetrics {
   /// Total number of enemies in the system
   final int totalEnemies;
-  
+
   /// Number of currently active enemies
   final int activeEnemies;
-  
+
   /// Number of currently inactive enemies
   final int inactiveEnemies;
-  
+
   /// Time taken for the last activation update
   final Duration? lastUpdateDuration;
-  
+
   /// Percentage of enemies that are currently active
   final double activationPercentage;
 
@@ -307,14 +308,16 @@ class ActivationMetrics {
   /// Gets the average update time in milliseconds
   double? get averageUpdateTimeMs {
     final duration = lastUpdateDuration;
-    return duration != null ? duration.inMicroseconds.toDouble() / 1000.0 : null;
+    return duration != null
+        ? duration.inMicroseconds.toDouble() / 1000.0
+        : null;
   }
 
   @override
   String toString() {
     return 'ActivationMetrics(total: $totalEnemies, active: $activeEnemies, '
-           'inactive: $inactiveEnemies, activation: ${activationPercentage.toStringAsFixed(1)}%, '
-           'updateTime: ${averageUpdateTimeMs?.toStringAsFixed(2)}ms)';
+        'inactive: $inactiveEnemies, activation: ${activationPercentage.toStringAsFixed(1)}%, '
+        'updateTime: ${averageUpdateTimeMs?.toStringAsFixed(2)}ms)';
   }
 }
 
@@ -337,7 +340,7 @@ class ActivationDebugInfo {
   @override
   String toString() {
     return 'ActivationDebugInfo(player: $playerPosition, '
-           'closest: ${closestActiveEnemyDistance?.toStringAsFixed(1)}, '
-           'metrics: $activationMetrics)';
+        'closest: ${closestActiveEnemyDistance?.toStringAsFixed(1)}, '
+        'metrics: $activationMetrics)';
   }
 }

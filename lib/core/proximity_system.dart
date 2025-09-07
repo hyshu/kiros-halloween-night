@@ -10,16 +10,13 @@ import 'tile_map.dart';
 class ProximitySystem {
   /// The proximity detector for distance calculations
   final ProximityDetector _proximityDetector;
-  
-  /// The spatial index for efficient queries
-  final SpatialIndex _spatialIndex;
-  
+
   /// The activation manager for enemy state management
   final ActivationManager _activationManager;
-  
+
   /// Whether the system is currently enabled
   bool _isEnabled = true;
-  
+
   /// Performance monitoring
   ProximitySystemStats _stats = const ProximitySystemStats();
 
@@ -30,11 +27,6 @@ class ProximitySystem {
     int spatialCellSize = 16,
     int activationUpdateCooldown = 2,
   }) : _proximityDetector = ProximityDetector(),
-       _spatialIndex = SpatialIndex(
-         worldWidth: worldWidth,
-         worldHeight: worldHeight,
-         cellSize: spatialCellSize,
-       ),
        _activationManager = ActivationManager(
          proximityDetector: ProximityDetector(),
          spatialIndex: SpatialIndex(
@@ -47,7 +39,8 @@ class ProximitySystem {
        );
 
   /// Initializes the proximity system with the given world parameters
-  factory ProximitySystem.forWorld(TileMap tileMap, {
+  factory ProximitySystem.forWorld(
+    TileMap tileMap, {
     int maxActiveEnemies = 50,
     int spatialCellSize = 16,
     int activationUpdateCooldown = 2,
@@ -78,10 +71,10 @@ class ProximitySystem {
     if (!_isEnabled) return;
 
     final startTime = DateTime.now();
-    
+
     // Update activation states based on proximity
     _activationManager.updateActivation(player);
-    
+
     // Update performance stats
     final updateDuration = DateTime.now().difference(startTime);
     _updateStats(updateDuration);
@@ -90,7 +83,7 @@ class ProximitySystem {
   /// Gets all enemies within activation range of the player
   List<EnemyCharacter> getEnemiesInActivationRange(GhostCharacter player) {
     return _proximityDetector.getEnemiesInActivationRange(
-      player, 
+      player,
       _activationManager.getActiveEnemies(),
     );
   }
@@ -157,7 +150,7 @@ class ProximitySystem {
   /// Enables or disables the proximity system
   void setEnabled(bool enabled) {
     _isEnabled = enabled;
-    
+
     if (!enabled) {
       // Deactivate all enemies when system is disabled
       final activeEnemies = _activationManager.getActiveEnemies();
@@ -199,7 +192,7 @@ class ProximitySystem {
   /// Gets debug information for the current state
   ProximitySystemDebugInfo getDebugInfo(GhostCharacter player) {
     final activationDebug = _activationManager.getDebugInfo(player);
-    
+
     return ProximitySystemDebugInfo(
       isEnabled: _isEnabled,
       activationDebug: activationDebug,
@@ -211,7 +204,7 @@ class ProximitySystem {
   void _updateStats([Duration? lastUpdateDuration]) {
     final activationMetrics = _activationManager.metrics;
     final spatialStats = _activationManager.getSpatialStats();
-    
+
     _stats = ProximitySystemStats(
       isEnabled: _isEnabled,
       totalEnemies: activationMetrics.totalEnemies,
@@ -229,7 +222,7 @@ class ProximitySystem {
     if (!_isEnabled) return;
 
     final activeEnemies = _activationManager.getActiveEnemies();
-    
+
     for (final enemy in activeEnemies) {
       // Only process AI for proximity-active enemies
       if (enemy.isProximityActive) {
@@ -241,21 +234,31 @@ class ProximitySystem {
   /// Gets enemies sorted by proximity priority for processing
   List<EnemyCharacter> getEnemiesByProximityPriority(GhostCharacter player) {
     final activeEnemies = _activationManager.getActiveEnemies();
-    return _proximityDetector.getEnemiesByProximityPriority(player, activeEnemies);
+    return _proximityDetector.getEnemiesByProximityPriority(
+      player,
+      activeEnemies,
+    );
   }
 
   /// Calculates the distance between the player and an enemy
-  double calculateDistanceToPlayer(GhostCharacter player, EnemyCharacter enemy) {
+  double calculateDistanceToPlayer(
+    GhostCharacter player,
+    EnemyCharacter enemy,
+  ) {
     return _proximityDetector.calculateDistance(player, enemy);
   }
 
   /// Checks if two characters are within proximity range
   bool areCharactersInProximity(
-    Character character1, 
-    Character character2, 
+    Character character1,
+    Character character2,
     int radius,
   ) {
-    return _proximityDetector.areCharactersInProximity(character1, character2, radius);
+    return _proximityDetector.areCharactersInProximity(
+      character1,
+      character2,
+      radius,
+    );
   }
 }
 
@@ -263,25 +266,25 @@ class ProximitySystem {
 class ProximitySystemStats {
   /// Whether the system is currently enabled
   final bool isEnabled;
-  
+
   /// Total number of enemies in the system
   final int totalEnemies;
-  
+
   /// Number of currently active enemies
   final int activeEnemies;
-  
+
   /// Number of currently inactive enemies
   final int inactiveEnemies;
-  
+
   /// Percentage of enemies that are currently active
   final double activationPercentage;
-  
+
   /// Number of spatial cells that contain characters
   final int spatialCellsOccupied;
-  
+
   /// Percentage of spatial cells that are occupied
   final double spatialOccupancyPercentage;
-  
+
   /// Duration of the last system update
   final Duration? lastUpdateDuration;
 
@@ -299,7 +302,9 @@ class ProximitySystemStats {
   /// Gets the average update time in milliseconds
   double? get averageUpdateTimeMs {
     final duration = lastUpdateDuration;
-    return duration != null ? duration.inMicroseconds.toDouble() / 1000.0 : null;
+    return duration != null
+        ? duration.inMicroseconds.toDouble() / 1000.0
+        : null;
   }
 
   /// Gets the efficiency ratio (active enemies / total enemies)
@@ -311,9 +316,9 @@ class ProximitySystemStats {
   @override
   String toString() {
     return 'ProximitySystemStats(enabled: $isEnabled, total: $totalEnemies, '
-           'active: $activeEnemies, activation: ${activationPercentage.toStringAsFixed(1)}%, '
-           'spatial: ${spatialOccupancyPercentage.toStringAsFixed(1)}%, '
-           'updateTime: ${averageUpdateTimeMs?.toStringAsFixed(2)}ms)';
+        'active: $activeEnemies, activation: ${activationPercentage.toStringAsFixed(1)}%, '
+        'spatial: ${spatialOccupancyPercentage.toStringAsFixed(1)}%, '
+        'updateTime: ${averageUpdateTimeMs?.toStringAsFixed(2)}ms)';
   }
 }
 

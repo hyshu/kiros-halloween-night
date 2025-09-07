@@ -1,6 +1,5 @@
 import 'character.dart';
 import 'enemy_character.dart';
-import 'ghost_character.dart';
 import 'position.dart';
 import 'tile_map.dart';
 import 'tile_type.dart';
@@ -9,14 +8,11 @@ import 'tile_type.dart';
 class CollisionDetector {
   /// The tile map to check collisions against
   final TileMap tileMap;
-  
+
   /// List of all characters in the game for character-to-character collision
   final List<Character> characters;
 
-  CollisionDetector({
-    required this.tileMap,
-    required this.characters,
-  });
+  CollisionDetector({required this.tileMap, required this.characters});
 
   /// Checks if a character can move to the specified position
   bool canMoveTo(Character character, Position newPosition) {
@@ -43,10 +39,10 @@ class CollisionDetector {
     for (final character in characters) {
       // Skip the moving character itself
       if (character.id == movingCharacter.id) continue;
-      
+
       // Skip inactive characters
       if (!character.isActive) continue;
-      
+
       // Check if another character is at this position
       if (character.position == position) {
         return true;
@@ -58,16 +54,20 @@ class CollisionDetector {
   /// Gets all characters at the specified position
   List<Character> getCharactersAt(Position position) {
     return characters
-        .where((character) => character.isActive && character.position == position)
+        .where(
+          (character) => character.isActive && character.position == position,
+        )
         .toList();
   }
 
   /// Gets all characters within a certain radius of a position
   List<Character> getCharactersInRadius(Position center, int radius) {
     return characters
-        .where((character) => 
-            character.isActive && 
-            character.position.distanceTo(center) <= radius)
+        .where(
+          (character) =>
+              character.isActive &&
+              character.position.distanceTo(center) <= radius,
+        )
         .toList();
   }
 
@@ -75,24 +75,27 @@ class CollisionDetector {
   List<EnemyCharacter> getEnemiesInRadius(Position center, int radius) {
     return characters
         .whereType<EnemyCharacter>()
-        .where((enemy) => 
-            enemy.isActive && 
-            enemy.position.distanceTo(center) <= radius)
+        .where(
+          (enemy) =>
+              enemy.isActive && enemy.position.distanceTo(center) <= radius,
+        )
         .toList();
   }
 
   /// Gets all hostile enemies within a certain radius of a position
   List<EnemyCharacter> getHostileEnemiesInRadius(Position center, int radius) {
-    return getEnemiesInRadius(center, radius)
-        .where((enemy) => enemy.isHostile)
-        .toList();
+    return getEnemiesInRadius(
+      center,
+      radius,
+    ).where((enemy) => enemy.isHostile).toList();
   }
 
   /// Gets all ally enemies within a certain radius of a position
   List<EnemyCharacter> getAllyEnemiesInRadius(Position center, int radius) {
-    return getEnemiesInRadius(center, radius)
-        .where((enemy) => enemy.isAlly)
-        .toList();
+    return getEnemiesInRadius(
+      center,
+      radius,
+    ).where((enemy) => enemy.isAlly).toList();
   }
 
   /// Checks if there's a clear line of sight between two positions
@@ -100,19 +103,19 @@ class CollisionDetector {
     // Simple line of sight check using Bresenham-like algorithm
     final dx = (to.x - from.x).abs();
     final dz = (to.z - from.z).abs();
-    
+
     if (dx == 0 && dz == 0) return true; // Same position
-    
+
     final stepX = from.x < to.x ? 1 : -1;
     final stepZ = from.z < to.z ? 1 : -1;
-    
+
     var currentX = from.x;
     var currentZ = from.z;
     var error = dx - dz;
-    
+
     while (currentX != to.x || currentZ != to.z) {
       final currentPos = Position(currentX, currentZ);
-      
+
       // Skip the starting position
       if (currentPos != from) {
         // Check if this position blocks line of sight
@@ -120,20 +123,20 @@ class CollisionDetector {
           return false;
         }
       }
-      
+
       final error2 = error * 2;
-      
+
       if (error2 > -dz) {
         error -= dz;
         currentX += stepX;
       }
-      
+
       if (error2 < dx) {
         error += dx;
         currentZ += stepZ;
       }
     }
-    
+
     return true;
   }
 
@@ -165,17 +168,20 @@ class CollisionDetector {
   }
 
   /// Validates a movement and returns detailed information
-  MovementValidation validateMovement(Character character, Position newPosition) {
+  MovementValidation validateMovement(
+    Character character,
+    Position newPosition,
+  ) {
     final result = getMovementResult(character, newPosition);
     final charactersAtPosition = getCharactersAt(newPosition);
-    
+
     return MovementValidation(
       result: result,
       isValid: result == MovementResult.success,
       blockedBy: result != MovementResult.success ? result : null,
       charactersAtDestination: charactersAtPosition,
-      tileType: tileMap.isValidPosition(newPosition) 
-          ? tileMap.getTileAt(newPosition) 
+      tileType: tileMap.isValidPosition(newPosition)
+          ? tileMap.getTileAt(newPosition)
           : null,
     );
   }
@@ -185,8 +191,8 @@ class CollisionDetector {
     final adjacent = <Position>[];
     final directions = [
       Position(0, -1), // North
-      Position(1, 0),  // East
-      Position(0, 1),  // South
+      Position(1, 0), // East
+      Position(0, 1), // South
       Position(-1, 0), // West
     ];
 
@@ -195,12 +201,12 @@ class CollisionDetector {
         position.x + direction.x,
         position.z + direction.z,
       );
-      
+
       if (tileMap.isWalkable(newPosition)) {
         adjacent.add(newPosition);
       }
     }
-    
+
     return adjacent;
   }
 
@@ -253,16 +259,16 @@ enum MovementResult {
 class MovementValidation {
   /// The result of the movement attempt
   final MovementResult result;
-  
+
   /// Whether the movement is valid
   final bool isValid;
-  
+
   /// What blocked the movement (null if successful)
   final MovementResult? blockedBy;
-  
+
   /// Characters at the destination position
   final List<Character> charactersAtDestination;
-  
+
   /// The tile type at the destination (null if out of bounds)
   final TileType? tileType;
 
@@ -277,6 +283,6 @@ class MovementValidation {
   @override
   String toString() {
     return 'MovementValidation(result: ${result.displayName}, '
-           'valid: $isValid, characters: ${charactersAtDestination.length})';
+        'valid: $isValid, characters: ${charactersAtDestination.length})';
   }
 }

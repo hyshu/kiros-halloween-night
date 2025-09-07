@@ -10,34 +10,35 @@ import 'enemy_spawner.dart';
 class AllyCharacter extends Character {
   /// The original enemy character this ally was converted from
   final EnemyCharacter originalEnemy;
-  
+
   /// The player character this ally follows
   GhostCharacter? _followTarget;
-  
+
   /// Preferred distance to maintain from the follow target
   final int preferredFollowDistance;
-  
+
   /// Maximum distance before ally tries to catch up
   final int maxFollowDistance;
-  
+
   /// Current ally state
   AllyState state;
-  
+
   /// Movement cooldown to prevent too frequent movement
   int movementCooldown;
-  
+
   /// Maximum movement cooldown (in game ticks)
-  static const int maxMovementCooldown = 2; // Allies move slightly faster than enemies
-  
+  static const int maxMovementCooldown =
+      2; // Allies move slightly faster than enemies
+
   /// Combat strength bonus from candy effects
   int combatStrengthBonus;
-  
+
   /// Satisfaction level (decreases over time or when taking damage)
   int satisfaction;
-  
+
   /// Maximum satisfaction level
   final int maxSatisfaction;
-  
+
   /// Random number generator for AI decisions
   static final Random _random = Random();
 
@@ -51,15 +52,15 @@ class AllyCharacter extends Character {
     this.satisfaction = 100,
     this.maxSatisfaction = 100,
   }) : super(
-          id: '${originalEnemy.id}_ally',
-          position: originalEnemy.position,
-          modelPath: originalEnemy.modelPath,
-          health: originalEnemy.health,
-          maxHealth: originalEnemy.maxHealth,
-          isActive: true,
-          canMove: true,
-          isIdle: false,
-        );
+         id: '${originalEnemy.id}_ally',
+         position: originalEnemy.position,
+         modelPath: originalEnemy.modelPath,
+         health: originalEnemy.health,
+         maxHealth: originalEnemy.maxHealth,
+         isActive: true,
+         canMove: true,
+         isIdle: false,
+       );
 
   /// Gets the follow target (player character)
   GhostCharacter? get followTarget => _followTarget;
@@ -102,7 +103,10 @@ class AllyCharacter extends Character {
   }
 
   /// Executes following behavior
-  void _executeFollowingBehavior(TileMap tileMap, List<EnemyCharacter> hostileEnemies) {
+  void _executeFollowingBehavior(
+    TileMap tileMap,
+    List<EnemyCharacter> hostileEnemies,
+  ) {
     if (_followTarget == null) {
       setIdle();
       return;
@@ -118,7 +122,7 @@ class AllyCharacter extends Character {
 
     // Follow the player
     final distanceToPlayer = position.distanceTo(_followTarget!.position);
-    
+
     if (distanceToPlayer > maxFollowDistance) {
       // Too far away, move towards player quickly
       _moveTowardsTarget(_followTarget!.position, tileMap);
@@ -130,7 +134,8 @@ class AllyCharacter extends Character {
       _moveAwayFromTarget(_followTarget!.position, tileMap);
     } else {
       // At good distance, stay put or move randomly
-      if (_random.nextDouble() < 0.3) { // 30% chance to move randomly
+      if (_random.nextDouble() < 0.3) {
+        // 30% chance to move randomly
         _wanderRandomly(tileMap);
       } else {
         setIdle();
@@ -139,9 +144,12 @@ class AllyCharacter extends Character {
   }
 
   /// Executes combat behavior
-  void _executeCombatBehavior(TileMap tileMap, List<EnemyCharacter> hostileEnemies) {
+  void _executeCombatBehavior(
+    TileMap tileMap,
+    List<EnemyCharacter> hostileEnemies,
+  ) {
     final nearbyEnemies = _getNearbyHostileEnemies(hostileEnemies);
-    
+
     if (nearbyEnemies.isEmpty) {
       // No enemies nearby, return to following
       state = AllyState.following;
@@ -150,8 +158,11 @@ class AllyCharacter extends Character {
     }
 
     // Find the closest enemy
-    final closestEnemy = nearbyEnemies.reduce((a, b) => 
-      position.distanceTo(a.position) < position.distanceTo(b.position) ? a : b
+    final closestEnemy = nearbyEnemies.reduce(
+      (a, b) =>
+          position.distanceTo(a.position) < position.distanceTo(b.position)
+          ? a
+          : b,
     );
 
     // Move towards the closest enemy
@@ -159,20 +170,22 @@ class AllyCharacter extends Character {
   }
 
   /// Gets nearby hostile enemies within combat range
-  List<EnemyCharacter> _getNearbyHostileEnemies(List<EnemyCharacter> hostileEnemies) {
+  List<EnemyCharacter> _getNearbyHostileEnemies(
+    List<EnemyCharacter> hostileEnemies,
+  ) {
     const combatRange = 4; // Range at which ally will engage enemies
-    
+
     return hostileEnemies.where((enemy) {
-      return enemy.isHostile && 
-             enemy.isProximityActive && 
-             position.distanceTo(enemy.position) <= combatRange;
+      return enemy.isHostile &&
+          enemy.isProximityActive &&
+          position.distanceTo(enemy.position) <= combatRange;
     }).toList();
   }
 
   /// Moves towards a target position
   void _moveTowardsTarget(Position target, TileMap tileMap) {
     final direction = _getDirectionTowards(target);
-    
+
     if (direction != null) {
       _attemptMove(direction, tileMap);
     } else {
@@ -184,7 +197,7 @@ class AllyCharacter extends Character {
   /// Moves away from a target position
   void _moveAwayFromTarget(Position target, TileMap tileMap) {
     final direction = _getDirectionAwayFrom(target);
-    
+
     if (direction != null) {
       _attemptMove(direction, tileMap);
     } else {
@@ -195,8 +208,9 @@ class AllyCharacter extends Character {
   /// Makes the ally wander randomly
   void _wanderRandomly(TileMap tileMap) {
     final directions = Direction.values;
-    final shuffledDirections = List<Direction>.from(directions)..shuffle(_random);
-    
+    final shuffledDirections = List<Direction>.from(directions)
+      ..shuffle(_random);
+
     for (final direction in shuffledDirections) {
       if (_attemptMove(direction, tileMap)) {
         break; // Successfully moved
@@ -208,7 +222,7 @@ class AllyCharacter extends Character {
   Direction? _getDirectionTowards(Position target) {
     final dx = target.x - position.x;
     final dz = target.z - position.z;
-    
+
     // Prioritize the axis with the larger difference
     if (dx.abs() > dz.abs()) {
       return dx > 0 ? Direction.east : Direction.west;
@@ -219,7 +233,7 @@ class AllyCharacter extends Character {
     } else if (dz != 0) {
       return dz > 0 ? Direction.south : Direction.north;
     }
-    
+
     return null; // Already at target
   }
 
@@ -227,7 +241,7 @@ class AllyCharacter extends Character {
   Direction? _getDirectionAwayFrom(Position target) {
     final dx = target.x - position.x;
     final dz = target.z - position.z;
-    
+
     // Move in the opposite direction of the largest difference
     if (dx.abs() > dz.abs()) {
       return dx > 0 ? Direction.west : Direction.east;
@@ -238,26 +252,26 @@ class AllyCharacter extends Character {
     } else if (dz != 0) {
       return dz > 0 ? Direction.north : Direction.south;
     }
-    
+
     return null; // Already at target
   }
 
   /// Attempts to move in the specified direction
   bool _attemptMove(Direction direction, TileMap tileMap) {
     final newPosition = _getNewPosition(direction);
-    
+
     // Check if the new position is valid and walkable
     if (!tileMap.isWalkable(newPosition)) {
       return false;
     }
-    
+
     // Perform the movement
     final success = moveTo(newPosition);
     if (success) {
       setActive(); // Ally is moving, not idle
       movementCooldown = maxMovementCooldown;
     }
-    
+
     return success;
   }
 
@@ -278,7 +292,8 @@ class AllyCharacter extends Character {
   /// Updates satisfaction level over time
   void _updateSatisfaction() {
     // Satisfaction decreases slowly over time
-    if (_random.nextDouble() < 0.02) { // 2% chance per tick
+    if (_random.nextDouble() < 0.02) {
+      // 2% chance per tick
       satisfaction = (satisfaction - 1).clamp(0, maxSatisfaction);
     }
   }
@@ -287,16 +302,16 @@ class AllyCharacter extends Character {
   @override
   bool takeDamage(int damage) {
     final wasAlive = super.takeDamage(damage);
-    
+
     // Taking damage reduces satisfaction
     satisfaction = (satisfaction - damage * 2).clamp(0, maxSatisfaction);
-    
+
     // If health reaches zero, become satisfied (disappear)
     if (!wasAlive) {
       state = AllyState.satisfied;
       satisfaction = 0;
     }
-    
+
     return wasAlive;
   }
 
@@ -341,15 +356,15 @@ class AllyCharacter extends Character {
   @override
   String toString() {
     return 'AllyCharacter($id) at $position [State: ${state.name}, '
-           'Health: $health/$maxHealth, Satisfaction: $satisfaction/$maxSatisfaction]';
+        'Health: $health/$maxHealth, Satisfaction: $satisfaction/$maxSatisfaction]';
   }
 }
 
 /// Represents the different states an ally can be in
 enum AllyState {
-  following,  // Following the player
-  combat,     // Engaging hostile enemies
-  satisfied;  // Satisfied and ready to disappear
+  following, // Following the player
+  combat, // Engaging hostile enemies
+  satisfied; // Satisfied and ready to disappear
 
   String get displayName {
     switch (this) {

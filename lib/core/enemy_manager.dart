@@ -1,22 +1,16 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
+
 import 'enemy_character.dart';
 import 'enemy_spawner.dart';
 import 'position.dart';
 import 'tile_map.dart';
-import 'proximity_detector.dart';
-import 'spatial_index.dart';
 
 /// Manages all enemies in the game world
 class EnemyManager {
   /// All enemies in the game world
   final Map<String, EnemyCharacter> _enemies = {};
-
-  /// Proximity detector for enemy activation
-  final ProximityDetector _proximityDetector = ProximityDetector();
-
-  /// Spatial index for efficient proximity queries
-  SpatialIndex? _spatialIndex;
 
   /// Reference to the tile map for validation
   TileMap? _tileMap;
@@ -53,10 +47,6 @@ class EnemyManager {
   /// Initializes the enemy manager with a tile map
   void initialize(TileMap tileMap) {
     _tileMap = tileMap;
-
-    // Initialize the spatial index with world dimensions
-    final (width, height) = tileMap.dimensions;
-    _spatialIndex = SpatialIndex(worldWidth: width, worldHeight: height);
   }
 
   /// Spawns enemies across the world map
@@ -68,7 +58,7 @@ class EnemyManager {
       throw StateError('EnemyManager must be initialized with a TileMap first');
     }
 
-    print('EnemyManager: Spawning enemies across the world...');
+    debugPrint('EnemyManager: Spawning enemies across the world...');
 
     // Use EnemySpawner to generate enemies
     final spawnedEnemies = EnemySpawner.spawnEnemies(
@@ -82,7 +72,7 @@ class EnemyManager {
       await addEnemy(enemy);
     }
 
-    print('EnemyManager: Successfully spawned ${_enemies.length} enemies');
+    debugPrint('EnemyManager: Successfully spawned ${_enemies.length} enemies');
   }
 
   /// Spawns enemies in a specific region
@@ -115,7 +105,7 @@ class EnemyManager {
     // Load the enemy's 3D model
     await enemy.loadModel();
 
-    print(
+    debugPrint(
       'EnemyManager: Added ${enemy.enemyType.displayName} '
       'at ${enemy.position} (${enemy.id})',
     );
@@ -125,7 +115,7 @@ class EnemyManager {
   void removeEnemy(String enemyId) {
     final enemy = _enemies.remove(enemyId);
     if (enemy != null) {
-      print(
+      debugPrint(
         'EnemyManager: Removed ${enemy.enemyType.displayName} '
         '(${enemy.id})',
       );
@@ -136,7 +126,7 @@ class EnemyManager {
   Future<void> spawnBoss(Position bossLocation) async {
     final boss = EnemySpawner.spawnBoss(bossLocation);
     await addEnemy(boss);
-    print('EnemyManager: Spawned boss at $bossLocation');
+    debugPrint('EnemyManager: Spawned boss at $bossLocation');
   }
 
   /// Updates enemy activation based on player position
@@ -153,9 +143,11 @@ class EnemyManager {
         enemy.isActive = shouldBeActive;
 
         if (shouldBeActive) {
-          print('EnemyManager: Activated ${enemy.id} at distance $distance');
+          debugPrint(
+            'EnemyManager: Activated ${enemy.id} at distance $distance',
+          );
         } else {
-          print('EnemyManager: Deactivated ${enemy.id}');
+          debugPrint('EnemyManager: Deactivated ${enemy.id}');
         }
       }
     }
@@ -245,7 +237,7 @@ class EnemyManager {
   /// Clears all enemies from the manager
   void clearAllEnemies() {
     _enemies.clear();
-    print('EnemyManager: Cleared all enemies');
+    debugPrint('EnemyManager: Cleared all enemies');
   }
 
   /// Spawns enemies for testing without loading 3D models
@@ -257,7 +249,7 @@ class EnemyManager {
       throw StateError('EnemyManager must be initialized with a TileMap first');
     }
 
-    print('EnemyManager: Spawning enemies for testing...');
+    debugPrint('EnemyManager: Spawning enemies for testing...');
 
     // Use EnemySpawner to generate enemies
     final spawnedEnemies = EnemySpawner.spawnEnemies(
@@ -269,13 +261,13 @@ class EnemyManager {
     // Add all spawned enemies to our management system without loading models
     for (final enemy in spawnedEnemies) {
       _enemies[enemy.id] = enemy;
-      print(
+      debugPrint(
         'EnemyManager: Added ${enemy.enemyType.displayName} '
         'at ${enemy.position} (${enemy.id}) for testing',
       );
     }
 
-    print(
+    debugPrint(
       'EnemyManager: Successfully spawned ${_enemies.length} enemies for testing',
     );
     return spawnedEnemies;

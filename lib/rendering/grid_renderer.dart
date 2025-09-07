@@ -85,7 +85,9 @@ class _GridRendererState extends material.State<GridRenderer> {
         setState(() {
           if (details.scale != 1.0) {
             final minDistance = widget.sceneManager.tileMap != null ? 5.0 : 3.0;
-            final maxDistance = widget.sceneManager.tileMap != null ? 25.0 : 15.0;
+            final maxDistance = widget.sceneManager.tileMap != null
+                ? 25.0
+                : 15.0;
             _cameraDistance = (_baseScale / details.scale).clamp(
               minDistance,
               maxDistance,

@@ -10,49 +10,44 @@ import 'enemy_spawner.dart';
 class EnemyCharacter extends Character {
   /// The current state of the enemy
   EnemyState state;
-  
+
   /// Radius within which the enemy becomes active
   final int activationRadius;
-  
+
   /// Whether the enemy is currently within proximity activation range
   bool isProximityActive;
-  
+
   /// The enemy's AI behavior type
   final EnemyAIType aiType;
-  
+
   /// Last known position of the player (for AI tracking)
   Position? lastKnownPlayerPosition;
-  
+
   /// Movement cooldown to prevent too frequent movement
   int movementCooldown;
-  
+
   /// Maximum movement cooldown (in game ticks)
   static const int maxMovementCooldown = 3;
-  
+
   /// Random number generator for AI decisions
   static final Random _random = Random();
 
   EnemyCharacter({
-    required String id,
-    required Position position,
-    required String modelPath,
-    int health = 50,
-    int maxHealth = 50,
+    required super.id,
+    required super.position,
+    required super.modelPath,
+    super.health = 50,
+    super.maxHealth = 50,
     this.state = EnemyState.hostile,
     this.activationRadius = 8,
     this.isProximityActive = false,
     this.aiType = EnemyAIType.wanderer,
     this.movementCooldown = 0,
   }) : super(
-          id: id,
-          position: position,
-          modelPath: modelPath,
-          health: health,
-          maxHealth: maxHealth,
-          isActive: false, // Enemies start inactive until proximity activated
-          canMove: true,
-          isIdle: true,
-        );
+         isActive: false, // Enemies start inactive until proximity activated
+         canMove: true,
+         isIdle: true,
+       );
 
   /// Factory constructor for creating enemies with human models
   factory EnemyCharacter.human({
@@ -102,7 +97,8 @@ class EnemyCharacter extends Character {
 
   /// Gets the enemy type based on the model path
   EnemyType get enemyType {
-    if (modelPath.contains('character-male') || modelPath.contains('character-female')) {
+    if (modelPath.contains('character-male') ||
+        modelPath.contains('character-female')) {
       return EnemyType.human;
     } else {
       return EnemyType.monster;
@@ -175,7 +171,7 @@ class EnemyCharacter extends Character {
   void _executeAllyAI(GhostCharacter player, TileMap tileMap) {
     // Allies follow the player and attack hostile enemies
     final distanceToPlayer = position.distanceTo(player.position);
-    
+
     if (distanceToPlayer > 2) {
       // Follow player if too far away
       _moveTowardsPlayer(player, tileMap);
@@ -193,7 +189,7 @@ class EnemyCharacter extends Character {
   void _moveTowardsPlayer(GhostCharacter player, TileMap tileMap) {
     final targetPosition = lastKnownPlayerPosition ?? player.position;
     final direction = _getDirectionTowards(targetPosition);
-    
+
     if (direction != null) {
       _attemptMove(direction, tileMap);
     } else {
@@ -205,8 +201,9 @@ class EnemyCharacter extends Character {
   /// Makes the enemy wander randomly
   void _wanderRandomly(TileMap tileMap) {
     final directions = Direction.values;
-    final shuffledDirections = List<Direction>.from(directions)..shuffle(_random);
-    
+    final shuffledDirections = List<Direction>.from(directions)
+      ..shuffle(_random);
+
     for (final direction in shuffledDirections) {
       if (_attemptMove(direction, tileMap)) {
         break; // Successfully moved
@@ -217,7 +214,7 @@ class EnemyCharacter extends Character {
   /// Guard behavior - stay in place unless player gets too close
   void _guardBehavior(GhostCharacter player, TileMap tileMap) {
     final distanceToPlayer = position.distanceTo(player.position);
-    
+
     if (distanceToPlayer <= 2) {
       // Player is too close, move towards them
       _moveTowardsPlayer(player, tileMap);
@@ -231,7 +228,7 @@ class EnemyCharacter extends Character {
   Direction? _getDirectionTowards(Position target) {
     final dx = target.x - position.x;
     final dz = target.z - position.z;
-    
+
     // Prioritize the axis with the larger difference
     if (dx.abs() > dz.abs()) {
       return dx > 0 ? Direction.east : Direction.west;
@@ -242,26 +239,26 @@ class EnemyCharacter extends Character {
     } else if (dz != 0) {
       return dz > 0 ? Direction.south : Direction.north;
     }
-    
+
     return null; // Already at target
   }
 
   /// Attempts to move in the specified direction
   bool _attemptMove(Direction direction, TileMap tileMap) {
     final newPosition = _getNewPosition(direction);
-    
+
     // Check if the new position is valid and walkable
     if (!tileMap.isWalkable(newPosition)) {
       return false;
     }
-    
+
     // Perform the movement
     final success = moveTo(newPosition);
     if (success) {
       setActive(); // Enemy is moving, not idle
       movementCooldown = maxMovementCooldown;
     }
-    
+
     return success;
   }
 
@@ -317,7 +314,7 @@ class EnemyCharacter extends Character {
   @override
   String toString() {
     return 'EnemyCharacter($id) at $position [State: ${state.name}, '
-           'Health: $health/$maxHealth, Active: $isProximityActive]';
+        'Health: $health/$maxHealth, Active: $isProximityActive]';
   }
 }
 
@@ -341,9 +338,9 @@ enum EnemyState {
 
 /// Represents different AI behavior types
 enum EnemyAIType {
-  aggressive,  // Actively seeks and moves towards player
-  wanderer,    // Moves randomly, may notice player
-  guard;       // Stays in place unless player gets close
+  aggressive, // Actively seeks and moves towards player
+  wanderer, // Moves randomly, may notice player
+  guard; // Stays in place unless player gets close
 
   String get displayName {
     switch (this) {

@@ -9,10 +9,7 @@ void main() {
 
     setUp(() {
       tileMap = TileMap();
-      player = GhostCharacter(
-        id: 'player',
-        position: const Position(10, 10),
-      );
+      player = GhostCharacter(id: 'player', position: const Position(10, 10));
       enemy = EnemyCharacter.human(
         id: 'enemy1',
         position: const Position(15, 15),
@@ -32,9 +29,9 @@ void main() {
     test('should activate when player is within range', () {
       // Move player closer to enemy
       player.position = const Position(12, 12); // Distance of ~4
-      
+
       enemy.activate();
-      
+
       expect(enemy.isProximityActive, isTrue);
       expect(enemy.isActive, isTrue);
     });
@@ -42,9 +39,9 @@ void main() {
     test('should deactivate when player moves away', () {
       enemy.activate();
       expect(enemy.isProximityActive, isTrue);
-      
+
       enemy.deactivate();
-      
+
       expect(enemy.isProximityActive, isFalse);
       expect(enemy.isActive, isFalse);
     });
@@ -52,9 +49,9 @@ void main() {
     test('should convert to ally state', () {
       expect(enemy.isHostile, isTrue);
       expect(enemy.isAlly, isFalse);
-      
+
       enemy.convertToAlly();
-      
+
       expect(enemy.isHostile, isFalse);
       expect(enemy.isAlly, isTrue);
       expect(enemy.state, equals(EnemyState.ally));
@@ -62,7 +59,7 @@ void main() {
 
     test('should become satisfied', () {
       enemy.setSatisfied();
-      
+
       expect(enemy.isSatisfied, isTrue);
       expect(enemy.isActive, isFalse);
       expect(enemy.state, equals(EnemyState.satisfied));
@@ -70,22 +67,22 @@ void main() {
 
     test('should not update AI when inactive', () {
       final initialPosition = enemy.position;
-      
+
       // Enemy is inactive by default
       enemy.updateAI(player, tileMap);
-      
+
       expect(enemy.position, equals(initialPosition));
       expect(enemy.isIdle, isTrue);
     });
 
     test('should update AI when active and proximity activated', () {
       enemy.activate();
-      
+
       // Place player adjacent to enemy for visibility
       player.position = const Position(14, 15);
-      
+
       enemy.updateAI(player, tileMap);
-      
+
       // Enemy should have processed AI (movement cooldown should be set)
       expect(enemy.movementCooldown, greaterThanOrEqualTo(0));
     });
@@ -107,7 +104,7 @@ void main() {
       );
 
       expect(enemies, isNotEmpty);
-      
+
       // Check that enemies are not too close to player spawn
       for (final enemy in enemies) {
         final distance = enemy.position.distanceTo(const Position(10, 10));
@@ -117,7 +114,7 @@ void main() {
 
     test('should spawn boss enemy', () {
       final boss = EnemySpawner.spawnBoss(const Position(100, 200));
-      
+
       expect(boss.id, startsWith('boss_'));
       expect(boss.position, equals(const Position(100, 200)));
       expect(boss.health, equals(200));
@@ -154,16 +151,13 @@ void main() {
 
     setUp(() {
       tileMap = TileMap();
-      player = GhostCharacter(
-        id: 'player',
-        position: const Position(10, 10),
-      );
+      player = GhostCharacter(id: 'player', position: const Position(10, 10));
       enemy = EnemyCharacter.human(
         id: 'enemy1',
         position: const Position(15, 15),
         modelType: HumanModelType.femaleA,
       );
-      
+
       collisionDetector = CollisionDetector(
         tileMap: tileMap,
         characters: [player, enemy],
@@ -175,7 +169,7 @@ void main() {
         player,
         const Position(11, 10),
       );
-      
+
       expect(canMove, isTrue);
     });
 
@@ -184,7 +178,7 @@ void main() {
         player,
         const Position(0, 0), // Wall position
       );
-      
+
       expect(canMove, isFalse);
     });
 
@@ -193,16 +187,16 @@ void main() {
         player,
         enemy.position, // Enemy's position
       );
-      
+
       expect(canMove, isTrue); // Should be true since enemy is inactive
-      
+
       // Activate enemy and try again
       enemy.isActive = true;
       final canMoveWithActiveEnemy = collisionDetector.canMoveTo(
         player,
         enemy.position,
       );
-      
+
       expect(canMoveWithActiveEnemy, isFalse);
     });
 
@@ -211,7 +205,7 @@ void main() {
         const Position(12, 12),
         5,
       );
-      
+
       // Only player should be in range (enemy is inactive)
       expect(charactersInRadius.length, equals(1));
       expect(charactersInRadius.first.id, equals('player'));
@@ -222,7 +216,7 @@ void main() {
         player,
         const Position(11, 10),
       );
-      
+
       expect(validation.isValid, isTrue);
       expect(validation.result, equals(MovementResult.success));
       expect(validation.tileType, equals(TileType.floor));
@@ -233,7 +227,7 @@ void main() {
     test('should provide random human model types', () {
       final model1 = HumanModelType.random();
       final model2 = HumanModelType.random();
-      
+
       expect(model1, isA<HumanModelType>());
       expect(model2, isA<HumanModelType>());
       expect(model1.modelPath, startsWith('assets/characters/character-'));
@@ -242,7 +236,7 @@ void main() {
     test('should provide random monster model types', () {
       final model1 = MonsterModelType.random();
       final model2 = MonsterModelType.random();
-      
+
       expect(model1, isA<MonsterModelType>());
       expect(model2, isA<MonsterModelType>());
       expect(model1.modelPath, startsWith('assets/graveyard/character-'));
