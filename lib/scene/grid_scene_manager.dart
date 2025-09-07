@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -15,6 +17,7 @@ class GridObject {
   Model3D? model;
   final int gridX;
   final int gridZ;
+  final double rotationY; // Rotation around Y-axis in radians
 
   GridObject({
     required this.modelPath,
@@ -22,12 +25,19 @@ class GridObject {
     required this.gridX,
     required this.gridZ,
     this.model,
+    this.rotationY = 0.0,
   });
 
-  Vector3 get worldPosition => Vector3(gridX * Position.tileSpacing, 0.0, gridZ * Position.tileSpacing);
+  Vector3 get worldPosition =>
+      Vector3(gridX * Position.tileSpacing, 0.0, gridZ * Position.tileSpacing);
 
   Matrix4 get modelMatrix {
-    return Matrix4.identity()..translateByVector3(worldPosition);
+    final matrix = Matrix4.identity();
+    matrix.translateByVector3(worldPosition);
+    if (rotationY != 0.0) {
+      matrix.rotateY(rotationY);
+    }
+    return matrix;
   }
 }
 
@@ -78,9 +88,12 @@ class GridSceneManager extends ChangeNotifier {
 
   List<GridObject> _getObjectsInViewport() {
     final viewportObjects = <GridObject>[];
-    final cameraX = _cameraTarget.x / Position.tileSpacing; // Convert world to grid coordinates
+    final cameraX =
+        _cameraTarget.x /
+        Position.tileSpacing; // Convert world to grid coordinates
     final cameraZ = _cameraTarget.z / Position.tileSpacing;
-    final radius = _viewportRadius / Position.tileSpacing; // Convert to grid units
+    final radius =
+        _viewportRadius / Position.tileSpacing; // Convert to grid units
 
     for (final obj in _objects.values) {
       final dx = obj.gridX - cameraX;
@@ -187,7 +200,11 @@ class GridSceneManager extends ChangeNotifier {
   void _updateCameraToFollowCharacter() {
     if (_ghostCharacter != null) {
       final pos = _ghostCharacter!.position;
-      _cameraTarget = Vector3(pos.x * Position.tileSpacing, 0.0, pos.z * Position.tileSpacing);
+      _cameraTarget = Vector3(
+        pos.x * Position.tileSpacing,
+        0.0,
+        pos.z * Position.tileSpacing,
+      );
 
       // Update enemy activation based on new player position
       if (_enemyManager != null) {
@@ -267,7 +284,11 @@ class GridSceneManager extends ChangeNotifier {
   void _updateCameraTarget() {
     if (_tileMap?.playerSpawn != null) {
       final spawn = _tileMap!.playerSpawn!;
-      _cameraTarget = Vector3(spawn.x * Position.tileSpacing, 0.0, spawn.z * Position.tileSpacing);
+      _cameraTarget = Vector3(
+        spawn.x * Position.tileSpacing,
+        0.0,
+        spawn.z * Position.tileSpacing,
+      );
     }
   }
 
@@ -276,6 +297,7 @@ class GridSceneManager extends ChangeNotifier {
     required String displayName,
     required int gridX,
     required int gridZ,
+    double rotationY = 0.0,
   }) async {
     if (_tileMap != null) {
       // For large world, check bounds against tile map
@@ -303,6 +325,7 @@ class GridSceneManager extends ChangeNotifier {
       displayName: displayName,
       gridX: gridX,
       gridZ: gridZ,
+      rotationY: rotationY,
     );
 
     _objects[key] = newObject;
@@ -316,6 +339,7 @@ class GridSceneManager extends ChangeNotifier {
         gridX: gridX,
         gridZ: gridZ,
         model: model,
+        rotationY: rotationY,
       );
       notifyListeners();
     } catch (e) {
@@ -396,17 +420,18 @@ class GridSceneManager extends ChangeNotifier {
         if (_objects.containsKey(key)) continue; // Already loaded
 
         final tileType = _tileMap!.getTileAt(position);
-        final modelKey = _getTileModelKey(tileType, position);
+        final modelData = _getTileModelData(tileType, position);
 
-        if (modelKey != null) {
-          final modelData = _modelLibrary[modelKey];
-          if (modelData != null) {
+        if (modelData?.modelKey != null) {
+          final libraryData = _modelLibrary[modelData!.modelKey];
+          if (libraryData != null) {
             objectsToPlace.add(
               addObject(
-                modelPath: modelData['path']!,
-                displayName: modelData['name']!,
+                modelPath: libraryData['path']!,
+                displayName: libraryData['name']!,
                 gridX: x,
                 gridZ: z,
+                rotationY: modelData.rotation,
               ),
             );
           }
@@ -418,49 +443,54 @@ class GridSceneManager extends ChangeNotifier {
     await Future.wait(objectsToPlace);
   }
 
-  /// Get the appropriate model key for a tile type and position
-  String? _getTileModelKey(TileType tileType, Position position) {
+  /// Get the appropriate model key and rotation for a tile type and position
+  ({String? modelKey, double rotation})? _getTileModelData(
+    TileType tileType,
+    Position position,
+  ) {
     switch (tileType) {
       case TileType.wall:
-        return _getSmartWallModel(position);
+        return _getSmartWallModelData(position);
       case TileType.obstacle:
-        return _getSmartObstacleModel(position);
+        return (modelKey: _getSmartObstacleModel(position), rotation: 0.0);
       case TileType.candy:
         // Always show candy items
         final variant = (position.x * 5 + position.z * 13) % 3;
         switch (variant) {
           case 0:
-            return 'candy_apple';
+            return (modelKey: 'candy_apple', rotation: 0.0);
           case 1:
-            return 'candy_chocolate';
+            return (modelKey: 'candy_chocolate', rotation: 0.0);
           case 2:
-            return 'candy_lollipop';
+            return (modelKey: 'candy_lollipop', rotation: 0.0);
           default:
-            return 'candy_apple';
+            return (modelKey: 'candy_apple', rotation: 0.0);
         }
       case TileType.floor:
         // Show decorative items more frequently to visualize pathways
         if ((position.x * 11 + position.z * 17) % 20 == 0) {
-          return 'lantern';
+          return (modelKey: 'lantern', rotation: 0.0);
         }
         return null; // Most floor tiles remain empty for navigation
     }
   }
 
-  /// Get smart wall model based on neighboring tiles
-  String _getSmartWallModel(Position position) {
+  /// Get smart wall model and rotation based on neighboring tiles
+  ({String modelKey, double rotation}) _getSmartWallModelData(
+    Position position,
+  ) {
     if (_tileMap == null) {
       // Fallback to old behavior if no tile map
       final variant = (position.x + position.z) % 3;
       switch (variant) {
         case 0:
-          return 'fence';
+          return (modelKey: 'fence', rotation: 0.0);
         case 1:
-          return 'grave';
+          return (modelKey: 'grave', rotation: 0.0);
         case 2:
-          return 'tree';
+          return (modelKey: 'tree', rotation: 0.0);
         default:
-          return 'fence';
+          return (modelKey: 'fence', rotation: 0.0);
       }
     }
 
@@ -475,96 +505,96 @@ class GridSceneManager extends ChangeNotifier {
     final leftTile = _tileMap!.getTileAt(left);
     final rightTile = _tileMap!.getTileAt(right);
 
-    // If any adjacent tile is not a wall, use brick-wall
-    if (upTile != TileType.wall ||
-        downTile != TileType.wall ||
-        leftTile != TileType.wall ||
-        rightTile != TileType.wall) {
-      return 'brick-wall';
-    }
+    // Count non-wall adjacent tiles
+    final isUpOpen = upTile != TileType.wall;
+    final isDownOpen = downTile != TileType.wall;
+    final isLeftOpen = leftTile != TileType.wall;
+    final isRightOpen = rightTile != TileType.wall;
 
-    // Check diagonal neighbors (top-right, top-left, bottom-right, bottom-left)
-    final topRight = Position(position.x + 1, position.z - 1);
-    final topLeft = Position(position.x - 1, position.z - 1);
-    final bottomRight = Position(position.x + 1, position.z + 1);
-    final bottomLeft = Position(position.x - 1, position.z + 1);
+    final openCount = [
+      isUpOpen,
+      isDownOpen,
+      isLeftOpen,
+      isRightOpen,
+    ].where((x) => x).length;
 
-    final topRightTile = _tileMap!.getTileAt(topRight);
-    final topLeftTile = _tileMap!.getTileAt(topLeft);
-    final bottomRightTile = _tileMap!.getTileAt(bottomRight);
-    final bottomLeftTile = _tileMap!.getTileAt(bottomLeft);
+    // If any adjacent tile is not a wall, use brick-wall and rotate towards the opening
+    if (openCount > 0) {
+      // Determine rotation based on which direction is open
+      double rotation = 0.0;
 
-    // If all adjacent are walls but any diagonal is not wall, use brick-wall-curve-small
-    if (topRightTile != TileType.wall ||
-        topLeftTile != TileType.wall ||
-        bottomRightTile != TileType.wall ||
-        bottomLeftTile != TileType.wall) {
-      return 'brick-wall-curve-small';
+      if (isUpOpen && !isDownOpen && !isLeftOpen && !isRightOpen) {
+        // Opening to the north - face north (no rotation)
+        rotation = 0.0;
+      } else if (isRightOpen && !isUpOpen && !isDownOpen && !isLeftOpen) {
+        // Opening to the east - face east (90 degrees)
+        rotation = -pi / 2.0;
+      } else if (isDownOpen && !isUpOpen && !isLeftOpen && !isRightOpen) {
+        // Opening to the south - face south (180 degrees)
+        rotation = pi; // π
+      } else if (isLeftOpen && !isUpOpen && !isDownOpen && !isRightOpen) {
+        // Opening to the west - face west (270 degrees)
+        rotation = -3.0 * pi / 2.0;
+      } else {
+        // Multiple openings or corner case - use default rotation
+        rotation = 0.0;
+      }
+
+      // Check diagonal neighbors for curves
+      final topRight = Position(position.x + 1, position.z - 1);
+      final topLeft = Position(position.x - 1, position.z - 1);
+      final bottomRight = Position(position.x + 1, position.z + 1);
+      final bottomLeft = Position(position.x - 1, position.z + 1);
+
+      final topRightTile = _tileMap!.getTileAt(topRight);
+      final topLeftTile = _tileMap!.getTileAt(topLeft);
+      final bottomRightTile = _tileMap!.getTileAt(bottomRight);
+      final bottomLeftTile = _tileMap!.getTileAt(bottomLeft);
+
+      final diagonalOpenCount = [
+        topRightTile != TileType.wall,
+        topLeftTile != TileType.wall,
+        bottomRightTile != TileType.wall,
+        bottomLeftTile != TileType.wall,
+      ].where((x) => x).length;
+
+      // If all adjacent are walls but only one diagonal is open, use curve
+      if (openCount == 2 && diagonalOpenCount == 3) {
+        if (topRightTile == TileType.wall) {
+          rotation = -pi; // Top-right curve
+        } else if (bottomRightTile == TileType.wall) {
+          rotation = -3.0 * pi / 2.0; // Bottom-right curve
+        } else if (bottomLeftTile == TileType.wall) {
+          rotation = 0; // Bottom-left curve
+        } else if (topLeftTile == TileType.wall) {
+          rotation = -pi / 2.0; // Top-left curve
+        }
+        return (modelKey: 'brick-wall-curve-small', rotation: rotation);
+      }
+
+      return (modelKey: 'brick-wall', rotation: rotation);
     }
 
     // Default to gravestone-bevel if completely surrounded by walls
-    return 'gravestone-bevel';
+    return (modelKey: 'gravestone-bevel', rotation: 0.0);
   }
 
   /// Get smart obstacle model based on neighboring tiles
   String _getSmartObstacleModel(Position position) {
-    if (_tileMap == null) {
-      // Fallback to old behavior if no tile map
-      final variant = (position.x * 3 + position.z * 7) % 4;
-      switch (variant) {
-        case 0:
-          return 'crypt';
-        case 1:
-          return 'grave';
-        case 2:
-          return 'tree';
-        case 3:
-          return 'pumpkin';
-        default:
-          return 'crypt';
-      }
+    // Fallback to old behavior if no tile map
+    final variant = (position.x * 3 + position.z * 7) % 4;
+    switch (variant) {
+      case 0:
+        return 'crypt';
+      case 1:
+        return 'grave';
+      case 2:
+        return 'tree';
+      case 3:
+        return 'pumpkin';
+      default:
+        return 'crypt';
     }
-
-    // Check adjacent tiles (up, down, left, right)
-    final up = Position(position.x, position.z - 1);
-    final down = Position(position.x, position.z + 1);
-    final left = Position(position.x - 1, position.z);
-    final right = Position(position.x + 1, position.z);
-
-    final upTile = _tileMap!.getTileAt(up);
-    final downTile = _tileMap!.getTileAt(down);
-    final leftTile = _tileMap!.getTileAt(left);
-    final rightTile = _tileMap!.getTileAt(right);
-
-    // If any adjacent tile is not a wall, use brick-wall
-    if (upTile != TileType.wall ||
-        downTile != TileType.wall ||
-        leftTile != TileType.wall ||
-        rightTile != TileType.wall) {
-      return 'brick-wall';
-    }
-
-    // Check diagonal neighbors (top-right, top-left, bottom-right, bottom-left)
-    final topRight = Position(position.x + 1, position.z - 1);
-    final topLeft = Position(position.x - 1, position.z - 1);
-    final bottomRight = Position(position.x + 1, position.z + 1);
-    final bottomLeft = Position(position.x - 1, position.z + 1);
-
-    final topRightTile = _tileMap!.getTileAt(topRight);
-    final topLeftTile = _tileMap!.getTileAt(topLeft);
-    final bottomRightTile = _tileMap!.getTileAt(bottomRight);
-    final bottomLeftTile = _tileMap!.getTileAt(bottomLeft);
-
-    // If all adjacent are walls but any diagonal is not wall, use brick-wall-curve-small
-    if (topRightTile != TileType.wall ||
-        topLeftTile != TileType.wall ||
-        bottomRightTile != TileType.wall ||
-        bottomLeftTile != TileType.wall) {
-      return 'brick-wall-curve-small';
-    }
-
-    // Default to gravestone-bevel if completely surrounded by walls
-    return 'gravestone-bevel';
   }
 
   static const Map<String, Map<String, String>> _modelLibrary = {
