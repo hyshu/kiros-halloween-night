@@ -1,0 +1,240 @@
+import 'package:flutter/foundation.dart';
+
+import 'ally_character.dart';
+import 'ally_manager.dart';
+import 'combat_manager.dart';
+import 'enemy_character.dart';
+import 'enemy_manager.dart';
+import 'ghost_character.dart';
+import 'tile_map.dart';
+
+/// Manages the main game loop and coordinates all game systems
+class GameLoopManager extends ChangeNotifier {
+  /// The ghost character (player)
+  GhostCharacter? _ghostCharacter;
+
+  /// Enemy manager
+  EnemyManager? _enemyManager;
+
+  /// Ally manager
+  final AllyManager _allyManager = AllyManager(maxAllies: 10);
+
+  /// Combat manager
+  final CombatManager _combatManager = CombatManager();
+
+  /// Reference to the tile map
+  TileMap? _tileMap;
+
+  /// Whether the turn-based system is running
+  bool _isRunning = false;
+
+  /// Combat statistics
+  int _totalCombatsProcessed = 0;
+  int _enemiesDefeated = 0;
+  int _alliesLost = 0;
+
+  /// Getters for accessing managers
+  AllyManager get allyManager => _allyManager;
+  CombatManager get combatManager => _combatManager;
+  EnemyManager? get enemyManager => _enemyManager;
+  GhostCharacter? get ghostCharacter => _ghostCharacter;
+
+  /// Combat statistics getters
+  int get totalCombatsProcessed => _totalCombatsProcessed;
+  int get enemiesDefeated => _enemiesDefeated;
+  int get alliesLost => _alliesLost;
+
+  /// Initializes the game loop with required components
+  void initialize({
+    required GhostCharacter ghostCharacter,
+    required EnemyManager enemyManager,
+    required TileMap tileMap,
+  }) {
+    _ghostCharacter = ghostCharacter;
+    _enemyManager = enemyManager;
+    _tileMap = tileMap;
+
+    // Set player reference for ally manager
+    _allyManager.setPlayer(ghostCharacter);
+
+    debugPrint('GameLoopManager: Initialized with player at ${ghostCharacter.position}');
+  }
+
+  /// Initializes the turn-based game system (no real-time loop)
+  void initializeTurnBasedSystem() {
+    if (_isRunning) return;
+
+    _isRunning = true;
+    debugPrint('GameLoopManager: Turn-based system initialized');
+    notifyListeners();
+  }
+
+  /// Stops the turn-based system
+  void stopTurnBasedSystem() {
+    if (!_isRunning) return;
+
+    _isRunning = false;
+    debugPrint('GameLoopManager: Turn-based system stopped');
+    notifyListeners();
+  }
+
+
+  /// Gets all hostile enemies in the game
+  List<EnemyCharacter> _getHostileEnemies() {
+    if (_enemyManager == null) return [];
+
+    return _enemyManager!.activeEnemies
+        .where((enemy) => enemy.isHostile && enemy.isAlive)
+        .toList();
+  }
+
+  /// Processes combat between allies and hostile enemies
+  void _processCombat(List<EnemyCharacter> hostileEnemies) {
+    final allies = _allyManager.allies.where((ally) => ally.isAlive).toList();
+
+    if (allies.isEmpty || hostileEnemies.isEmpty) {
+      return;
+    }
+
+    // Process combat encounters
+    final combatResults = _combatManager.processCombat(allies, hostileEnemies);
+
+    if (combatResults.isNotEmpty) {
+      _totalCombatsProcessed += combatResults.length;
+
+      for (final result in combatResults) {
+        _processCombatResult(result);
+      }
+
+      debugPrint(
+        'GameLoopManager: Processed ${combatResults.length} combat encounters',
+      );
+    }
+  }
+
+  /// Processes the result of a single combat encounter
+  void _processCombatResult(CombatResult result) {
+    if (result.enemyDefeated) {
+      _enemiesDefeated++;
+      _handleEnemyDefeated(result.enemy);
+    }
+
+    if (result.allyDefeated) {
+      _alliesLost++;
+      _handleAllyDefeated(result.ally);
+    }
+
+    // Log significant combat events
+    if (result.enemyDefeated || result.allyDefeated) {
+      debugPrint('GameLoopManager: Combat result - ${result.description}');
+    }
+  }
+
+  /// Handles when an enemy is defeated in combat
+  void _handleEnemyDefeated(EnemyCharacter enemy) {
+    // Remove enemy from the scene
+    if (_enemyManager != null) {
+      _enemyManager!.removeEnemy(enemy.id);
+    }
+
+    debugPrint('GameLoopManager: Enemy ${enemy.id} defeated and removed');
+  }
+
+  /// Handles when an ally is defeated in combat
+  void _handleAllyDefeated(AllyCharacter ally) {
+    // Ally will be automatically removed by AllyManager
+    debugPrint('GameLoopManager: Ally ${ally.id} defeated');
+  }
+
+  /// Called when the player character moves - processes one turn
+  void onPlayerMoved() {
+    if (_ghostCharacter == null || _enemyManager == null || _tileMap == null) {
+      return;
+    }
+
+    debugPrint('GameLoopManager: Processing turn after player move');
+
+    try {
+      // Update enemy activation based on new player position
+      _enemyManager!.updateEnemyActivation(_ghostCharacter!.position);
+
+      // Process enemy AI (one turn)
+      _enemyManager!.processEnemyAI(_ghostCharacter!);
+
+      // Get all active hostile enemies
+      final hostileEnemies = _getHostileEnemies();
+
+      // Update ally AI (one turn)
+      _allyManager.updateAllies(_tileMap!, hostileEnemies);
+
+      // Process combat between allies and hostile enemies
+      _processCombat(hostileEnemies);
+
+      // Notify listeners of updates
+      notifyListeners();
+
+      debugPrint('GameLoopManager: Turn completed');
+    } catch (e) {
+      debugPrint('GameLoopManager: Error in turn processing: $e');
+    }
+  }
+
+  /// Converts an enemy to an ally (for future integration)
+  bool convertEnemyToAlly(EnemyCharacter enemy) {
+    if (!_allyManager.isAtMaxCapacity) {
+      final success = _allyManager.convertEnemyToAlly(enemy);
+      if (success && _enemyManager != null) {
+        // Remove enemy from enemy manager
+        _enemyManager!.removeEnemy(enemy.id);
+        debugPrint('GameLoopManager: Converted enemy ${enemy.id} to ally');
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Gets game statistics
+  Map<String, dynamic> getGameStats() {
+    return {
+      'isRunning': _isRunning,
+      'totalAllies': _allyManager.count,
+      'maxAllies': _allyManager.maxAllies,
+      'activeEnemies': _enemyManager?.activeEnemyCount ?? 0,
+      'totalEnemies': _enemyManager?.enemyCount ?? 0,
+      'activeCombats': _combatManager.activeCombats.length,
+      'combatsProcessed': _totalCombatsProcessed,
+      'enemiesDefeated': _enemiesDefeated,
+      'alliesLost': _alliesLost,
+      'playerPosition': _ghostCharacter?.position.toString() ?? 'Unknown',
+    };
+  }
+
+  /// Gets detailed ally information
+  Map<String, dynamic> getAllyInfo() {
+    return _allyManager.getAllySummary();
+  }
+
+  /// Forces a manual turn processing (useful for debugging)
+  void forceTurn() {
+    if (_isRunning) {
+      onPlayerMoved();
+    }
+  }
+
+  @override
+  void dispose() {
+    stopTurnBasedSystem();
+    _allyManager.dispose();
+    super.dispose();
+  }
+
+  @override
+  String toString() {
+    final stats = getGameStats();
+    return 'GameLoopManager(Running: ${stats['isRunning']}, '
+        'Allies: ${stats['totalAllies']}/${stats['maxAllies']}, '
+        'Enemies: ${stats['activeEnemies']}/${stats['totalEnemies']}, '
+        'Combats: ${stats['activeCombats']})';
+  }
+}
+

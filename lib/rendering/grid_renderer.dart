@@ -196,6 +196,47 @@ class _GridRendererState extends material.State<GridRenderer> {
                         fontSize: 12,
                       ),
                     ),
+                    if (widget.sceneManager.gameLoopManager != null) ...[
+                      const material.SizedBox(height: 8),
+                      material.Text(
+                        'Turn-Based Combat: Active',
+                        style: const material.TextStyle(
+                          color: material.Colors.green,
+                          fontSize: 12,
+                          fontWeight: material.FontWeight.bold,
+                        ),
+                      ),
+                      material.Text(
+                        'Allies: ${widget.sceneManager.gameLoopManager!.allyManager.count}/10',
+                        style: const material.TextStyle(
+                          color: material.Colors.blue,
+                          fontSize: 12,
+                        ),
+                      ),
+                      material.Text(
+                        'Active Combats: ${widget.sceneManager.gameLoopManager!.combatManager.activeCombats.length}',
+                        style: const material.TextStyle(
+                          color: material.Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                      if (widget.sceneManager.enemyManager != null) ...[
+                        material.Text(
+                          'Total Enemies: ${widget.sceneManager.enemyManager!.enemyCount}',
+                          style: const material.TextStyle(
+                            color: material.Colors.orange,
+                            fontSize: 12,
+                          ),
+                        ),
+                        material.Text(
+                          'Active Enemies: ${widget.sceneManager.enemyManager!.activeEnemyCount}',
+                          style: const material.TextStyle(
+                            color: material.Colors.yellow,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
                   ],
                 ),
               ),

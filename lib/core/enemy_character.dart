@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+
 import 'character.dart';
 import 'position.dart';
 import 'tile_map.dart';
@@ -28,6 +30,7 @@ class EnemyCharacter extends Character {
 
   /// Maximum movement cooldown (in game ticks)
   static const int maxMovementCooldown = 3;
+
 
   /// Random number generator for AI decisions
   static final Random _random = Random();
@@ -105,8 +108,18 @@ class EnemyCharacter extends Character {
     }
   }
 
-  /// Updates the enemy's AI behavior (called each game tick)
+  /// Updates the enemy's AI behavior (called each player turn)
   void updateAI(GhostCharacter player, TileMap tileMap) {
+    final distance = position.distanceTo(player.position);
+    
+    // Debug AI processing (only for interesting cases)
+    if (isProximityActive && distance <= 5) {
+      debugPrint(
+        'EnemyCharacter: $id turn - Active: $isActive, Proximity: $isProximityActive, '
+        'State: $state, Cooldown: $movementCooldown, Distance: $distance'
+      );
+    }
+
     // Only process AI if the enemy is proximity active
     if (!isProximityActive || !isActive) {
       setIdle();
@@ -116,6 +129,7 @@ class EnemyCharacter extends Character {
     // Update movement cooldown
     if (movementCooldown > 0) {
       movementCooldown--;
+      debugPrint('EnemyCharacter: $id waiting (cooldown: $movementCooldown)');
       return;
     }
 

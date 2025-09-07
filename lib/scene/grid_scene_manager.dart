@@ -10,6 +10,8 @@ import '../core/position.dart';
 import '../core/ghost_character.dart';
 import '../core/enemy_manager.dart';
 import '../core/enemy_character.dart';
+import '../core/game_loop_manager.dart';
+import '../core/ally_character.dart';
 
 class GridObject {
   final String modelPath;
@@ -52,6 +54,9 @@ class GridSceneManager extends ChangeNotifier {
   GhostCharacter? _ghostCharacter;
   EnemyManager? _enemyManager;
   final Map<String, GridObject> _characterObjects = {};
+  
+  // Game loop manager for combat and systems
+  GameLoopManager? _gameLoopManager;
 
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
@@ -82,6 +87,9 @@ class GridSceneManager extends ChangeNotifier {
 
     // Add character objects (always visible)
     objects.addAll(_characterObjects.values);
+    
+    // Add ally objects from game loop manager
+    _addAllyObjectsToRender(objects);
 
     return objects;
   }
@@ -128,6 +136,9 @@ class GridSceneManager extends ChangeNotifier {
 
   // Get the enemy manager
   EnemyManager? get enemyManager => _enemyManager;
+  
+  // Get the game loop manager
+  GameLoopManager? get gameLoopManager => _gameLoopManager;
 
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
@@ -191,6 +202,11 @@ class GridSceneManager extends ChangeNotifier {
     // Reload objects around new position for large world
     if (_tileMap != null) {
       _loadObjectsAroundCamera();
+    }
+
+    // Notify game loop manager of player movement
+    if (_gameLoopManager != null) {
+      _gameLoopManager!.onPlayerMoved();
     }
 
     notifyListeners();
@@ -394,6 +410,35 @@ class GridSceneManager extends ChangeNotifier {
     await _loadObjectsAroundCamera();
 
     _updateCameraTarget();
+    notifyListeners();
+  }
+
+  /// Initialize and start the game loop manager
+  void initializeGameLoop() {
+    if (_ghostCharacter != null && _enemyManager != null && _tileMap != null) {
+      _gameLoopManager = GameLoopManager();
+      _gameLoopManager!.initialize(
+        ghostCharacter: _ghostCharacter!,
+        enemyManager: _enemyManager!,
+        tileMap: _tileMap!,
+      );
+      
+      // Initialize turn-based system
+      _gameLoopManager!.initializeTurnBasedSystem();
+      
+      // Listen for game loop updates
+      _gameLoopManager!.addListener(_onGameLoopUpdate);
+      
+      debugPrint('GridSceneManager: Turn-based system initialized');
+    }
+  }
+
+  /// Called when game loop updates (for rendering ally positions)
+  void _onGameLoopUpdate() {
+    // Update enemy rendering positions
+    updateEnemyPositions();
+    
+    // Update ally rendering positions
     notifyListeners();
   }
 
@@ -681,4 +726,42 @@ class GridSceneManager extends ChangeNotifier {
     'candy_donut': {'path': 'assets/foods/donut.obj', 'name': 'Donut'},
     'candy_cupcake': {'path': 'assets/foods/cupcake.obj', 'name': 'Cupcake'},
   };
+
+  /// Adds ally objects to the rendering list
+  void _addAllyObjectsToRender(List<GridObject> objects) {
+    if (_gameLoopManager == null) return;
+
+    final allies = _gameLoopManager!.allyManager.allies;
+    for (final ally in allies) {
+      if (ally.isAlive) {
+        // Get the appropriate model path based on ally's original enemy type
+        final modelPath = _getAllyModelPath(ally);
+        
+        final allyObject = GridObject(
+          modelPath: modelPath,
+          displayName: ally.id,
+          gridX: ally.position.x,
+          gridZ: ally.position.z,
+          model: ally.model,
+        );
+        
+        objects.add(allyObject);
+      }
+    }
+  }
+
+  /// Gets the model path for an ally based on their original enemy type
+  String _getAllyModelPath(AllyCharacter ally) {
+    // Use the original enemy's model path
+    return ally.originalEnemy.modelPath;
+  }
+
+  /// Dispose resources when scene manager is destroyed
+  @override
+  void dispose() {
+    _gameLoopManager?.stopTurnBasedSystem();
+    _gameLoopManager?.removeListener(_onGameLoopUpdate);
+    _gameLoopManager?.dispose();
+    super.dispose();
+  }
 }

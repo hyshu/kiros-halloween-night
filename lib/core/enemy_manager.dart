@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import 'enemy_character.dart';
 import 'enemy_spawner.dart';
+import 'ghost_character.dart';
 import 'position.dart';
 import 'tile_map.dart';
 
@@ -17,6 +18,10 @@ class EnemyManager {
 
   /// Player position for proximity calculations
   Position? _playerPosition;
+
+  /// Debug counter for periodic logging
+  int _debugCounter = 0;
+
 
   /// Gets all enemies in the game
   UnmodifiableMapView<String, EnemyCharacter> get enemies =>
@@ -132,12 +137,15 @@ class EnemyManager {
   /// Updates enemy activation based on player position
   void updateEnemyActivation(Position playerPosition) {
     _playerPosition = playerPosition;
+    int activatedCount = 0;
+    int proximityActiveCount = 0;
 
     // Update proximity detection and activation for all enemies
     for (final enemy in _enemies.values) {
       final distance = playerPosition.distanceTo(enemy.position);
 
       final shouldBeActive = distance <= enemy.activationRadius;
+      final shouldBeProximityActive = distance <= 10; // Proximity activation distance
 
       if (shouldBeActive != enemy.isActive) {
         enemy.isActive = shouldBeActive;
@@ -150,6 +158,28 @@ class EnemyManager {
           debugPrint('EnemyManager: Deactivated ${enemy.id}');
         }
       }
+
+      // Update proximity activation
+      if (shouldBeProximityActive != enemy.isProximityActive) {
+        enemy.isProximityActive = shouldBeProximityActive;
+        if (shouldBeProximityActive) {
+          debugPrint(
+            'EnemyManager: ${enemy.id} is now proximity active (distance: $distance)',
+          );
+        }
+      }
+
+      if (enemy.isActive) activatedCount++;
+      if (enemy.isProximityActive) proximityActiveCount++;
+    }
+
+    // Debug info every 10 turns (turn-based)
+    _debugCounter++;
+    if (_debugCounter >= 10) {
+      _debugCounter = 0;
+      debugPrint(
+        'EnemyManager: Turn #$_debugCounter - Player at $playerPosition, Active: $activatedCount, Proximity: $proximityActiveCount/${_enemies.length}',
+      );
     }
   }
 
@@ -168,49 +198,49 @@ class EnemyManager {
     return getEnemiesInRadius(_playerPosition!, 15.0); // Max activation radius
   }
 
-  /// Processes AI for all active enemies
-  void processEnemyAI() {
+  /// Processes AI for all active enemies (turn-based)
+  void processEnemyAI([GhostCharacter? playerCharacter]) {
     if (_playerPosition == null) return;
 
-    for (final enemy in activeEnemies) {
+    final activeEnemiesList = activeEnemies;
+    if (activeEnemiesList.isEmpty) {
+      debugPrint('EnemyManager: No active enemies to process');
+      return;
+    }
+
+    debugPrint('EnemyManager: Processing AI turn for ${activeEnemiesList.length} active enemies');
+
+    for (final enemy in activeEnemiesList) {
       // Process enemy AI based on their type and state
-      _processEnemyAI(enemy);
+      _processEnemyAI(enemy, playerCharacter);
     }
   }
 
   /// Processes AI for a single enemy
-  void _processEnemyAI(EnemyCharacter enemy) {
+  void _processEnemyAI(EnemyCharacter enemy, GhostCharacter? playerCharacter) {
     if (_tileMap == null || _playerPosition == null) return;
 
-    switch (enemy.aiType) {
-      case EnemyAIType.wanderer:
-        _processWandererAI(enemy);
-        break;
-      case EnemyAIType.aggressive:
-        _processAggressiveAI(enemy);
-        break;
-      case EnemyAIType.guard:
-        _processGuardAI(enemy);
-        break;
-    }
+    // Use provided player character or create a temporary one
+    final playerGhost = playerCharacter ?? _createPlayerGhost();
+    if (playerGhost == null) return;
+
+    // Use the enemy's own AI processing method
+    enemy.updateAI(playerGhost, _tileMap!);
   }
 
-  /// Processes wanderer AI (random movement)
-  void _processWandererAI(EnemyCharacter enemy) {
-    // Wanderers move randomly when active
-    // This is a placeholder - full AI implementation would be in a separate task
-  }
-
-  /// Processes aggressive AI (moves toward player)
-  void _processAggressiveAI(EnemyCharacter enemy) {
-    // Aggressive enemies move toward the player when in range
-    // This is a placeholder - full AI implementation would be in a separate task
-  }
-
-  /// Processes guard AI (stays in area)
-  void _processGuardAI(EnemyCharacter enemy) {
-    // Guards patrol a small area around their spawn point
-    // This is a placeholder - full AI implementation would be in a separate task
+  /// Creates a temporary ghost character for AI processing
+  GhostCharacter? _createPlayerGhost() {
+    if (_playerPosition == null) return null;
+    
+    // Create a minimal ghost character for AI calculations
+    final tempGhost = GhostCharacter(
+      id: 'temp_player',
+      position: _playerPosition!,
+      health: 100,
+      maxHealth: 100,
+    );
+    
+    return tempGhost;
   }
 
   /// Gets statistics about the enemy population

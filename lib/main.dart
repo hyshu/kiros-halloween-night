@@ -109,6 +109,13 @@ class _GridSceneViewState extends State<GridSceneView> {
     );
 
     setState(() {
+      _loadingStatus = 'Initializing combat systems...';
+    });
+
+    // Initialize game loop with combat system
+    _sceneManager.initializeGameLoop();
+
+    setState(() {
       _isLoading = false;
     });
   }
