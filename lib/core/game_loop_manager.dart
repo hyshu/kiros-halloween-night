@@ -35,6 +35,9 @@ class GameLoopManager extends ChangeNotifier {
   /// Reference to dialogue manager for combat messages
   DialogueManager? _dialogueManager;
 
+  /// Callback for when an enemy is defeated and should be removed from scene
+  Function(String enemyId)? _onEnemyDefeated;
+
   /// Whether the turn-based system is running
   bool _isRunning = false;
 
@@ -71,11 +74,13 @@ class GameLoopManager extends ChangeNotifier {
     required EnemyManager enemyManager,
     required TileMap tileMap,
     DialogueManager? dialogueManager,
+    Function(String enemyId)? onEnemyDefeated,
   }) {
     _ghostCharacter = ghostCharacter;
     _enemyManager = enemyManager;
     _tileMap = tileMap;
     _dialogueManager = dialogueManager;
+    _onEnemyDefeated = onEnemyDefeated;
 
     // Set player reference for ally manager
     _allyManager.setPlayer(ghostCharacter);
@@ -156,9 +161,14 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Handles when an enemy is defeated in combat
   void _handleEnemyDefeated(EnemyCharacter enemy) {
-    // Remove enemy from the scene
+    // Remove enemy from the enemy manager
     if (_enemyManager != null) {
       _enemyManager!.removeEnemy(enemy.id);
+    }
+
+    // Remove enemy from the scene manager (3D model)
+    if (_onEnemyDefeated != null) {
+      _onEnemyDefeated!(enemy.id);
     }
 
     debugPrint('GameLoopManager: Enemy ${enemy.id} defeated and removed');
@@ -168,6 +178,20 @@ class GameLoopManager extends ChangeNotifier {
   void _handleAllyDefeated(AllyCharacter ally) {
     // Ally will be automatically removed by AllyManager
     debugPrint('GameLoopManager: Ally ${ally.id} defeated');
+  }
+
+  /// Cleans up satisfied enemies from the game
+  void _cleanupSatisfiedEnemies() {
+    if (_enemyManager == null) return;
+
+    final satisfiedEnemies = _enemyManager!.enemies.values
+        .where((enemy) => enemy.isSatisfied)
+        .toList();
+
+    for (final enemy in satisfiedEnemies) {
+      _handleEnemyDefeated(enemy);
+      debugPrint('GameLoopManager: Cleaned up satisfied enemy ${enemy.id}');
+    }
   }
 
   /// Processes direct combat between player and enemies
@@ -189,7 +213,7 @@ class GameLoopManager extends ChangeNotifier {
             .where((enemy) => !enemy.isAlive || enemy.health <= 0)
             .toList();
         for (final enemy in defeatedEnemies) {
-          _enemyManager!.removeEnemy(enemy.id);
+          _handleEnemyDefeated(enemy);
         }
         debugPrint(
           'GameLoopManager: Player defeated enemy with directional attack',
@@ -273,6 +297,9 @@ class GameLoopManager extends ChangeNotifier {
       // Process combat between allies and hostile enemies
       _processCombat(hostileEnemies);
 
+      // Clean up satisfied enemies
+      _cleanupSatisfiedEnemies();
+
       // Notify listeners of updates
       notifyListeners();
 
@@ -290,11 +317,17 @@ class GameLoopManager extends ChangeNotifier {
         // Remove enemy from enemy manager
         _enemyManager!.removeEnemy(enemy.id);
         
+        // Remove enemy from the scene manager (3D model)
+        if (_onEnemyDefeated != null) {
+          _onEnemyDefeated!(enemy.id);
+        }
+        
         // Show dialogue message
         if (_dialogueManager != null) {
           _dialogueManager!.showCombatFeedback('${enemy.id} has become your ally!');
         }
         
+        debugPrint('GameLoopManager: Enemy ${enemy.id} converted to ally and model removed');
         return true;
       }
     }

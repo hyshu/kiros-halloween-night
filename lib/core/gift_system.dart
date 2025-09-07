@@ -110,6 +110,10 @@ class GiftSystem extends ChangeNotifier {
 
   /// Applies candy effects to the converted enemy
   void _applyCandyEffectsToEnemy(EnemyCharacter enemy, CandyItem candy) {
+    // First, convert enemy to ally state
+    enemy.convertToAlly();
+    
+    // Then apply candy-specific effects
     switch (candy.effect) {
       case CandyEffect.healthBoost:
         // Heal the enemy

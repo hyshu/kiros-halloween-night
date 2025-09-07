@@ -436,6 +436,10 @@ class GridSceneManager extends ChangeNotifier {
         enemyManager: _enemyManager!,
         tileMap: _tileMap!,
         dialogueManager: _dialogueManager,
+        onEnemyDefeated: (enemyId) {
+          // Remove the defeated enemy's 3D model from the scene
+          removeEnemyFromScene(enemyId);
+        },
       );
 
       // Initialize turn-based system
