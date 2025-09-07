@@ -107,7 +107,7 @@ class SceneManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final model = await Model3D.loadFromAsset(displayName, modelPath);
+      final model = await Model3D.loadFromAssetCached(displayName, modelPath);
 
       final index = _objects.indexWhere((obj) => obj.id == id);
       if (index != -1) {

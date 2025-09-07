@@ -210,7 +210,7 @@ class CandyItem {
     if (model != null) return;
 
     try {
-      model = await Model3D.loadFromAsset(id, modelPath);
+      model = await Model3D.loadFromAssetCached(id, modelPath);
     } catch (e) {
       // Handle model loading error gracefully
       // In production, this would use proper logging

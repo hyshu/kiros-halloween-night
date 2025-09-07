@@ -361,7 +361,7 @@ class GridSceneManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final model = await Model3D.loadFromAsset(displayName, modelPath);
+      final model = await Model3D.loadFromAssetCached(displayName, modelPath);
       _objects[key] = GridObject(
         modelPath: modelPath,
         displayName: displayName,

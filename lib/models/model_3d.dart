@@ -4,6 +4,7 @@ import 'package:flutter_gpu/gpu.dart' as gpu;
 
 import '../parsers/obj_parser.dart';
 import '../managers/texture_manager.dart';
+import '../managers/model_manager.dart';
 
 class MaterialTextures {
   gpu.Texture? diffuseTexture;
@@ -97,6 +98,12 @@ class Model3D {
     }
 
     return model;
+  }
+
+  /// Loads a model using the ModelManager for caching and reuse
+  static Future<Model3D> loadFromAssetCached(String name, String path) async {
+    final modelManager = ModelManager();
+    return await modelManager.loadModel(name, path);
   }
 
   Matrix4 get modelMatrix {

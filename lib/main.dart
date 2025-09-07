@@ -7,6 +7,7 @@ import 'core/tile_map.dart';
 import 'core/ghost_character.dart';
 import 'core/position.dart';
 import 'managers/input_manager.dart';
+import 'managers/model_manager.dart';
 import 'widgets/dialogue_ui.dart';
 import 'l10n/strings.g.dart';
 
@@ -55,6 +56,17 @@ class _GridSceneViewState extends State<GridSceneView> {
 
   Future<void> _initializeWorldMap() async {
     final totalStopwatch = Stopwatch()..start();
+    
+    setState(() {
+      _loadingStatus = 'Preloading common 3D models...';
+    });
+
+    // Preload common models to improve performance
+    final preloadStopwatch = Stopwatch()..start();
+    final modelManager = ModelManager();
+    await modelManager.preloadCommonModels();
+    preloadStopwatch.stop();
+    debugPrint('Model preloading: ${preloadStopwatch.elapsedMilliseconds}ms');
     
     setState(() {
       _loadingStatus = 'Generating 200x400 world map...';
