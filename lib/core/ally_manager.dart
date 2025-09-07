@@ -43,13 +43,16 @@ class AllyManager extends ChangeNotifier {
 
   /// Converts an enemy to an ally
   /// Returns true if successful, false if at max capacity
-  bool convertEnemyToAlly(EnemyCharacter enemy) {
+  Future<bool> convertEnemyToAlly(EnemyCharacter enemy) async {
     if (isAtMaxCapacity) {
       return false;
     }
 
     // Create new ally from enemy
     final ally = AllyCharacter(originalEnemy: enemy);
+
+    // Load the 3D model for the ally
+    await ally.loadModel();
 
     // Set follow target if player is available
     if (_player != null) {

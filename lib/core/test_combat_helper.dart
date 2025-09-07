@@ -37,7 +37,7 @@ class TestCombatHelper {
       );
 
       // Convert to ally
-      final success = gameLoopManager.convertEnemyToAlly(mockEnemy);
+      final success = await gameLoopManager.convertEnemyToAlly(mockEnemy);
       if (success) {
         created++;
         debugPrint('TestCombatHelper: Created test ally $created at $allyPos');

@@ -310,9 +310,9 @@ class GameLoopManager extends ChangeNotifier {
   }
 
   /// Converts an enemy to an ally through the gift system
-  bool convertEnemyToAlly(EnemyCharacter enemy) {
+  Future<bool> convertEnemyToAlly(EnemyCharacter enemy) async {
     if (!_allyManager.isAtMaxCapacity) {
-      final success = _allyManager.convertEnemyToAlly(enemy);
+      final success = await _allyManager.convertEnemyToAlly(enemy);
       if (success && _enemyManager != null) {
         // Remove enemy from enemy manager
         _enemyManager!.removeEnemy(enemy.id);
@@ -327,7 +327,7 @@ class GameLoopManager extends ChangeNotifier {
           _dialogueManager!.showCombatFeedback('${enemy.id} has become your ally!');
         }
         
-        debugPrint('GameLoopManager: Enemy ${enemy.id} converted to ally and model removed');
+        debugPrint('GameLoopManager: Enemy ${enemy.id} converted to ally and model loaded');
         return true;
       }
     }
