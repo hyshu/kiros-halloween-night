@@ -6,6 +6,7 @@ import 'combat_manager.dart';
 import 'enemy_character.dart';
 import 'enemy_manager.dart';
 import 'ghost_character.dart';
+import 'player_combat_result.dart';
 import 'tile_map.dart';
 
 /// Manages the main game loop and coordinates all game systems
@@ -32,6 +33,11 @@ class GameLoopManager extends ChangeNotifier {
   int _totalCombatsProcessed = 0;
   int _enemiesDefeated = 0;
   int _alliesLost = 0;
+  int _playerEnemiesDefeated = 0;
+
+  /// Recent combat results for UI feedback
+  final List<PlayerCombatResult> _recentPlayerCombats = [];
+  static const int maxRecentCombats = 5;
 
   /// Getters for accessing managers
   AllyManager get allyManager => _allyManager;
@@ -43,6 +49,10 @@ class GameLoopManager extends ChangeNotifier {
   int get totalCombatsProcessed => _totalCombatsProcessed;
   int get enemiesDefeated => _enemiesDefeated;
   int get alliesLost => _alliesLost;
+  int get playerEnemiesDefeated => _playerEnemiesDefeated;
+  
+  /// Recent combat results getter
+  List<PlayerCombatResult> get recentPlayerCombats => List.unmodifiable(_recentPlayerCombats);
 
   /// Initializes the game loop with required components
   void initialize({
@@ -146,6 +156,64 @@ class GameLoopManager extends ChangeNotifier {
     debugPrint('GameLoopManager: Ally ${ally.id} defeated');
   }
 
+  /// Processes direct combat between player and enemies
+  void _processPlayerCombat() {
+    if (_ghostCharacter == null || _enemyManager == null) return;
+
+    // Check for directional attacks first (from input processing)
+    final playerAttackResult = _ghostCharacter!.consumeLastAttackResult();
+    if (playerAttackResult != null) {
+      _addPlayerCombatResult(playerAttackResult);
+      
+      if (playerAttackResult.enemyDefeated) {
+        _playerEnemiesDefeated++;
+        // Find and remove the defeated enemy
+        final defeatedEnemies = _enemyManager!.activeEnemies.where((enemy) =>
+            !enemy.isAlive || enemy.health <= 0).toList();
+        for (final enemy in defeatedEnemies) {
+          _enemyManager!.removeEnemy(enemy.id);
+        }
+        debugPrint('GameLoopManager: Player defeated enemy with directional attack');
+      }
+      return; // Directional attack processed, no adjacent combat
+    }
+
+    // Legacy adjacent combat (in case of multiple adjacent enemies)
+    final playerPos = _ghostCharacter!.position;
+    final adjacentEnemies = _enemyManager!.activeEnemies.where((enemy) {
+      return playerPos.distanceTo(enemy.position) == 1 && enemy.isHostile;
+    }).toList();
+
+    if (adjacentEnemies.isEmpty) return;
+
+    debugPrint('GameLoopManager: Processing adjacent combat with ${adjacentEnemies.length} enemies');
+
+    for (final enemy in adjacentEnemies) {
+      // Enemy attacks player (since player didn't initiate directional attack)
+      final enemyDamage = enemy.attackPlayer(_ghostCharacter!);
+      _ghostCharacter!.takeDamageFromEnemy(enemyDamage, enemy);
+      
+      debugPrint('GameLoopManager: ${enemy.id} attacks player for $enemyDamage damage');
+      
+      // Check if player was defeated
+      if (!_ghostCharacter!.isAlive) {
+        debugPrint('GameLoopManager: Player was defeated!');
+        // TODO: Handle player death
+        break;
+      }
+    }
+  }
+
+  /// Adds a player combat result to recent history
+  void _addPlayerCombatResult(PlayerCombatResult result) {
+    _recentPlayerCombats.add(result);
+    
+    // Keep only recent results
+    while (_recentPlayerCombats.length > maxRecentCombats) {
+      _recentPlayerCombats.removeAt(0);
+    }
+  }
+
   /// Called when the player character moves - processes one turn
   void onPlayerMoved() {
     if (_ghostCharacter == null || _enemyManager == null || _tileMap == null) {
@@ -161,7 +229,10 @@ class GameLoopManager extends ChangeNotifier {
       // Process enemy AI (one turn)
       _enemyManager!.processEnemyAI(_ghostCharacter!);
 
-      // Get all active hostile enemies
+      // Process player vs enemy combat
+      _processPlayerCombat();
+
+      // Get all active hostile enemies (after player combat)
       final hostileEnemies = _getHostileEnemies();
 
       // Update ally AI (one turn)
@@ -205,6 +276,10 @@ class GameLoopManager extends ChangeNotifier {
       'combatsProcessed': _totalCombatsProcessed,
       'enemiesDefeated': _enemiesDefeated,
       'alliesLost': _alliesLost,
+      'playerEnemiesDefeated': _playerEnemiesDefeated,
+      'playerHealth': _ghostCharacter?.health ?? 0,
+      'playerMaxHealth': _ghostCharacter?.maxHealth ?? 100,
+      'playerCombatStrength': _ghostCharacter?.effectiveCombatStrength ?? 0,
       'playerPosition': _ghostCharacter?.position.toString() ?? 'Unknown',
     };
   }

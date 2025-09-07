@@ -102,6 +102,7 @@ class _GridSceneViewState extends State<GridSceneView> {
     _inputManager = InputManager(
       ghostCharacter: _ghostCharacter,
       tileMap: _tileMap,
+      sceneManager: _sceneManager,
       onCharacterMoved: () {
         // Update the scene when character moves
         _sceneManager.updateGhostCharacterPosition();

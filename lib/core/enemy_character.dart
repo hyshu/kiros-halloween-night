@@ -31,6 +31,9 @@ class EnemyCharacter extends Character {
   /// Maximum movement cooldown (in game ticks)
   static const int maxMovementCooldown = 3;
 
+  /// Base combat strength for this enemy
+  int? baseCombatStrength;
+
 
   /// Random number generator for AI decisions
   static final Random _random = Random();
@@ -46,11 +49,15 @@ class EnemyCharacter extends Character {
     this.isProximityActive = false,
     this.aiType = EnemyAIType.wanderer,
     this.movementCooldown = 0,
+    this.baseCombatStrength,
   }) : super(
          isActive: false, // Enemies start inactive until proximity activated
          canMove: true,
          isIdle: true,
-       );
+       ) {
+    // Set default combat strength if not provided
+    baseCombatStrength ??= _getDefaultCombatStrength();
+  }
 
   /// Factory constructor for creating enemies with human models
   factory EnemyCharacter.human({
@@ -106,6 +113,29 @@ class EnemyCharacter extends Character {
     } else {
       return EnemyType.monster;
     }
+  }
+
+  /// Gets default combat strength based on enemy type
+  int _getDefaultCombatStrength() {
+    final enemyType = this.enemyType;
+    switch (enemyType) {
+      case EnemyType.human:
+        return 15; // Humans are weaker
+      case EnemyType.monster:
+        return 25; // Monsters are stronger
+    }
+  }
+
+  /// Attacks the player and returns damage dealt
+  int attackPlayer(GhostCharacter player) {
+    final combatStrength = baseCombatStrength ?? _getDefaultCombatStrength();
+    final baseDamage = (combatStrength * 0.6).round();
+    final randomBonus = (combatStrength * 0.4 * (DateTime.now().millisecond / 1000)).round();
+    final totalDamage = baseDamage + randomBonus;
+    
+    debugPrint('EnemyCharacter: $id attacks player for $totalDamage damage');
+    
+    return totalDamage;
   }
 
   /// Updates the enemy's AI behavior (called each player turn)
@@ -173,7 +203,7 @@ class EnemyCharacter extends Character {
         _moveTowardsPlayer(player, tileMap);
         break;
       case EnemyAIType.wanderer:
-        _wanderRandomly(tileMap);
+        _wanderRandomly(tileMap, player: player);
         break;
       case EnemyAIType.guard:
         _guardBehavior(player, tileMap);
@@ -205,21 +235,21 @@ class EnemyCharacter extends Character {
     final direction = _getDirectionTowards(targetPosition);
 
     if (direction != null) {
-      _attemptMove(direction, tileMap);
+      _attemptMove(direction, tileMap, player: player);
     } else {
       // If no direct path, try random movement
-      _wanderRandomly(tileMap);
+      _wanderRandomly(tileMap, player: player);
     }
   }
 
   /// Makes the enemy wander randomly
-  void _wanderRandomly(TileMap tileMap) {
+  void _wanderRandomly(TileMap tileMap, {GhostCharacter? player}) {
     final directions = Direction.values;
     final shuffledDirections = List<Direction>.from(directions)
       ..shuffle(_random);
 
     for (final direction in shuffledDirections) {
-      if (_attemptMove(direction, tileMap)) {
+      if (_attemptMove(direction, tileMap, player: player)) {
         break; // Successfully moved
       }
     }
@@ -258,8 +288,14 @@ class EnemyCharacter extends Character {
   }
 
   /// Attempts to move in the specified direction
-  bool _attemptMove(Direction direction, TileMap tileMap) {
+  bool _attemptMove(Direction direction, TileMap tileMap, {GhostCharacter? player}) {
     final newPosition = _getNewPosition(direction);
+
+    // Check if the new position would overlap with player
+    if (player != null && newPosition == player.position) {
+      debugPrint('EnemyCharacter: $id cannot move to $newPosition - player is there');
+      return false;
+    }
 
     // Check if the new position is valid and walkable
     if (!tileMap.isWalkable(newPosition)) {
@@ -271,6 +307,7 @@ class EnemyCharacter extends Character {
     if (success) {
       setActive(); // Enemy is moving, not idle
       movementCooldown = maxMovementCooldown;
+      debugPrint('EnemyCharacter: $id moved to $newPosition');
     }
 
     return success;

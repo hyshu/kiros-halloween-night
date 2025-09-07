@@ -236,6 +236,29 @@ class _GridRendererState extends material.State<GridRenderer> {
                           ),
                         ),
                       ],
+                      const material.SizedBox(height: 4),
+                      // Player combat stats
+                      material.Text(
+                        'Player HP: ${widget.sceneManager.gameLoopManager!.ghostCharacter?.health ?? 0}/${widget.sceneManager.gameLoopManager!.ghostCharacter?.maxHealth ?? 100}',
+                        style: const material.TextStyle(
+                          color: material.Colors.lightGreen,
+                          fontSize: 11,
+                        ),
+                      ),
+                      material.Text(
+                        'Combat Strength: ${widget.sceneManager.gameLoopManager!.ghostCharacter?.effectiveCombatStrength ?? 0}',
+                        style: const material.TextStyle(
+                          color: material.Colors.cyan,
+                          fontSize: 11,
+                        ),
+                      ),
+                      material.Text(
+                        'Enemies Defeated: ${widget.sceneManager.gameLoopManager!.playerEnemiesDefeated}',
+                        style: const material.TextStyle(
+                          color: material.Colors.pink,
+                          fontSize: 11,
+                        ),
+                      ),
                     ],
                   ],
                 ),
