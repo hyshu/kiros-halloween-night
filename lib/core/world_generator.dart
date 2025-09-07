@@ -311,34 +311,33 @@ class WorldGenerator {
     return boss;
   }
 
-  /// Validates that a path exists between two positions using BFS
+  /// Validates that a path exists between two positions using optimized BFS
   bool _validatePath(TileMap tileMap, Position start, Position end) {
     if (start == end) return true;
 
-    final visited = <Position>{};
+    // Use integer keys for faster Set operations
+    final visited = <int>{};
     final queue = <Position>[start];
-    visited.add(start);
-    int nodesVisited = 0;
-    final maxNodes = 5000; // Limit search to prevent long-running validation
+    final startKey = start.x * 1000 + start.z;
+    visited.add(startKey);
 
-    while (queue.isNotEmpty && nodesVisited < maxNodes) {
+    while (queue.isNotEmpty) {
       final current = queue.removeAt(0);
-      nodesVisited++;
 
       if (current == end) {
         return true;
       }
 
       for (final neighbor in tileMap.getWalkableAdjacentPositions(current)) {
-        if (!visited.contains(neighbor)) {
-          visited.add(neighbor);
+        final neighborKey = neighbor.x * 1000 + neighbor.z;
+        if (!visited.contains(neighborKey)) {
+          visited.add(neighborKey);
           queue.add(neighbor);
         }
       }
     }
 
-    // If we hit the node limit, assume path exists (optimistic validation)
-    return nodesVisited >= maxNodes;
+    return false;
   }
 
   /// Creates a guaranteed path between two positions using A* pathfinding
@@ -449,67 +448,101 @@ class WorldGenerator {
     return path;
   }
 
-  /// Adds obstacles within rooms to make them more interesting
+  /// Adds obstacles to rooms using optimized batch placement
   void _addObstacles(TileMap tileMap, List<Room> rooms) {
     if (_isTestMode) {
-      // Simplified obstacle placement for tests in rooms
-      final obstacleCount = 15;
-      int placed = 0;
-      int attempts = 0;
-      final maxAttempts = 100;
-
-      while (placed < obstacleCount && attempts < maxAttempts) {
-        attempts++;
-
-        final x = 20 + _random.nextInt(TileMap.worldWidth - 40);
-        final z = 20 + _random.nextInt(TileMap.worldHeight - 40);
-        final position = Position(x, z);
-
-        if (tileMap.getTileAt(position) == TileType.floor &&
-            position != tileMap.playerSpawn &&
-            position != tileMap.bossLocation) {
-          tileMap.setTileAt(position, TileType.obstacle);
-          placed++;
-        }
-      }
+      _addObstaclesSimple(tileMap);
       return;
     }
 
-    // Place obstacles within rooms only, not in corridors
-    final obstacleCount = 120; // Increased for 50 rooms
-    int placed = 0;
-    int attempts = 0;
-    final maxAttempts = obstacleCount * 15;
+    // Use optimized batch placement approach
+    _addObstaclesOptimized(tileMap, rooms);
+  }
 
-    while (placed < obstacleCount && attempts < maxAttempts) {
-      attempts++;
+  /// Simplified obstacle placement for test mode
+  void _addObstaclesSimple(TileMap tileMap) {
+    final obstacleCount = 15;
+    final candidatePositions = <Position>[];
 
-      final x = 1 + _random.nextInt(TileMap.worldWidth - 2);
-      final z = 1 + _random.nextInt(TileMap.worldHeight - 2);
-      final position = Position(x, z);
-
-      // Only place obstacles on floor tiles that are within rooms
-      if (tileMap.getTileAt(position) == TileType.floor &&
-          position != tileMap.playerSpawn &&
-          position != tileMap.bossLocation &&
-          _isPositionInAnyRoom(position, rooms)) {
-        // Temporarily place obstacle and check if path still exists
-        tileMap.setTileAt(position, TileType.obstacle);
-
-        if (tileMap.playerSpawn != null &&
-            tileMap.bossLocation != null &&
-            _validatePath(
-              tileMap,
-              tileMap.playerSpawn!,
-              tileMap.bossLocation!,
-            )) {
-          placed++;
-        } else {
-          // Remove obstacle if it breaks the path
-          tileMap.setTileAt(position, TileType.floor);
+    // Collect all valid floor positions
+    for (int z = 20; z < TileMap.worldHeight - 20; z++) {
+      for (int x = 20; x < TileMap.worldWidth - 20; x++) {
+        final position = Position(x, z);
+        if (tileMap.getTileAt(position) == TileType.floor &&
+            position != tileMap.playerSpawn &&
+            position != tileMap.bossLocation) {
+          candidatePositions.add(position);
         }
       }
     }
+
+    // Batch place obstacles
+    candidatePositions.shuffle(_random);
+    final placementCount = (obstacleCount).clamp(0, candidatePositions.length);
+    
+    for (int i = 0; i < placementCount; i++) {
+      tileMap.setTileAt(candidatePositions[i], TileType.obstacle);
+    }
+  }
+
+  /// Optimized obstacle placement using batch approach with safety checks
+  void _addObstaclesOptimized(TileMap tileMap, List<Room> rooms) {
+    final candidatePositions = <Position>[];
+
+    // Step 1: Collect all valid obstacle positions from rooms
+    for (final room in rooms) {
+      // Place obstacles only in room interiors, not on edges or near corridors
+      for (int z = room.z + 2; z < room.z + room.height - 2; z++) {
+        for (int x = room.x + 2; x < room.x + room.width - 2; x++) {
+          final position = Position(x, z);
+          if (tileMap.getTileAt(position) == TileType.floor &&
+              position != tileMap.playerSpawn &&
+              position != tileMap.bossLocation &&
+              _isSafeObstaclePosition(tileMap, position)) {
+            candidatePositions.add(position);
+          }
+        }
+      }
+    }
+
+    if (candidatePositions.isEmpty) return;
+
+    // Step 2: Conservative batch placement (use only 1/4 of candidates)
+    candidatePositions.shuffle(_random);
+    final targetCount = (candidatePositions.length ~/ 4).clamp(0, 80);
+    
+    for (int i = 0; i < targetCount; i++) {
+      final position = candidatePositions[i];
+      tileMap.setTileAt(position, TileType.obstacle);
+    }
+
+    // Step 3: Single path validation after batch placement
+    if (tileMap.playerSpawn != null && tileMap.bossLocation != null) {
+      if (!_validatePath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!)) {
+        // If path is broken, create guaranteed path
+        _createGuaranteedPath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!);
+      }
+    }
+  }
+
+  /// Checks if a position is safe for obstacle placement (not blocking critical paths)
+  bool _isSafeObstaclePosition(TileMap tileMap, Position position) {
+    // Count walkable neighbors - if too few, this might be a chokepoint
+    int walkableNeighbors = 0;
+    for (final neighbor in [
+      Position(position.x - 1, position.z),
+      Position(position.x + 1, position.z),
+      Position(position.x, position.z - 1),
+      Position(position.x, position.z + 1),
+    ]) {
+      if (tileMap.isValidPosition(neighbor) && 
+          tileMap.getTileAt(neighbor) == TileType.floor) {
+        walkableNeighbors++;
+      }
+    }
+    
+    // Only place obstacle if position has enough walkable neighbors
+    return walkableNeighbors >= 3;
   }
 
   /// Checks if a position is within any of the generated rooms
