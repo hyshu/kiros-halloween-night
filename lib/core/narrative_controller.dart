@@ -1,5 +1,4 @@
 import 'dialogue_manager.dart';
-import 'dialogue_event.dart';
 
 /// Manages story progression and contextual dialogue throughout the game
 class NarrativeController {
@@ -112,7 +111,7 @@ class NarrativeController {
       'Impossible... How could a mere ghost defeat me?',
       speakerName: 'Boss Monster',
     );
-    
+
     // Follow up with victory message
     Future.delayed(const Duration(seconds: 2), () {
       _dialogueManager.showStory(
@@ -175,7 +174,7 @@ class NarrativeController {
       _storyFlags.clear();
       _storyFlags.addAll(Map<String, bool>.from(progress['flags']));
     }
-    
+
     if (progress['counters'] is Map) {
       _eventCounters.clear();
       _eventCounters.addAll(Map<String, int>.from(progress['counters']));

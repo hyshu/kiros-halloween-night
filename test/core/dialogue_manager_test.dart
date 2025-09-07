@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/dialogue_manager.dart';
-import '../../lib/core/dialogue_event.dart';
+import 'package:kiro_halloween_game/core/dialogue_manager.dart';
+import 'package:kiro_halloween_game/core/dialogue_event.dart';
 
 void main() {
   group('DialogueManager', () {
@@ -43,7 +43,10 @@ void main() {
 
       expect(dialogueManager.isDialogueActive, isTrue);
       // Events are now combined in the same turn
-      expect(dialogueManager.getCurrentDialogueText(), equals('First message\nSecond message'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        equals('First message\nSecond message'),
+      );
     });
 
     test('should show interaction dialogue', () {
@@ -51,7 +54,10 @@ void main() {
 
       expect(dialogueManager.isDialogueActive, isTrue);
       expect(dialogueManager.getCurrentDialogueText(), equals('Hello!'));
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
     });
 
     test('should show item collection dialogue', () {
@@ -59,31 +65,58 @@ void main() {
 
       expect(dialogueManager.isDialogueActive, isTrue);
       expect(dialogueManager.getCurrentDialogueText(), equals('Found candy!'));
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
     });
 
     test('should show combat feedback dialogue', () {
       dialogueManager.showCombatFeedback('Enemy defeated!');
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), equals('Enemy defeated!'));
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        equals('Enemy defeated!'),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
     });
 
     test('should show story dialogue', () {
-      dialogueManager.showStory('The adventure begins...', speakerName: 'Narrator');
+      dialogueManager.showStory(
+        'The adventure begins...',
+        speakerName: 'Narrator',
+      );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), equals('The adventure begins...'));
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        equals('The adventure begins...'),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
     });
 
     test('should show boss dialogue', () {
-      dialogueManager.showBossDialogue('You dare challenge me?', speakerName: 'Boss');
+      dialogueManager.showBossDialogue(
+        'You dare challenge me?',
+        speakerName: 'Boss',
+      );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), equals('You dare challenge me?'));
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        equals('You dare challenge me?'),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
     });
 
     test('should advance dialogue', () {

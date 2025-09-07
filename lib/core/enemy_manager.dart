@@ -22,7 +22,6 @@ class EnemyManager {
   /// Debug counter for periodic logging
   int _debugCounter = 0;
 
-
   /// Gets all enemies in the game
   UnmodifiableMapView<String, EnemyCharacter> get enemies =>
       UnmodifiableMapView(_enemies);
@@ -145,7 +144,8 @@ class EnemyManager {
       final distance = playerPosition.distanceTo(enemy.position);
 
       final shouldBeActive = distance <= enemy.activationRadius;
-      final shouldBeProximityActive = distance <= 10; // Proximity activation distance
+      final shouldBeProximityActive =
+          distance <= 10; // Proximity activation distance
 
       if (shouldBeActive != enemy.isActive) {
         enemy.isActive = shouldBeActive;
@@ -208,7 +208,9 @@ class EnemyManager {
       return;
     }
 
-    debugPrint('EnemyManager: Processing AI turn for ${activeEnemiesList.length} active enemies');
+    debugPrint(
+      'EnemyManager: Processing AI turn for ${activeEnemiesList.length} active enemies',
+    );
 
     for (final enemy in activeEnemiesList) {
       // Process enemy AI based on their type and state
@@ -231,7 +233,7 @@ class EnemyManager {
   /// Creates a temporary ghost character for AI processing
   GhostCharacter? _createPlayerGhost() {
     if (_playerPosition == null) return null;
-    
+
     // Create a minimal ghost character for AI calculations
     final tempGhost = GhostCharacter(
       id: 'temp_player',
@@ -239,7 +241,7 @@ class EnemyManager {
       health: 100,
       maxHealth: 100,
     );
-    
+
     return tempGhost;
   }
 

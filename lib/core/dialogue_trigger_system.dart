@@ -64,9 +64,7 @@ class DialogueTriggerSystem {
     _narrativeController.triggerFirstCandyCollection(candy.name);
 
     // Collection feedback
-    _dialogueManager.showItemCollection(
-      _getCandyCollectionDialogue(candy),
-    );
+    _dialogueManager.showItemCollection(_getCandyCollectionDialogue(candy));
 
     // Update counters and check for contextual dialogue
     _narrativeController.incrementEventCounter('candy_collected');
@@ -74,7 +72,8 @@ class DialogueTriggerSystem {
   }
 
   /// Triggers dialogue for combat events
-  void triggerCombatEvent(String eventType, {
+  void triggerCombatEvent(
+    String eventType, {
     AllyCharacter? ally,
     EnemyCharacter? enemy,
     String? outcome,
@@ -94,14 +93,10 @@ class DialogueTriggerSystem {
         );
         break;
       case 'ally_defeated':
-        _dialogueManager.showCombatFeedback(
-          _getAllyDefeatedDialogue(ally),
-        );
+        _dialogueManager.showCombatFeedback(_getAllyDefeatedDialogue(ally));
         break;
       case 'enemy_defeated':
-        _dialogueManager.showCombatFeedback(
-          _getEnemyDefeatedDialogue(enemy),
-        );
+        _dialogueManager.showCombatFeedback(_getEnemyDefeatedDialogue(enemy));
         break;
     }
 
@@ -238,7 +233,11 @@ class DialogueTriggerSystem {
     return '$allyName engages $enemyName in combat!';
   }
 
-  String _getCombatEndDialogue(AllyCharacter? ally, EnemyCharacter? enemy, String? outcome) {
+  String _getCombatEndDialogue(
+    AllyCharacter? ally,
+    EnemyCharacter? enemy,
+    String? outcome,
+  ) {
     switch (outcome) {
       case 'ally_victory':
         return 'Your ally emerges victorious!';

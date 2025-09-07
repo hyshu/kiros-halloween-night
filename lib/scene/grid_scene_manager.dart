@@ -218,7 +218,7 @@ class GridSceneManager extends ChangeNotifier {
 
     // Update dialogue system
     _dialogueManager.update();
-    
+
     // Check for candy collection at current position
     _checkCandyCollectionDialogue();
 
@@ -775,14 +775,14 @@ class GridSceneManager extends ChangeNotifier {
     if (_ghostCharacter == null || _tileMap == null) return;
 
     final pos = _ghostCharacter!.position;
-    
+
     // Check if there's candy at current position
     if (_tileMap!.isValidPosition(pos)) {
       final tile = _tileMap!.getTileAt(pos);
       if (tile == TileType.candy) {
         // Show candy collection dialogue with variety
         _showCandyCollectionMessage();
-        
+
         // Remove candy from tile map (mark as floor)
         _tileMap!.setTileAt(pos, TileType.floor);
       }
@@ -798,8 +798,9 @@ class GridSceneManager extends ChangeNotifier {
       'The sweet candy makes Kiro glow brighter with ghostly happiness.',
       'Kiro gobbles up the candy, feeling more spirited than ever!',
     ];
-    
-    final randomMessage = messages[DateTime.now().millisecondsSinceEpoch % messages.length];
+
+    final randomMessage =
+        messages[DateTime.now().millisecondsSinceEpoch % messages.length];
     _dialogueManager.showItemCollection(randomMessage);
   }
 

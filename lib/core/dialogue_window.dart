@@ -8,7 +8,7 @@ class DialogueWindow {
   bool _isActive = false;
   DialogueEvent? _currentEvent;
   DateTime? _displayStartTime;
-  
+
   // Callbacks for user interactions
   DialogueCallback? _onAdvance;
   DialogueCallback? _onDismiss;
@@ -32,7 +32,7 @@ class DialogueWindow {
     if (_currentEvent?.displayDuration == null || _displayStartTime == null) {
       return false;
     }
-    
+
     final elapsed = DateTime.now().difference(_displayStartTime!);
     return elapsed >= _currentEvent!.displayDuration!;
   }
@@ -54,7 +54,7 @@ class DialogueWindow {
   void displayDialogue(DialogueEvent event) {
     _currentEvent = event;
     _displayStartTime = DateTime.now();
-    
+
     if (!_isActive) {
       _isActive = true;
       _onShow?.call();
@@ -64,7 +64,7 @@ class DialogueWindow {
   /// Advances to the next dialogue or dismisses if at end
   void advanceDialogue() {
     if (!canAdvance) return;
-    
+
     _onAdvance?.call();
     dismissDialogue();
   }
@@ -72,10 +72,10 @@ class DialogueWindow {
   /// Dismisses the current dialogue window
   void dismissDialogue() {
     if (!canDismiss) return;
-    
+
     _currentEvent = null;
     _displayStartTime = null;
-    
+
     if (_isActive) {
       _isActive = false;
       _onDismiss?.call();
@@ -100,14 +100,14 @@ class DialogueWindow {
   /// Gets the display text for the current dialogue
   String getDisplayText() {
     if (_currentEvent == null) return '';
-    
+
     final speaker = _currentEvent!.speakerName;
     final message = _currentEvent!.message;
-    
+
     if (speaker != null && speaker.isNotEmpty) {
       return '$speaker: $message';
     }
-    
+
     return message;
   }
 

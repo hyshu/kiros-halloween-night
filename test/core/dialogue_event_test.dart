@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/dialogue_event.dart';
+import 'package:kiro_halloween_game/core/dialogue_event.dart';
 
 void main() {
   group('DialogueEvent', () {

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/narrative_controller.dart';
-import '../../lib/core/dialogue_manager.dart';
-import '../../lib/core/dialogue_event.dart';
+import 'package:kiro_halloween_game/core/narrative_controller.dart';
+import 'package:kiro_halloween_game/core/dialogue_manager.dart';
+import 'package:kiro_halloween_game/core/dialogue_event.dart';
 
 void main() {
   group('NarrativeController', () {
@@ -44,18 +44,27 @@ void main() {
       // Clear dialogue and try again
       dialogueManager.clear();
       narrativeController.triggerGameStart();
-      expect(dialogueManager.isDialogueActive, isFalse); // Should not trigger again
+      expect(
+        dialogueManager.isDialogueActive,
+        isFalse,
+      ); // Should not trigger again
     });
 
     test('should trigger first enemy encounter dialogue once', () {
       narrativeController.triggerFirstEnemyEncounter();
-      expect(narrativeController.getStoryFlag('first_enemy_encountered'), isTrue);
+      expect(
+        narrativeController.getStoryFlag('first_enemy_encountered'),
+        isTrue,
+      );
       expect(dialogueManager.isDialogueActive, isTrue);
 
       // Clear dialogue and try again
       dialogueManager.clear();
       narrativeController.triggerFirstEnemyEncounter();
-      expect(dialogueManager.isDialogueActive, isFalse); // Should not trigger again
+      expect(
+        dialogueManager.isDialogueActive,
+        isFalse,
+      ); // Should not trigger again
     });
 
     test('should trigger first candy collection dialogue once', () {
@@ -86,7 +95,10 @@ void main() {
     test('should trigger boss encounter dialogue', () {
       narrativeController.triggerBossEncounter();
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
     });
 
     test('should trigger contextual dialogue based on milestones', () {

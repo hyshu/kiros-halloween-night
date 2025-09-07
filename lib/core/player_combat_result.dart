@@ -30,7 +30,8 @@ class PlayerCombatResult {
   bool get wasSuccessful => enemyDefeated;
 
   /// Whether the player took damage (for enemy counter-attacks)
-  bool get playerTookDamage => false; // Will be extended for enemy counter-attacks
+  bool get playerTookDamage =>
+      false; // Will be extended for enemy counter-attacks
 
   @override
   String toString() {

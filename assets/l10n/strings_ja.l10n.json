@@ -1,0 +1,99 @@
+{
+  "@@locale": "ja",
+  "game": {
+    "title": "キロ ハロウィン ゲーム",
+    "start": "ゲーム開始",
+    "pause": "一時停止",
+    "resume": "再開",
+    "quit": "終了",
+    "gameOver": "ゲームオーバー",
+    "victory": "勝利！"
+  },
+  "ui": {
+    "health": "体力",
+    "score": "スコア",
+    "level": "レベル",
+    "inventory": "アイテム",
+    "back": "戻る",
+    "confirm": "確認",
+    "cancel": "キャンセル"
+  },
+  "combat": {
+    "attack": "攻撃",
+    "defend": "防御",
+    "run": "逃げる",
+    "victory": "勝利しました！",
+    "defeat": "敗北しました！",
+    "enemyDefeated": "敵を倒しました！",
+    "takeDamage": "{damage}のダメージを受けました",
+    "dealDamage": "{damage}のダメージを与えました",
+    "enemyAttacks": {
+      "withDamage": [
+        "{}がキロに意外なハグをしました！驚くほど温かいです！（{}ダメージ）",
+        "フレンドリーな{}がキロに遊び半分でぶつかってきました！（{}ダメージ）",
+        "{}がキロとハイタッチしようとしましたが、幽霊に触るのは難しいようです！（{}ダメージ）",
+        "{}が浮いている幽霊にくすぐり攻撃を試みました！（{}ダメージ）",
+        "好奇心旺盛な{}がキロの幽霊の形を突いてきました！（{}ダメージ）"
+      ],
+      "withoutDamage": [
+        "{}がキロに手を振りましたが、幽霊のターゲットを外しました！（0ダメージ）",
+        "困惑した{}がキロが浮いていた空中を振り回しました！（0ダメージ）",
+        "{}のフレンドリーなジェスチャーがキロを素通りしました！（0ダメージ）"
+      ]
+    },
+    "playerAttacks": {
+      "withDamage": [
+        "キロが怖い「ブー！」を放ちます！敵は怖がって逃げてしまいました！（{}ダメージ）",
+        "キロの幽霊の存在感が敵を圧倒しました！敵は恐怖で消え去りました！（{}ダメージ）",
+        "フレンドリーな幽霊のハグで敵は恥ずかしくて戦えません！（{}ダメージ）",
+        "キロのエーテルなくすぐり攻撃がたまりません！敵は笑いながら去りました！（{}ダメージ）",
+        "敵はキロの幽霊ダンスに魅了され、平和的に立ち去りました！（{}ダメージ）"
+      ],
+      "withoutDamage": [
+        "キロは怖がらせようとしましたが、敵は笑うだけでした！（{}ダメージ）",
+        "キロの幽霊タッチは気づかれましたが、あまり効果的ではありませんでした！（{}ダメージ）",
+        "敵はキロのアプローチから優しい幽霊の風を感じました！（{}ダメージ）",
+        "キロのフレンドリーな幽霊の手振りが敵を少し混乱させました！（{}ダメージ）"
+      ]
+    }
+  },
+  "dialogue": {
+    "continueButton": "続ける",
+    "skip": "スキップ",
+    "close": "閉じる"
+  },
+  "items": {
+    "candy": "キャンディ",
+    "collected": "{item}を入手しました！",
+    "useItem": "アイテム使用",
+    "noItems": "アイテムがありません"
+  },
+  "enemies": {
+    "ghost": "ゴースト",
+    "skeleton": "スケルトン",
+    "zombie": "ゾンビ"
+  },
+  "messages": {
+    "welcome": "キロ ハロウィン ゲームへようこそ！",
+    "gameStarted": "ゲームが開始されました！",
+    "levelComplete": "レベルクリア！",
+    "newLevel": "レベル {level}"
+  },
+  "debug": {
+    "gameLoopInitialized": "GameLoopManager: プレイヤーを{}で初期化しました",
+    "turnBasedSystemInitialized": "GameLoopManager: ターンベースシステムが初期化されました", 
+    "turnBasedSystemStopped": "GameLoopManager: ターンベースシステムが停止されました",
+    "combatEncountersProcessed": "GameLoopManager: {}の戦闘遭遇を処理しました",
+    "combatResult": "GameLoopManager: 戦闘結果 - {}",
+    "enemyDefeatedRemoved": "GameLoopManager: エネミー{}が倒され削除されました",
+    "allyDefeated": "GameLoopManager: アライ{}が倒されました",
+    "playerDefeatedEnemy": "GameLoopManager: プレイヤーが方向攻撃でエネミーを倒しました",
+    "processingAdjacentCombat": "GameLoopManager: {}体のエネミーとの隣接戦闘を処理中",
+    "enemyAttacksPlayer": "GameLoopManager: {}がプレイヤーに{}ダメージを与えました",
+    "playerDefeated": "GameLoopManager: プレイヤーが倒されました！",
+    "processingTurn": "GameLoopManager: プレイヤー移動後のターンを処理中",
+    "turnCompleted": "GameLoopManager: ターン完了",
+    "errorInTurnProcessing": "GameLoopManager: ターン処理でエラー: {}",
+    "convertedEnemyToAlly": "GameLoopManager: エネミー{}をアライに変換しました"
+  }
+}

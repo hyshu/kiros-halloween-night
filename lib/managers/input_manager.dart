@@ -27,7 +27,11 @@ class InputManager {
   /// Returns true if the key was handled
   bool handleKeyPress(LogicalKeyboardKey key) {
     final enemyManager = _sceneManager?.enemyManager;
-    final wasHandled = _ghostCharacter.handleInput(key, _tileMap, enemyManager: enemyManager);
+    final wasHandled = _ghostCharacter.handleInput(
+      key,
+      _tileMap,
+      enemyManager: enemyManager,
+    );
 
     if (wasHandled && !_ghostCharacter.isIdle) {
       // Character moved successfully

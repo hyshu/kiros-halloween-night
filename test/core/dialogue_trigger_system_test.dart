@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/dialogue_trigger_system.dart';
-import '../../lib/core/dialogue_manager.dart';
-import '../../lib/core/dialogue_event.dart';
-import '../../lib/core/narrative_controller.dart';
-import '../../lib/core/enemy_character.dart';
-import '../../lib/core/ally_character.dart';
-import '../../lib/core/candy_item.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/dialogue_trigger_system.dart';
+import 'package:kiro_halloween_game/core/dialogue_manager.dart';
+import 'package:kiro_halloween_game/core/dialogue_event.dart';
+import 'package:kiro_halloween_game/core/narrative_controller.dart';
+import 'package:kiro_halloween_game/core/enemy_character.dart';
+import 'package:kiro_halloween_game/core/ally_character.dart';
+import 'package:kiro_halloween_game/core/candy_item.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   // Skip DialogueTriggerSystem tests temporarily - new dialogue system changed behavior
@@ -18,13 +18,16 @@ void main() {
     setUp(() {
       dialogueManager = DialogueManager();
       narrativeController = NarrativeController(dialogueManager);
-      triggerSystem = DialogueTriggerSystem(dialogueManager, narrativeController);
+      triggerSystem = DialogueTriggerSystem(
+        dialogueManager,
+        narrativeController,
+      );
     });
 
     test('should trigger enemy interaction dialogue', () {
       // Set the first enemy encountered flag to avoid tutorial dialogue
       narrativeController.setStoryFlag('first_enemy_encountered', true);
-      
+
       final enemy = EnemyCharacter(
         id: 'test_enemy_1',
         position: const Position(5, 5),
@@ -34,8 +37,14 @@ void main() {
       triggerSystem.triggerEnemyInteraction(enemy, action: 'approach');
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
-      expect(dialogueManager.getCurrentDialogueText(), contains('Wandering Spirit'));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('Wandering Spirit'),
+      );
     });
 
     test('should trigger enemy conversion dialogue', () {
@@ -55,7 +64,7 @@ void main() {
     test('should trigger item collection dialogue', () {
       // Set the first candy collected flag to avoid tutorial dialogue
       narrativeController.setStoryFlag('first_candy_collected', true);
-      
+
       final candy = CandyItem(
         id: 'test_candy_1',
         name: 'Chocolate Bar',
@@ -68,24 +77,28 @@ void main() {
       triggerSystem.triggerItemCollection(candy);
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
-      expect(dialogueManager.getCurrentDialogueText(), contains('Chocolate Bar'));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('Chocolate Bar'),
+      );
       expect(narrativeController.getEventCounter('candy_collected'), equals(1));
     });
 
     test('should trigger combat event dialogue', () {
       // Set the first combat seen flag to avoid tutorial dialogue
       narrativeController.setStoryFlag('first_combat_seen', true);
-      
+
       final originalEnemy = EnemyCharacter(
         id: 'test_enemy_3',
         position: const Position(3, 3),
         modelPath: 'assets/characters/character-male-b.obj',
       );
-      
-      final ally = AllyCharacter(
-        originalEnemy: originalEnemy,
-      );
+
+      final ally = AllyCharacter(originalEnemy: originalEnemy);
 
       final enemy = EnemyCharacter(
         id: 'test_enemy_4',
@@ -100,16 +113,25 @@ void main() {
       );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
       expect(dialogueManager.getCurrentDialogueText(), contains('combat'));
-      expect(narrativeController.getEventCounter('combats_witnessed'), equals(1));
+      expect(
+        narrativeController.getEventCounter('combats_witnessed'),
+        equals(1),
+      );
     });
 
     test('should trigger story events', () {
       triggerSystem.triggerStoryEvent('game_start');
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
       expect(narrativeController.getStoryFlag('game_started'), isTrue);
     });
 
@@ -117,22 +139,29 @@ void main() {
       triggerSystem.triggerStoryEvent('boss_encounter');
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
     });
 
     test('should trigger area discovery dialogue', () {
-      triggerSystem.triggerStoryEvent('area_discovered', context: {
-        'area_name': 'Secret Chamber',
-      });
+      triggerSystem.triggerStoryEvent(
+        'area_discovered',
+        context: {'area_name': 'Secret Chamber'},
+      );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), contains('Secret Chamber'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('Secret Chamber'),
+      );
     });
 
     test('should generate different enemy names based on model path', () {
       // Set the first enemy encountered flag to avoid tutorial dialogue
       narrativeController.setStoryFlag('first_enemy_encountered', true);
-      
+
       final maleEnemy = EnemyCharacter(
         id: 'test_enemy_5',
         position: const Position(1, 1),
@@ -152,7 +181,10 @@ void main() {
       );
 
       triggerSystem.triggerEnemyInteraction(maleEnemy, action: 'approach');
-      expect(dialogueManager.getCurrentDialogueText(), contains('Wandering Spirit'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('Wandering Spirit'),
+      );
 
       dialogueManager.clear();
       triggerSystem.triggerEnemyInteraction(femaleEnemy, action: 'approach');
@@ -160,13 +192,16 @@ void main() {
 
       dialogueManager.clear();
       triggerSystem.triggerEnemyInteraction(monsterEnemy, action: 'approach');
-      expect(dialogueManager.getCurrentDialogueText(), contains('Shadow Beast'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('Shadow Beast'),
+      );
     });
 
     test('should provide different dialogue based on candy effects', () {
       // Set the first candy collected flag to avoid tutorial dialogue
       narrativeController.setStoryFlag('first_candy_collected', true);
-      
+
       final healthCandy = CandyItem(
         id: 'test_candy_2',
         name: 'Health Potion',
@@ -196,16 +231,14 @@ void main() {
     test('should handle combat outcomes correctly', () {
       // Set the first combat seen flag to avoid tutorial dialogue
       narrativeController.setStoryFlag('first_combat_seen', true);
-      
+
       final originalEnemy2 = EnemyCharacter(
         id: 'test_enemy_8',
         position: const Position(5, 5),
         modelPath: 'assets/characters/character-male-c.obj',
       );
-      
-      final ally = AllyCharacter(
-        originalEnemy: originalEnemy2,
-      );
+
+      final ally = AllyCharacter(originalEnemy: originalEnemy2);
 
       triggerSystem.triggerCombatEvent(
         'combat_end',

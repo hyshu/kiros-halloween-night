@@ -67,7 +67,11 @@ class GhostCharacter extends Character {
 
   /// Handles keyboard input for movement and combat
   /// Returns true if the key was recognized (regardless of action success)
-  bool handleInput(LogicalKeyboardKey key, TileMap? tileMap, {EnemyManager? enemyManager}) {
+  bool handleInput(
+    LogicalKeyboardKey key,
+    TileMap? tileMap, {
+    EnemyManager? enemyManager,
+  }) {
     if (_isProcessingInput || !canMove) return false;
 
     Direction? direction;
@@ -94,7 +98,7 @@ class GhostCharacter extends Character {
 
     // Key was recognized, check for enemy in that direction
     final targetPosition = _getNewPosition(direction);
-    
+
     // Check if there's an enemy at target position
     if (enemyManager != null) {
       final enemiesAtTarget = enemyManager.getEnemiesAt(targetPosition);
@@ -104,15 +108,19 @@ class GhostCharacter extends Character {
         return true; // Key was handled as attack
       }
     }
-    
+
     // No enemy at target, attempt normal movement
     attemptMove(direction, tileMap, enemyManager: enemyManager);
     return true; // Key was handled, regardless of movement success
   }
 
   /// Attempts to move in the specified direction
-  /// Returns true if the move was successful  
-  bool attemptMove(Direction direction, TileMap? tileMap, {EnemyManager? enemyManager}) {
+  /// Returns true if the move was successful
+  bool attemptMove(
+    Direction direction,
+    TileMap? tileMap, {
+    EnemyManager? enemyManager,
+  }) {
     if (_isProcessingInput || !canMove) return false;
 
     _isProcessingInput = true;
@@ -325,7 +333,9 @@ class GhostCharacter extends Character {
 
   /// Gets the player's total combat strength
   int get effectiveCombatStrength {
-    final candyBonus = inventory.getTotalAbilityModification('combatStrength').round();
+    final candyBonus = inventory
+        .getTotalAbilityModification('combatStrength')
+        .round();
     return baseCombatStrength + combatStrengthBonus + candyBonus;
   }
 
@@ -333,16 +343,17 @@ class GhostCharacter extends Character {
   PlayerCombatResult attackEnemy(EnemyCharacter enemy) {
     isInCombat = true;
     final playerStrength = effectiveCombatStrength;
-    
+
     // Calculate damage with some randomness
     final baseDamage = (playerStrength * 0.8).round();
-    final randomBonus = (playerStrength * 0.4 * (DateTime.now().millisecond / 1000)).round();
+    final randomBonus =
+        (playerStrength * 0.4 * (DateTime.now().millisecond / 1000)).round();
     final totalDamage = baseDamage + randomBonus;
-    
+
     // Apply damage to enemy
     final wasAlive = enemy.isAlive;
     enemy.takeDamage(totalDamage);
-    
+
     final result = PlayerCombatResult(
       playerDamageDealt: totalDamage,
       enemyDefeated: wasAlive && !enemy.isAlive,
@@ -350,7 +361,7 @@ class GhostCharacter extends Character {
       enemyHealth: enemy.health,
       combatDescription: _getCombatDescription(totalDamage, enemy.isAlive),
     );
-    
+
     // Update statistics
     if (result.enemyDefeated) {
       enemiesDefeated++;
@@ -358,7 +369,7 @@ class GhostCharacter extends Character {
       final healthGain = (maxHealth * 0.1).round();
       heal(healthGain);
     }
-    
+
     isInCombat = false;
     return result;
   }
@@ -366,10 +377,12 @@ class GhostCharacter extends Character {
   /// Takes damage from enemy attack
   void takeDamageFromEnemy(int damage, EnemyCharacter attacker) {
     takeDamage(damage);
-    
+
     // Apply defensive abilities from candies
     if (inventory.hasActiveAbility('damageReduction')) {
-      final reduction = inventory.getTotalAbilityModification('damageReduction');
+      final reduction = inventory.getTotalAbilityModification(
+        'damageReduction',
+      );
       final reducedDamage = (damage * (1.0 - reduction)).round();
       heal(damage - reducedDamage); // Restore some health due to reduction
     }
@@ -382,31 +395,38 @@ class GhostCharacter extends Character {
 
   /// Removes combat strength bonus
   void removeCombatStrengthBonus(int bonus) {
-    combatStrengthBonus = (combatStrengthBonus - bonus).clamp(0, double.infinity).toInt();
+    combatStrengthBonus = (combatStrengthBonus - bonus)
+        .clamp(0, double.infinity)
+        .toInt();
   }
 
   /// Performs an attack on enemies at a specific position
-  void _performAttackAtPosition(Position targetPosition, List<EnemyCharacter> enemies) {
-    debugPrint('GhostCharacter: Attacking ${enemies.length} enemies at $targetPosition');
-    
+  void _performAttackAtPosition(
+    Position targetPosition,
+    List<EnemyCharacter> enemies,
+  ) {
+    debugPrint(
+      'GhostCharacter: Attacking ${enemies.length} enemies at $targetPosition',
+    );
+
     // Attack the first enemy at the position
     if (enemies.isNotEmpty) {
       final enemy = enemies.first;
       final result = attackEnemy(enemy);
-      
+
       // Store the result for GameLoopManager to process
       _lastAttackResult = result;
-      
+
       debugPrint('GhostCharacter: ${result.combatDescription}');
-      
+
       // Player doesn't move, just attacks
-      setIdle(); 
+      setIdle();
     }
   }
 
   /// Last attack result for GameLoopManager to access
   PlayerCombatResult? _lastAttackResult;
-  
+
   /// Gets and clears the last attack result
   PlayerCombatResult? consumeLastAttackResult() {
     final result = _lastAttackResult;

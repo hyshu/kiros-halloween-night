@@ -6,7 +6,7 @@ enum DialogueType {
   playerAttack,
   enemyAttack,
   story,
-  boss
+  boss,
 }
 
 /// Represents a single dialogue event with message and interaction options

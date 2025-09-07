@@ -75,20 +75,21 @@ class TestCombatHelper {
 
     // Move some enemies close to allies to trigger combat
     int combatsForced = 0;
-    for (int i = 0; i < min(allies.length, enemies.length) && combatsForced < 3; i++) {
+    for (
+      int i = 0;
+      i < min(allies.length, enemies.length) && combatsForced < 3;
+      i++
+    ) {
       final ally = allies[i];
       final enemy = enemies[i];
 
       if (enemy.isHostile && ally.isAlive) {
         // Move enemy to adjacent position to ally
-        final newEnemyPos = Position(
-          ally.position.x + 1,
-          ally.position.z,
-        );
+        final newEnemyPos = Position(ally.position.x + 1, ally.position.z);
 
         enemy.moveTo(newEnemyPos);
         combatsForced++;
-        
+
         debugPrint(
           'TestCombatHelper: Moved ${enemy.id} next to ${ally.id} to force combat',
         );
@@ -114,13 +115,17 @@ class TestCombatHelper {
     debugPrint('Enemies Defeated: ${stats['enemiesDefeated']}');
     debugPrint('Allies Lost: ${stats['alliesLost']}');
     debugPrint('Player Position: ${stats['playerPosition']}');
-    
+
     if (allyInfo['total'] > 0) {
       debugPrint('Ally Details:');
       debugPrint('  - In Combat: ${allyInfo['inCombat']}');
       debugPrint('  - Following: ${allyInfo['following']}');
-      debugPrint('  - Average Satisfaction: ${(allyInfo['averageSatisfaction'] * 100).toStringAsFixed(1)}%');
-      debugPrint('  - Total Combat Strength: ${allyInfo['totalCombatStrength']}');
+      debugPrint(
+        '  - Average Satisfaction: ${(allyInfo['averageSatisfaction'] * 100).toStringAsFixed(1)}%',
+      );
+      debugPrint(
+        '  - Total Combat Strength: ${allyInfo['totalCombatStrength']}',
+      );
     }
     debugPrint('========================');
   }
@@ -128,22 +133,22 @@ class TestCombatHelper {
   /// Runs a complete combat test sequence
   Future<void> runCombatTest() async {
     debugPrint('TestCombatHelper: Starting combat test sequence...');
-    
+
     // Step 1: Create test allies
     await createTestAllies();
     await Future.delayed(const Duration(seconds: 1));
-    
+
     // Step 2: Print initial status
     printCombatStatus();
     await Future.delayed(const Duration(seconds: 1));
-    
+
     // Step 3: Force combat encounters
     forceCombatEncounters();
     await Future.delayed(const Duration(seconds: 2));
-    
+
     // Step 4: Print combat results
     printCombatStatus();
-    
+
     debugPrint('TestCombatHelper: Combat test sequence completed');
   }
 }

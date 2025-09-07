@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/descriptive_text_system.dart';
-import '../../lib/core/dialogue_manager.dart';
-import '../../lib/core/dialogue_event.dart';
-import '../../lib/core/position.dart';
+import 'package:kiro_halloween_game/core/descriptive_text_system.dart';
+import 'package:kiro_halloween_game/core/dialogue_manager.dart';
+import 'package:kiro_halloween_game/core/dialogue_event.dart';
+import 'package:kiro_halloween_game/core/position.dart';
 
 void main() {
   group('DescriptiveTextSystem', () {
@@ -25,30 +25,48 @@ void main() {
       );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueType(), equals(DialogueType.combat));
-      expect(dialogueManager.getCurrentDialogueText(), contains('entrance halls'));
-      expect(dialogueManager.getCurrentDialogueText(), contains('guard valuable candy'));
+      expect(
+        dialogueManager.getCurrentDialogueType(),
+        equals(DialogueType.combat),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('entrance halls'),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('guard valuable candy'),
+      );
     });
 
     test('should describe different areas based on position', () {
       // Test entrance area
       const entrancePosition = Position(25, 50);
       descriptiveSystem.describeEnvironment(entrancePosition);
-      expect(dialogueManager.getCurrentDialogueText(), contains('entrance halls'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('entrance halls'),
+      );
 
       dialogueManager.clear();
 
       // Test deeper area
       const deepPosition = Position(175, 350);
       descriptiveSystem.describeEnvironment(deepPosition);
-      expect(dialogueManager.getCurrentDialogueText(), contains('deeper, more dangerous'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('deeper, more dangerous'),
+      );
 
       dialogueManager.clear();
 
       // Test middle area
       const middlePosition = Position(100, 200);
       descriptiveSystem.describeEnvironment(middlePosition);
-      expect(dialogueManager.getCurrentDialogueText(), contains('mysterious corridors'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('mysterious corridors'),
+      );
     });
 
     test('should describe movement with obstacles', () {
@@ -62,7 +80,10 @@ void main() {
       );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), contains('blocked by a massive stone wall'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('blocked by a massive stone wall'),
+      );
     });
 
     test('should describe movement with discoveries', () {
@@ -76,7 +97,10 @@ void main() {
       );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), contains('glowing crystal nearby'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('glowing crystal nearby'),
+      );
     });
 
     test('should describe state changes', () {
@@ -86,32 +110,52 @@ void main() {
 
       dialogueManager.clear();
 
-      descriptiveSystem.describeStateChange('many_allies', context: {'ally_count': 3});
-      expect(dialogueManager.getCurrentDialogueText(), contains('3 loyal allies'));
+      descriptiveSystem.describeStateChange(
+        'many_allies',
+        context: {'ally_count': 3},
+      );
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('3 loyal allies'),
+      );
     });
 
     test('should describe special events', () {
-      descriptiveSystem.describeSpecialEvent('secret_area_found', context: {
-        'area_name': 'the Crystal Cavern',
-      });
+      descriptiveSystem.describeSpecialEvent(
+        'secret_area_found',
+        context: {'area_name': 'the Crystal Cavern'},
+      );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), contains('Crystal Cavern'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('Crystal Cavern'),
+      );
       expect(dialogueManager.getCurrentDialogueText(), contains('secret area'));
     });
 
     test('should describe emotional moments', () {
       descriptiveSystem.describeEmotionalMoment('first_friend');
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), contains('warm feeling'));
-      expect(dialogueManager.getCurrentDialogueText(), contains('no longer alone'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('warm feeling'),
+      );
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('no longer alone'),
+      );
 
       dialogueManager.clear();
 
-      descriptiveSystem.describeEmotionalMoment('ally_sacrifice', context: {
-        'ally_name': 'Brave Guardian',
-      });
-      expect(dialogueManager.getCurrentDialogueText(), contains('Brave Guardian'));
+      descriptiveSystem.describeEmotionalMoment(
+        'ally_sacrifice',
+        context: {'ally_name': 'Brave Guardian'},
+      );
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('Brave Guardian'),
+      );
       expect(dialogueManager.getCurrentDialogueText(), contains('sacrifice'));
     });
 
@@ -136,8 +180,15 @@ void main() {
 
       expect(dialogueManager.isDialogueActive, isTrue);
       final text = dialogueManager.getCurrentDialogueText();
-      expect(text.contains('echo') || text.contains('shadows') || text.contains('whispers') || 
-             text.contains('stones') || text.contains('breeze') || text.contains('symbols'), isTrue);
+      expect(
+        text.contains('echo') ||
+            text.contains('shadows') ||
+            text.contains('whispers') ||
+            text.contains('stones') ||
+            text.contains('breeze') ||
+            text.contains('symbols'),
+        isTrue,
+      );
     });
 
     test('should describe environment with special features', () {
@@ -149,7 +200,10 @@ void main() {
       );
 
       expect(dialogueManager.isDialogueActive, isTrue);
-      expect(dialogueManager.getCurrentDialogueText(), contains('ancient altar'));
+      expect(
+        dialogueManager.getCurrentDialogueText(),
+        contains('ancient altar'),
+      );
     });
   });
 }

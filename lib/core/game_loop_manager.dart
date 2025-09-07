@@ -9,7 +9,7 @@ import 'ghost_character.dart';
 import 'player_combat_result.dart';
 import 'tile_map.dart';
 import 'dialogue_manager.dart';
-import 'enemy_spawner.dart';
+import '../l10n/strings.g.dart';
 
 /// Manages the main game loop and coordinates all game systems
 class GameLoopManager extends ChangeNotifier {
@@ -55,9 +55,10 @@ class GameLoopManager extends ChangeNotifier {
   int get enemiesDefeated => _enemiesDefeated;
   int get alliesLost => _alliesLost;
   int get playerEnemiesDefeated => _playerEnemiesDefeated;
-  
+
   /// Recent combat results getter
-  List<PlayerCombatResult> get recentPlayerCombats => List.unmodifiable(_recentPlayerCombats);
+  List<PlayerCombatResult> get recentPlayerCombats =>
+      List.unmodifiable(_recentPlayerCombats);
 
   /// Initializes the game loop with required components
   void initialize({
@@ -74,7 +75,9 @@ class GameLoopManager extends ChangeNotifier {
     // Set player reference for ally manager
     _allyManager.setPlayer(ghostCharacter);
 
-    debugPrint('GameLoopManager: Initialized with player at ${ghostCharacter.position}');
+    debugPrint(
+      'GameLoopManager: Initialized with player at ${ghostCharacter.position}',
+    );
   }
 
   /// Initializes the turn-based game system (no real-time loop)
@@ -94,7 +97,6 @@ class GameLoopManager extends ChangeNotifier {
     debugPrint('GameLoopManager: Turn-based system stopped');
     notifyListeners();
   }
-
 
   /// Gets all hostile enemies in the game
   List<EnemyCharacter> _getHostileEnemies() {
@@ -171,19 +173,22 @@ class GameLoopManager extends ChangeNotifier {
     final playerAttackResult = _ghostCharacter!.consumeLastAttackResult();
     if (playerAttackResult != null) {
       _addPlayerCombatResult(playerAttackResult);
-      
+
       // Show combat message for player attack
       _showPlayerAttackMessage(playerAttackResult);
-      
+
       if (playerAttackResult.enemyDefeated) {
         _playerEnemiesDefeated++;
         // Find and remove the defeated enemy
-        final defeatedEnemies = _enemyManager!.activeEnemies.where((enemy) =>
-            !enemy.isAlive || enemy.health <= 0).toList();
+        final defeatedEnemies = _enemyManager!.activeEnemies
+            .where((enemy) => !enemy.isAlive || enemy.health <= 0)
+            .toList();
         for (final enemy in defeatedEnemies) {
           _enemyManager!.removeEnemy(enemy.id);
         }
-        debugPrint('GameLoopManager: Player defeated enemy with directional attack');
+        debugPrint(
+          'GameLoopManager: Player defeated enemy with directional attack',
+        );
       }
       return; // Directional attack processed, no adjacent combat
     }
@@ -196,18 +201,22 @@ class GameLoopManager extends ChangeNotifier {
 
     if (adjacentEnemies.isEmpty) return;
 
-    debugPrint('GameLoopManager: Processing adjacent combat with ${adjacentEnemies.length} enemies');
+    debugPrint(
+      'GameLoopManager: Processing adjacent combat with ${adjacentEnemies.length} enemies',
+    );
 
     for (final enemy in adjacentEnemies) {
       // Enemy attacks player (since player didn't initiate directional attack)
       final enemyDamage = enemy.attackPlayer(_ghostCharacter!);
       _ghostCharacter!.takeDamageFromEnemy(enemyDamage, enemy);
-      
+
       // Show message for enemy attacking player
       _showEnemyAttackMessage(enemy, enemyDamage);
-      
-      debugPrint('GameLoopManager: ${enemy.id} attacks player for $enemyDamage damage');
-      
+
+      debugPrint(
+        'GameLoopManager: ${enemy.id} attacks player for $enemyDamage damage',
+      );
+
       // Check if player was defeated
       if (!_ghostCharacter!.isAlive) {
         debugPrint('GameLoopManager: Player was defeated!');
@@ -220,7 +229,7 @@ class GameLoopManager extends ChangeNotifier {
   /// Adds a player combat result to recent history
   void _addPlayerCombatResult(PlayerCombatResult result) {
     _recentPlayerCombats.add(result);
-    
+
     // Keep only recent results
     while (_recentPlayerCombats.length > maxRecentCombats) {
       _recentPlayerCombats.removeAt(0);
@@ -319,23 +328,18 @@ class GameLoopManager extends ChangeNotifier {
     if (_dialogueManager == null) return;
 
     final damage = result.playerDamageDealt;
-    final messages = result.enemyDefeated 
-      ? [
-          'Kiro gives a spooky BOO! The enemy runs away scared! ($damage damage)',
-          'Kiro\'s ghostly presence overwhelms the foe! They vanish in fright! ($damage damage)', 
-          'A friendly ghostly hug makes the enemy too embarrassed to continue! ($damage damage)',
-          'Kiro\'s ethereal tickle attack is too much! The enemy giggles away! ($damage damage)',
-          'The enemy is so charmed by Kiro\'s ghostly dance, they leave peacefully! ($damage damage)',
-        ]
-      : [
-          'Kiro attempts a spooky scare, but the enemy just laughs! ($damage damage)',
-          'Kiro\'s ghostly boop is noticed but not very effective! ($damage damage)',
-          'The enemy feels a gentle ghostly breeze from Kiro\'s approach! ($damage damage)',
-          'Kiro\'s friendly ghost wave confuses the enemy slightly! ($damage damage)',
-        ];
+    final messages = result.enemyDefeated
+        ? t.combat.playerAttacks.withDamage
+        : t.combat.playerAttacks.withoutDamage;
 
-    final randomMessage = messages[DateTime.now().millisecondsSinceEpoch % messages.length];
-    _dialogueManager!.showPlayerAttack(randomMessage);
+    final randomIndex = DateTime.now().millisecondsSinceEpoch % messages.length;
+    final messageTemplate = messages[randomIndex];
+    final formattedMessage = messageTemplate.replaceAll(
+      '{}',
+      damage.toString(),
+    );
+
+    _dialogueManager!.showPlayerAttack(formattedMessage);
   }
 
   /// Shows comical message when enemy attacks player
@@ -344,21 +348,24 @@ class GameLoopManager extends ChangeNotifier {
 
     final enemyType = enemy.enemyType.displayName;
     final messages = damage > 0
-      ? [
-          'The $enemyType gives Kiro an unexpected hug! It\'s surprisingly warm! ($damage damage)',
-          'A friendly $enemyType bumps into Kiro playfully! ($damage damage)',
-          'The $enemyType tries to high-five Kiro, but ghosts are tricky to touch! ($damage damage)',
-          'The $enemyType attempts a tickle attack on the floating ghost! ($damage damage)',
-          'A curious $enemyType pokes at Kiro\'s ghostly form! ($damage damage)',
-        ]
-      : [
-          'The $enemyType waves at Kiro but misses the ghostly target! (0 damage)',
-          'A confused $enemyType swings at empty air where Kiro was floating! (0 damage)',
-          'The $enemyType\'s friendly gesture goes right through Kiro! (0 damage)',
-        ];
+        ? t.combat.enemyAttacks.withDamage
+        : t.combat.enemyAttacks.withoutDamage;
 
-    final randomMessage = messages[DateTime.now().millisecondsSinceEpoch % messages.length];
-    _dialogueManager!.showCombatFeedback(randomMessage);
+    final randomIndex = DateTime.now().millisecondsSinceEpoch % messages.length;
+    final messageTemplate = messages[randomIndex];
+
+    String formattedMessage;
+    if (damage > 0) {
+      // Replace first {} with enemy type, second {} with damage
+      formattedMessage = messageTemplate
+          .replaceFirst('{}', enemyType)
+          .replaceFirst('{}', damage.toString());
+    } else {
+      // Replace {} with enemy type
+      formattedMessage = messageTemplate.replaceAll('{}', enemyType);
+    }
+
+    _dialogueManager!.showCombatFeedback(formattedMessage);
   }
 
   @override
@@ -377,4 +384,3 @@ class GameLoopManager extends ChangeNotifier {
         'Combats: ${stats['activeCombats']})';
   }
 }
-

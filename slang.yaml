@@ -1,0 +1,12 @@
+base_locale: en
+fallback_strategy: base_locale
+input_directory: lib/l10n
+input_file_pattern: .l10n.json
+output_directory: lib/l10n
+output_file_name: strings.g.dart
+output_format: single_file
+locale_handling: true
+flutter_integration: true
+translate_var_name: t
+enum_name: AppLocale
+class_name: Strings

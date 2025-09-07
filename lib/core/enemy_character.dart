@@ -34,7 +34,6 @@ class EnemyCharacter extends Character {
   /// Base combat strength for this enemy
   int? baseCombatStrength;
 
-
   /// Random number generator for AI decisions
   static final Random _random = Random();
 
@@ -130,23 +129,24 @@ class EnemyCharacter extends Character {
   int attackPlayer(GhostCharacter player) {
     final combatStrength = baseCombatStrength ?? _getDefaultCombatStrength();
     final baseDamage = (combatStrength * 0.6).round();
-    final randomBonus = (combatStrength * 0.4 * (DateTime.now().millisecond / 1000)).round();
+    final randomBonus =
+        (combatStrength * 0.4 * (DateTime.now().millisecond / 1000)).round();
     final totalDamage = baseDamage + randomBonus;
-    
+
     debugPrint('EnemyCharacter: $id attacks player for $totalDamage damage');
-    
+
     return totalDamage;
   }
 
   /// Updates the enemy's AI behavior (called each player turn)
   void updateAI(GhostCharacter player, TileMap tileMap) {
     final distance = position.distanceTo(player.position);
-    
+
     // Debug AI processing (only for interesting cases)
     if (isProximityActive && distance <= 5) {
       debugPrint(
         'EnemyCharacter: $id turn - Active: $isActive, Proximity: $isProximityActive, '
-        'State: $state, Cooldown: $movementCooldown, Distance: $distance'
+        'State: $state, Cooldown: $movementCooldown, Distance: $distance',
       );
     }
 
@@ -288,12 +288,18 @@ class EnemyCharacter extends Character {
   }
 
   /// Attempts to move in the specified direction
-  bool _attemptMove(Direction direction, TileMap tileMap, {GhostCharacter? player}) {
+  bool _attemptMove(
+    Direction direction,
+    TileMap tileMap, {
+    GhostCharacter? player,
+  }) {
     final newPosition = _getNewPosition(direction);
 
     // Check if the new position would overlap with player
     if (player != null && newPosition == player.position) {
-      debugPrint('EnemyCharacter: $id cannot move to $newPosition - player is there');
+      debugPrint(
+        'EnemyCharacter: $id cannot move to $newPosition - player is there',
+      );
       return false;
     }
 

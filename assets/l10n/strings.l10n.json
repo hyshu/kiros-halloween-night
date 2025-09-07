@@ -1,0 +1,134 @@
+{
+  "@@locale": "en",
+  "game": {
+    "title": "Kiro Halloween Game",
+    "start": "Start Game",
+    "pause": "Pause",
+    "resume": "Resume",
+    "quit": "Quit",
+    "gameOver": "Game Over",
+    "victory": "Victory!"
+  },
+  "ui": {
+    "health": "Health",
+    "score": "Score",
+    "level": "Level",
+    "inventory": "Inventory",
+    "back": "Back",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "combat": {
+    "attack": "Attack",
+    "defend": "Defend",
+    "run": "Run",
+    "victory": "You won!",
+    "defeat": "You were defeated!",
+    "enemyDefeated": "Enemy defeated!",
+    "takeDamage": "You took {damage} damage",
+    "dealDamage": "You dealt {damage} damage",
+    "enemyAttacks": {
+      "withDamage": [
+        "The {} gives Kiro an unexpected hug! It's surprisingly warm! ({} damage)",
+        "A friendly {} bumps into Kiro playfully! ({} damage)",
+        "The {} tries to high-five Kiro, but ghosts are tricky to touch! ({} damage)",
+        "The {} attempts a tickle attack on the floating ghost! ({} damage)",
+        "A curious {} pokes at Kiro's ghostly form! ({} damage)"
+      ],
+      "withoutDamage": [
+        "The {} waves at Kiro but misses the ghostly target! (0 damage)",
+        "A confused {} swings at empty air where Kiro was floating! (0 damage)",
+        "The {}'s friendly gesture goes right through Kiro! (0 damage)"
+      ]
+    },
+    "playerAttacks": {
+      "withDamage": [
+        "Kiro gives a spooky BOO! The enemy runs away scared! ({} damage)",
+        "Kiro's ghostly presence overwhelms the foe! They vanish in fright! ({} damage)",
+        "A friendly ghostly hug makes the enemy too embarrassed to continue! ({} damage)",
+        "Kiro's ethereal tickle attack is too much! The enemy giggles away! ({} damage)",
+        "The enemy is so charmed by Kiro's ghostly dance, they leave peacefully! ({} damage)"
+      ],
+      "withoutDamage": [
+        "Kiro attempts a spooky scare, but the enemy just laughs! ({} damage)",
+        "Kiro's ghostly boop is noticed but not very effective! ({} damage)",
+        "The enemy feels a gentle ghostly breeze from Kiro's approach! ({} damage)",
+        "Kiro's friendly ghost wave confuses the enemy slightly! ({} damage)"
+      ]
+    },
+    "messages": {
+      "allyDefeatsEnemyStrike": " defeats  with a powerful strike!",
+      "allyEmergesVictorious": " emerges victorious against !",
+      "allyOvercomes": " overcomes  in battle!",
+      "allyDefeatedBy": " is defeated by .",
+      "enemyOvercomes": " overcomes  in combat.",
+      "allyFalls": " falls to .",
+      "bothDefeatEachOther": " and  defeat each other!",
+      "bothFallInCombat": "Both  and  fall in combat!",
+      "bothDefeated": " and  are both defeated!",
+      "exchangeBlows": " and  exchange blows!",
+      "battleContinues": "The battle between  and  continues!",
+      "fightFiercely": " and  fight fiercely!",
+      "engagesInCombat": " engages  in combat!",
+      "movesToAttack": " moves to attack !",
+      "confronts": " confronts !",
+      "hasBeenDefeated": " has been defeated!",
+      "fallsToGround": " falls to the ground, defeated.",
+      "noLongerThreat": " is no longer a threat.",
+      "entersCombat": " enters combat mode!",
+      "preparesForBattle": " prepares for battle!",
+      "readiesForCombat": " readies for combat!",
+      "returnsToFollowing": " returns to following you.",
+      "comesBack": " comes back to your side.",
+      "resumesFollowing": " resumes following.",
+      "looksSatisfied": " looks satisfied and wanders away.",
+      "seemsContent": " seems content and departs.",
+      "appearsFullfilled": " appears fulfilled and leaves.",
+      "looksContent": " looks more content.",
+      "seemsPleased": " seems pleased with the situation.",
+      "appearsHappier": " appears happier.",
+      "looksLessSatisfied": " looks less satisfied.",
+      "seemsTroubled": " seems troubled.",
+      "appearsUnhappy": " appears unhappy."
+    }
+  },
+  "dialogue": {
+    "continueButton": "Continue",
+    "skip": "Skip",
+    "close": "Close"
+  },
+  "items": {
+    "candy": "Candy",
+    "collected": "Collected {item}!",
+    "useItem": "Use Item",
+    "noItems": "No items available"
+  },
+  "enemies": {
+    "ghost": "Ghost",
+    "skeleton": "Skeleton",
+    "zombie": "Zombie"
+  },
+  "messages": {
+    "welcome": "Welcome to Kiro Halloween Game!",
+    "gameStarted": "Game started!",
+    "levelComplete": "Level completed!",
+    "newLevel": "Level {level}"
+  },
+  "debug": {
+    "gameLoopInitialized": "GameLoopManager: Initialized with player at {}",
+    "turnBasedSystemInitialized": "GameLoopManager: Turn-based system initialized", 
+    "turnBasedSystemStopped": "GameLoopManager: Turn-based system stopped",
+    "combatEncountersProcessed": "GameLoopManager: Processed {} combat encounters",
+    "combatResult": "GameLoopManager: Combat result - {}",
+    "enemyDefeatedRemoved": "GameLoopManager: Enemy {} defeated and removed",
+    "allyDefeated": "GameLoopManager: Ally {} defeated",
+    "playerDefeatedEnemy": "GameLoopManager: Player defeated enemy with directional attack",
+    "processingAdjacentCombat": "GameLoopManager: Processing adjacent combat with {} enemies",
+    "enemyAttacksPlayer": "GameLoopManager: {} attacks player for {} damage",
+    "playerDefeated": "GameLoopManager: Player was defeated!",
+    "processingTurn": "GameLoopManager: Processing turn after player move",
+    "turnCompleted": "GameLoopManager: Turn completed",
+    "errorInTurnProcessing": "GameLoopManager: Error in turn processing: {}",
+    "convertedEnemyToAlly": "GameLoopManager: Converted enemy {} to ally"
+  }
+}

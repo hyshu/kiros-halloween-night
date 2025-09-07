@@ -8,19 +8,26 @@ import 'core/ghost_character.dart';
 import 'core/position.dart';
 import 'managers/input_manager.dart';
 import 'widgets/dialogue_ui.dart';
+import 'l10n/strings.g.dart';
 
-void main() => runApp(const App());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  LocaleSettings.useDeviceLocale();
+  runApp(TranslationProvider(child: const App()));
+}
 
 class App extends StatelessWidget {
   const App({super.key});
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: "Kiro's Ghost Roguelike",
+    onGenerateTitle: (_) => t.game.title,
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       useMaterial3: true,
     ),
+    locale: TranslationProvider.of(context).flutterLocale,
+    supportedLocales: AppLocale.values.map((locale) => locale.flutterLocale),
     home: const GridSceneView(),
   );
 }
@@ -38,7 +45,7 @@ class _GridSceneViewState extends State<GridSceneView> {
   late GhostCharacter _ghostCharacter;
   late InputManager _inputManager;
   bool _isLoading = true;
-  String _loadingStatus = 'Generating world...';
+  String _loadingStatus = '';
 
   @override
   void initState() {
@@ -138,9 +145,9 @@ class _GridSceneViewState extends State<GridSceneView> {
                 style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 'Creating rooms and narrow corridors...',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
@@ -157,9 +164,7 @@ class _GridSceneViewState extends State<GridSceneView> {
               backgroundColor: const Color(0xFF050510),
               sceneManager: _sceneManager,
             ),
-            DialogueUI(
-              dialogueManager: _sceneManager.dialogueManager,
-            ),
+            DialogueUI(dialogueManager: _sceneManager.dialogueManager),
           ],
         ),
       ),

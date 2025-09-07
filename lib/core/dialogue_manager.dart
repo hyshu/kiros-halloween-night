@@ -9,9 +9,9 @@ class DialogueManager {
   final DialogueWindow _dialogueWindow = DialogueWindow();
   final List<DialogueEvent> _eventQueue = [];
   final Map<DialogueType, List<DialogueEventCallback>> _eventListeners = {};
-  
+
   bool _isProcessingQueue = false;
-  
+
   // Turn-based event tracking
   final List<String> _currentTurnEvents = [];
   int _turnsSinceLastEvent = 0;
@@ -54,18 +54,20 @@ class DialogueManager {
   void triggerDialogue(DialogueEvent event) {
     // Notify listeners
     _eventListeners[event.type]?.forEach((callback) => callback(event));
-    
+
     // Add event message to current turn events
     _currentTurnEvents.add(event.message);
     _turnsSinceLastEvent = 0;
-    
+
     // Display combined events
     _displayTurnEvents();
   }
 
   /// Convenience method for interaction dialogues
   void showInteraction(String message, {String? speakerName}) {
-    triggerDialogue(DialogueEvent.interaction(message, speakerName: speakerName));
+    triggerDialogue(
+      DialogueEvent.interaction(message, speakerName: speakerName),
+    );
   }
 
   /// Convenience method for item collection dialogues
@@ -101,9 +103,9 @@ class DialogueManager {
   /// Processes the next event in the queue
   void _processNextEvent() {
     if (_isProcessingQueue || _eventQueue.isEmpty) return;
-    
+
     _isProcessingQueue = true;
-    
+
     // Small delay to prevent rapid-fire dialogue
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_eventQueue.isNotEmpty) {
@@ -117,33 +119,35 @@ class DialogueManager {
   /// Updates the dialogue system (call this in game loop)
   void update() {
     _dialogueWindow.update();
-    
+
     // Process next event if dialogue window becomes inactive
-    if (!_dialogueWindow.isActive && _eventQueue.isNotEmpty && !_isProcessingQueue) {
+    if (!_dialogueWindow.isActive &&
+        _eventQueue.isNotEmpty &&
+        !_isProcessingQueue) {
       _processNextEvent();
     }
   }
-  
+
   /// Called when a new turn begins (from GameLoopManager)
   void onNewTurn() {
     _turnsSinceLastEvent++;
-    
+
     // Hide dialogue after 3 turns with no new events
     if (_turnsSinceLastEvent >= 3 && _dialogueWindow.isActive) {
       _currentTurnEvents.clear();
       _dialogueWindow.clear();
     }
-    
+
     // Clear events from previous turn if there are no new events
     if (_currentTurnEvents.isEmpty && _dialogueWindow.isActive) {
       _dialogueWindow.clear();
     }
   }
-  
+
   /// Displays all events from the current turn as a single multi-line dialogue
   void _displayTurnEvents() {
     if (_currentTurnEvents.isEmpty) return;
-    
+
     final combinedMessage = _currentTurnEvents.join('\n');
     final turnEvent = DialogueEvent(
       message: combinedMessage,
@@ -151,7 +155,7 @@ class DialogueManager {
       canAdvance: false,
       canDismiss: false,
     );
-    
+
     _dialogueWindow.displayDialogue(turnEvent);
   }
 
@@ -173,7 +177,7 @@ class DialogueManager {
     _isProcessingQueue = false;
     _turnsSinceLastEvent = 0;
   }
-  
+
   /// Clears current turn events (called at the start of each new turn)
   void clearTurnEvents() {
     _currentTurnEvents.clear();
