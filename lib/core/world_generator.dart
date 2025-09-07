@@ -58,7 +58,7 @@ class WorldGenerator {
     }
 
     // Add some obstacles and candy items
-    _addObstacles(tileMap);
+    _addObstacles(tileMap, rooms);
     _addCandyItems(tileMap);
 
     return tileMap;
@@ -450,7 +450,7 @@ class WorldGenerator {
   }
 
   /// Adds obstacles within rooms to make them more interesting
-  void _addObstacles(TileMap tileMap) {
+  void _addObstacles(TileMap tileMap, List<Room> rooms) {
     if (_isTestMode) {
       // Simplified obstacle placement for tests in rooms
       final obstacleCount = 15;
@@ -488,10 +488,11 @@ class WorldGenerator {
       final z = 1 + _random.nextInt(TileMap.worldHeight - 2);
       final position = Position(x, z);
 
-      // Only place obstacles on floor tiles that aren't spawn or boss locations
+      // Only place obstacles on floor tiles that are within rooms
       if (tileMap.getTileAt(position) == TileType.floor &&
           position != tileMap.playerSpawn &&
-          position != tileMap.bossLocation) {
+          position != tileMap.bossLocation &&
+          _isPositionInAnyRoom(position, rooms)) {
         // Temporarily place obstacle and check if path still exists
         tileMap.setTileAt(position, TileType.obstacle);
 
@@ -509,6 +510,16 @@ class WorldGenerator {
         }
       }
     }
+  }
+
+  /// Checks if a position is within any of the generated rooms
+  bool _isPositionInAnyRoom(Position position, List<Room> rooms) {
+    for (final room in rooms) {
+      if (room.contains(position)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /// Adds candy items throughout the rooms and corridors
