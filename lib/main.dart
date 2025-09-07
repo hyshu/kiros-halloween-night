@@ -7,6 +7,7 @@ import 'core/tile_map.dart';
 import 'core/ghost_character.dart';
 import 'core/position.dart';
 import 'managers/input_manager.dart';
+import 'widgets/dialogue_ui.dart';
 
 void main() => runApp(const App());
 
@@ -150,9 +151,16 @@ class _GridSceneViewState extends State<GridSceneView> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: _inputManager.createKeyboardListener(
-        child: GridRenderer(
-          backgroundColor: const Color(0xFF050510),
-          sceneManager: _sceneManager,
+        child: Stack(
+          children: [
+            GridRenderer(
+              backgroundColor: const Color(0xFF050510),
+              sceneManager: _sceneManager,
+            ),
+            DialogueUI(
+              dialogueManager: _sceneManager.dialogueManager,
+            ),
+          ],
         ),
       ),
     );

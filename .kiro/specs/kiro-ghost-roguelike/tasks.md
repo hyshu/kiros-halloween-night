@@ -118,15 +118,15 @@
     - Add combat state management and resolution handling
     - _Requirements: 6.1, 6.2, 6.5_
 
-- [ ] 8. Implement dialogue and event system
-  - [ ] 8.1 Create dialogue management system
+- [x] 8. Implement dialogue and event system
+  - [x] 8.1 Create dialogue management system
     - Write DialogueManager class for displaying game events and interactions
     - Implement DialogueWindow with user interaction capabilities (advance/dismiss)
     - Create event-driven dialogue system for contextual responses
     - Add dialogue rendering integration with existing UI system
     - _Requirements: 8.1, 8.2, 8.5_
 
-  - [ ] 8.2 Integrate dialogue with game events
+  - [x] 8.2 Integrate dialogue with game events
     - Implement dialogue triggers for enemy interactions and item collection
     - Create narrative controller for story progression and contextual dialogue
     - Add combat feedback through dialogue system

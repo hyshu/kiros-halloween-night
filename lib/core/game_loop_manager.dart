@@ -8,6 +8,8 @@ import 'enemy_manager.dart';
 import 'ghost_character.dart';
 import 'player_combat_result.dart';
 import 'tile_map.dart';
+import 'dialogue_manager.dart';
+import 'enemy_spawner.dart';
 
 /// Manages the main game loop and coordinates all game systems
 class GameLoopManager extends ChangeNotifier {
@@ -25,6 +27,9 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Reference to the tile map
   TileMap? _tileMap;
+
+  /// Reference to dialogue manager for combat messages
+  DialogueManager? _dialogueManager;
 
   /// Whether the turn-based system is running
   bool _isRunning = false;
@@ -59,10 +64,12 @@ class GameLoopManager extends ChangeNotifier {
     required GhostCharacter ghostCharacter,
     required EnemyManager enemyManager,
     required TileMap tileMap,
+    DialogueManager? dialogueManager,
   }) {
     _ghostCharacter = ghostCharacter;
     _enemyManager = enemyManager;
     _tileMap = tileMap;
+    _dialogueManager = dialogueManager;
 
     // Set player reference for ally manager
     _allyManager.setPlayer(ghostCharacter);
@@ -165,6 +172,9 @@ class GameLoopManager extends ChangeNotifier {
     if (playerAttackResult != null) {
       _addPlayerCombatResult(playerAttackResult);
       
+      // Show combat message for player attack
+      _showPlayerAttackMessage(playerAttackResult);
+      
       if (playerAttackResult.enemyDefeated) {
         _playerEnemiesDefeated++;
         // Find and remove the defeated enemy
@@ -192,6 +202,9 @@ class GameLoopManager extends ChangeNotifier {
       // Enemy attacks player (since player didn't initiate directional attack)
       final enemyDamage = enemy.attackPlayer(_ghostCharacter!);
       _ghostCharacter!.takeDamageFromEnemy(enemyDamage, enemy);
+      
+      // Show message for enemy attacking player
+      _showEnemyAttackMessage(enemy, enemyDamage);
       
       debugPrint('GameLoopManager: ${enemy.id} attacks player for $enemyDamage damage');
       
@@ -223,6 +236,11 @@ class GameLoopManager extends ChangeNotifier {
     debugPrint('GameLoopManager: Processing turn after player move');
 
     try {
+      // Clear events from previous turn and notify dialogue manager of new turn
+      if (_dialogueManager != null) {
+        _dialogueManager!.clearTurnEvents();
+        _dialogueManager!.onNewTurn();
+      }
       // Update enemy activation based on new player position
       _enemyManager!.updateEnemyActivation(_ghostCharacter!.position);
 
@@ -294,6 +312,53 @@ class GameLoopManager extends ChangeNotifier {
     if (_isRunning) {
       onPlayerMoved();
     }
+  }
+
+  /// Shows comical message when player attacks enemy
+  void _showPlayerAttackMessage(PlayerCombatResult result) {
+    if (_dialogueManager == null) return;
+
+    final damage = result.playerDamageDealt;
+    final messages = result.enemyDefeated 
+      ? [
+          'Kiro gives a spooky BOO! The enemy runs away scared! ($damage damage)',
+          'Kiro\'s ghostly presence overwhelms the foe! They vanish in fright! ($damage damage)', 
+          'A friendly ghostly hug makes the enemy too embarrassed to continue! ($damage damage)',
+          'Kiro\'s ethereal tickle attack is too much! The enemy giggles away! ($damage damage)',
+          'The enemy is so charmed by Kiro\'s ghostly dance, they leave peacefully! ($damage damage)',
+        ]
+      : [
+          'Kiro attempts a spooky scare, but the enemy just laughs! ($damage damage)',
+          'Kiro\'s ghostly boop is noticed but not very effective! ($damage damage)',
+          'The enemy feels a gentle ghostly breeze from Kiro\'s approach! ($damage damage)',
+          'Kiro\'s friendly ghost wave confuses the enemy slightly! ($damage damage)',
+        ];
+
+    final randomMessage = messages[DateTime.now().millisecondsSinceEpoch % messages.length];
+    _dialogueManager!.showPlayerAttack(randomMessage);
+  }
+
+  /// Shows comical message when enemy attacks player
+  void _showEnemyAttackMessage(EnemyCharacter enemy, int damage) {
+    if (_dialogueManager == null) return;
+
+    final enemyType = enemy.enemyType.displayName;
+    final messages = damage > 0
+      ? [
+          'The $enemyType gives Kiro an unexpected hug! It\'s surprisingly warm! ($damage damage)',
+          'A friendly $enemyType bumps into Kiro playfully! ($damage damage)',
+          'The $enemyType tries to high-five Kiro, but ghosts are tricky to touch! ($damage damage)',
+          'The $enemyType attempts a tickle attack on the floating ghost! ($damage damage)',
+          'A curious $enemyType pokes at Kiro\'s ghostly form! ($damage damage)',
+        ]
+      : [
+          'The $enemyType waves at Kiro but misses the ghostly target! (0 damage)',
+          'A confused $enemyType swings at empty air where Kiro was floating! (0 damage)',
+          'The $enemyType\'s friendly gesture goes right through Kiro! (0 damage)',
+        ];
+
+    final randomMessage = messages[DateTime.now().millisecondsSinceEpoch % messages.length];
+    _dialogueManager!.showCombatFeedback(randomMessage);
   }
 
   @override

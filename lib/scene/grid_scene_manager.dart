@@ -12,6 +12,7 @@ import '../core/enemy_manager.dart';
 import '../core/enemy_character.dart';
 import '../core/game_loop_manager.dart';
 import '../core/ally_character.dart';
+import '../core/dialogue_manager.dart';
 
 class GridObject {
   final String modelPath;
@@ -54,9 +55,12 @@ class GridSceneManager extends ChangeNotifier {
   GhostCharacter? _ghostCharacter;
   EnemyManager? _enemyManager;
   final Map<String, GridObject> _characterObjects = {};
-  
+
   // Game loop manager for combat and systems
   GameLoopManager? _gameLoopManager;
+
+  // Dialogue manager for narrative and feedback
+  final DialogueManager _dialogueManager = DialogueManager();
 
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
@@ -87,7 +91,7 @@ class GridSceneManager extends ChangeNotifier {
 
     // Add character objects (always visible)
     objects.addAll(_characterObjects.values);
-    
+
     // Add ally objects from game loop manager
     _addAllyObjectsToRender(objects);
 
@@ -136,9 +140,12 @@ class GridSceneManager extends ChangeNotifier {
 
   // Get the enemy manager
   EnemyManager? get enemyManager => _enemyManager;
-  
+
   // Get the game loop manager
   GameLoopManager? get gameLoopManager => _gameLoopManager;
+
+  /// Get the dialogue manager instance
+  DialogueManager get dialogueManager => _dialogueManager;
 
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
@@ -208,6 +215,12 @@ class GridSceneManager extends ChangeNotifier {
     if (_gameLoopManager != null) {
       _gameLoopManager!.onPlayerMoved();
     }
+
+    // Update dialogue system
+    _dialogueManager.update();
+    
+    // Check for candy collection at current position
+    _checkCandyCollectionDialogue();
 
     notifyListeners();
   }
@@ -421,14 +434,15 @@ class GridSceneManager extends ChangeNotifier {
         ghostCharacter: _ghostCharacter!,
         enemyManager: _enemyManager!,
         tileMap: _tileMap!,
+        dialogueManager: _dialogueManager,
       );
-      
+
       // Initialize turn-based system
       _gameLoopManager!.initializeTurnBasedSystem();
-      
+
       // Listen for game loop updates
       _gameLoopManager!.addListener(_onGameLoopUpdate);
-      
+
       debugPrint('GridSceneManager: Turn-based system initialized');
     }
   }
@@ -437,7 +451,7 @@ class GridSceneManager extends ChangeNotifier {
   void _onGameLoopUpdate() {
     // Update enemy rendering positions
     updateEnemyPositions();
-    
+
     // Update ally rendering positions
     notifyListeners();
   }
@@ -736,7 +750,7 @@ class GridSceneManager extends ChangeNotifier {
       if (ally.isAlive) {
         // Get the appropriate model path based on ally's original enemy type
         final modelPath = _getAllyModelPath(ally);
-        
+
         final allyObject = GridObject(
           modelPath: modelPath,
           displayName: ally.id,
@@ -744,7 +758,7 @@ class GridSceneManager extends ChangeNotifier {
           gridZ: ally.position.z,
           model: ally.model,
         );
-        
+
         objects.add(allyObject);
       }
     }
@@ -754,6 +768,39 @@ class GridSceneManager extends ChangeNotifier {
   String _getAllyModelPath(AllyCharacter ally) {
     // Use the original enemy's model path
     return ally.originalEnemy.modelPath;
+  }
+
+  /// Checks for candy collection at current player position and shows dialogue
+  void _checkCandyCollectionDialogue() {
+    if (_ghostCharacter == null || _tileMap == null) return;
+
+    final pos = _ghostCharacter!.position;
+    
+    // Check if there's candy at current position
+    if (_tileMap!.isValidPosition(pos)) {
+      final tile = _tileMap!.getTileAt(pos);
+      if (tile == TileType.candy) {
+        // Show candy collection dialogue with variety
+        _showCandyCollectionMessage();
+        
+        // Remove candy from tile map (mark as floor)
+        _tileMap!.setTileAt(pos, TileType.floor);
+      }
+    }
+  }
+
+  /// Shows a randomized candy collection message
+  void _showCandyCollectionMessage() {
+    final messages = [
+      'Kiro finds a delicious candy! Sweet energy flows through the ghost.',
+      'A glowing candy catches Kiro\'s attention. Yummy supernatural treat!',
+      'Kiro discovers a magical candy that sparkles with otherworldly flavor.',
+      'The sweet candy makes Kiro glow brighter with ghostly happiness.',
+      'Kiro gobbles up the candy, feeling more spirited than ever!',
+    ];
+    
+    final randomMessage = messages[DateTime.now().millisecondsSinceEpoch % messages.length];
+    _dialogueManager.showItemCollection(randomMessage);
   }
 
   /// Dispose resources when scene manager is destroyed
