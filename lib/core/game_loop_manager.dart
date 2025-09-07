@@ -6,6 +6,7 @@ import 'combat_manager.dart';
 import 'enemy_character.dart';
 import 'enemy_manager.dart';
 import 'ghost_character.dart';
+import 'gift_system.dart';
 import 'player_combat_result.dart';
 import 'tile_map.dart';
 import 'dialogue_manager.dart';
@@ -24,6 +25,9 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Combat manager
   final CombatManager _combatManager = CombatManager();
+
+  /// Gift system manager
+  final GiftSystem _giftSystem = GiftSystem();
 
   /// Reference to the tile map
   TileMap? _tileMap;
@@ -47,6 +51,7 @@ class GameLoopManager extends ChangeNotifier {
   /// Getters for accessing managers
   AllyManager get allyManager => _allyManager;
   CombatManager get combatManager => _combatManager;
+  GiftSystem get giftSystem => _giftSystem;
   EnemyManager? get enemyManager => _enemyManager;
   GhostCharacter? get ghostCharacter => _ghostCharacter;
 
@@ -277,18 +282,65 @@ class GameLoopManager extends ChangeNotifier {
     }
   }
 
-  /// Converts an enemy to an ally (for future integration)
+  /// Converts an enemy to an ally through the gift system
   bool convertEnemyToAlly(EnemyCharacter enemy) {
     if (!_allyManager.isAtMaxCapacity) {
       final success = _allyManager.convertEnemyToAlly(enemy);
       if (success && _enemyManager != null) {
         // Remove enemy from enemy manager
         _enemyManager!.removeEnemy(enemy.id);
-        debugPrint('GameLoopManager: Converted enemy ${enemy.id} to ally');
+        
+        // Show dialogue message
+        if (_dialogueManager != null) {
+          _dialogueManager!.showCombatFeedback('${enemy.id} has become your ally!');
+        }
+        
         return true;
       }
     }
     return false;
+  }
+
+  /// Initiates the gift process with an adjacent enemy
+  bool initiateGiftToEnemy(EnemyCharacter enemy) {
+    if (_ghostCharacter == null) return false;
+    
+    return _giftSystem.initiateGift(_ghostCharacter!, enemy);
+  }
+
+  /// Confirms the gift and completes the enemy conversion
+  bool confirmGift() {
+    if (_ghostCharacter == null) return false;
+    
+    final targetEnemy = _giftSystem.targetEnemy;
+    final success = _giftSystem.confirmGift(_ghostCharacter!);
+    
+    if (success && targetEnemy != null) {
+      // Convert the target enemy to ally
+      convertEnemyToAlly(targetEnemy);
+    }
+    return success;
+  }
+
+  /// Cancels the current gift process
+  void cancelGift() {
+    _giftSystem.cancelGift();
+  }
+
+  /// Gets all adjacent enemies that can receive gifts
+  List<EnemyCharacter> getAdjacentGiftableEnemies() {
+    if (_ghostCharacter == null || _enemyManager == null) return [];
+    
+    final allEnemies = _enemyManager!.activeEnemies;
+    return _giftSystem.getAdjacentGiftableEnemies(_ghostCharacter!, allEnemies);
+  }
+
+  /// Checks if the player can give gifts to any adjacent enemies
+  bool canGiveGifts() {
+    if (_ghostCharacter == null || _enemyManager == null) return false;
+    
+    final allEnemies = _enemyManager!.activeEnemies;
+    return _giftSystem.canGiveGifts(_ghostCharacter!, allEnemies);
   }
 
   /// Gets game statistics

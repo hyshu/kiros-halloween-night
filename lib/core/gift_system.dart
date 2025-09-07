@@ -84,8 +84,8 @@ class GiftSystem extends ChangeNotifier {
       return false;
     }
 
-    // Convert enemy to ally
-    _convertEnemyToAlly(_targetEnemy!, giftedCandy);
+    // Apply candy effects to the enemy
+    _applyCandyEffectsToEnemy(_targetEnemy!, giftedCandy);
 
     // Close gift UI
     _closeGiftUI();
@@ -107,17 +107,6 @@ class GiftSystem extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Converts an enemy to ally state and applies satisfaction behavior
-  void _convertEnemyToAlly(EnemyCharacter enemy, CandyItem candy) {
-    // Convert enemy state
-    enemy.convertToAlly();
-
-    // Apply candy effects to the enemy (satisfaction behavior)
-    _applyCandyEffectsToEnemy(enemy, candy);
-
-    // Trigger satisfaction display behavior
-    _displaySatisfactionBehavior(enemy, candy);
-  }
 
   /// Applies candy effects to the converted enemy
   void _applyCandyEffectsToEnemy(EnemyCharacter enemy, CandyItem candy) {
@@ -151,6 +140,9 @@ class GiftSystem extends ChangeNotifier {
         enemy.heal(10);
         break;
     }
+    
+    // Trigger satisfaction display behavior
+    _displaySatisfactionBehavior(enemy, candy);
   }
 
   /// Displays satisfaction behavior when enemy becomes ally

@@ -10,6 +10,7 @@ import 'managers/input_manager.dart';
 import 'managers/model_manager.dart';
 import 'widgets/dialogue_ui.dart';
 import 'widgets/inventory_ui.dart';
+import 'widgets/gift_ui.dart';
 import 'l10n/strings.g.dart';
 
 void main() {
@@ -152,6 +153,20 @@ class _GridSceneViewState extends State<GridSceneView> {
           _showInventory = !_showInventory;
         });
       },
+      onGiftToggle: () {
+        // Start gift process with first adjacent enemy - this shows the candy selection UI
+        final adjacentEnemies = _sceneManager.gameLoopManager!.getAdjacentGiftableEnemies();
+        if (adjacentEnemies.isNotEmpty) {
+          final success = _sceneManager.gameLoopManager!.initiateGiftToEnemy(adjacentEnemies.first);
+          if (success) {
+            setState(() {
+              _showInventory = false; // Close inventory if open
+            });
+          }
+        } else {
+          debugPrint('No adjacent enemies to give gifts to');
+        }
+      },
     );
     inputManagerStopwatch.stop();
     debugPrint('Input manager setup: ${inputManagerStopwatch.elapsedMilliseconds}ms');
@@ -210,6 +225,18 @@ class _GridSceneViewState extends State<GridSceneView> {
               sceneManager: _sceneManager,
             ),
             DialogueUI(dialogueManager: _sceneManager.dialogueManager),
+            if (_sceneManager.gameLoopManager?.giftSystem.isGiftUIActive == true)
+              GiftOverlay(
+                giftSystem: _sceneManager.gameLoopManager!.giftSystem,
+                onConfirmGift: () {
+                  _sceneManager.gameLoopManager!.confirmGift();
+                  setState(() {});
+                },
+                onCancelGift: () {
+                  _sceneManager.gameLoopManager!.cancelGift();
+                  setState(() {});
+                },
+              ),
             if (_showInventory)
               InventoryOverlay(
                 inventory: _ghostCharacter.inventory,
@@ -218,30 +245,32 @@ class _GridSceneViewState extends State<GridSceneView> {
                   setState(() {}); // Refresh UI after using candy
                 },
                 onGiveCandy: (candyId) {
-                  // TODO: Implement gift system integration
-                  // For now, just show a debug message
-                  debugPrint('Would give candy $candyId to enemy');
-                },
-                checkCanGiveToEnemies: () {
-                  // Check if there are any enemies adjacent to the player
-                  if (_sceneManager.enemyManager == null) return false;
-                  
-                  final playerPos = _ghostCharacter.position;
-                  final enemies = _sceneManager.enemyManager!.enemies.values;
-                  
-                  // Check if any enemy is adjacent (within 1 tile)
-                  for (final enemy in enemies) {
-                    final dx = (playerPos.x - enemy.position.x).abs();
-                    final dz = (playerPos.z - enemy.position.z).abs();
-                    
-                    // Adjacent means exactly 1 tile away in one direction
-                    if ((dx == 1 && dz == 0) || (dx == 0 && dz == 1)) {
-                      if (enemy.isHostile) {
-                        return true;
-                      }
+                  // Find adjacent giftable enemies
+                  final adjacentEnemies = _sceneManager.gameLoopManager!.getAdjacentGiftableEnemies();
+                  if (adjacentEnemies.isNotEmpty) {
+                    // Directly give the selected candy to the first adjacent enemy
+                    final targetEnemy = adjacentEnemies.first;
+                    final success = _sceneManager.gameLoopManager!.initiateGiftToEnemy(targetEnemy);
+                    if (success) {
+                      // Find and select the candy that was chosen
+                      final availableCandy = _sceneManager.gameLoopManager!.giftSystem.availableCandy;
+                      final selectedCandy = availableCandy.firstWhere(
+                        (candy) => candy.id == candyId,
+                        orElse: () => availableCandy.first,
+                      );
+                      _sceneManager.gameLoopManager!.giftSystem.selectCandy(selectedCandy);
+                      
+                      // Immediately confirm the gift
+                      _sceneManager.gameLoopManager!.confirmGift();
+                      
+                      setState(() {
+                        _showInventory = false; // Close inventory
+                      });
                     }
                   }
-                  return false;
+                },
+                checkCanGiveToEnemies: () {
+                  return _sceneManager.gameLoopManager?.canGiveGifts() ?? false;
                 },
                 onClose: () {
                   setState(() {

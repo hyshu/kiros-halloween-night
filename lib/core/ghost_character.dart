@@ -72,12 +72,19 @@ class GhostCharacter extends Character {
     TileMap? tileMap, {
     EnemyManager? enemyManager,
     Function()? onInventoryToggle,
+    Function()? onGiftToggle,
   }) {
     if (_isProcessingInput || !canMove) return false;
 
     // Handle inventory toggle
     if (key == LogicalKeyboardKey.keyI) {
       onInventoryToggle?.call();
+      return true;
+    }
+    
+    // Handle gift toggle (G key)
+    if (key == LogicalKeyboardKey.keyG) {
+      onGiftToggle?.call();
       return true;
     }
 

@@ -267,6 +267,7 @@ class AllyCharacter extends Character {
 
     // Perform the movement
     final success = moveTo(newPosition);
+    
     if (success) {
       setActive(); // Ally is moving, not idle
       movementCooldown = maxMovementCooldown;
