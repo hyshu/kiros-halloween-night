@@ -28,6 +28,9 @@ class EnemyCharacter extends Character {
   /// Movement cooldown to prevent too frequent movement
   int movementCooldown;
 
+  /// Current facing direction (for animation and visual feedback)
+  Direction _facingDirection = Direction.south;
+
   /// Maximum movement cooldown (in game ticks)
   static const int maxMovementCooldown = 3;
 
@@ -127,6 +130,12 @@ class EnemyCharacter extends Character {
 
   /// Attacks the player and returns damage dealt
   int attackPlayer(GhostCharacter player) {
+    // Face the player when attacking
+    final direction = _getDirectionTowards(player.position);
+    if (direction != null) {
+      _facingDirection = direction;
+    }
+
     final combatStrength = baseCombatStrength ?? _getDefaultCombatStrength();
     final baseDamage = (combatStrength * 0.6).round();
     final randomBonus =
@@ -250,7 +259,7 @@ class EnemyCharacter extends Character {
 
     for (final direction in shuffledDirections) {
       if (_attemptMove(direction, tileMap, player: player)) {
-        break; // Successfully moved
+        break; // Successfully moved (facing direction updated in _attemptMove)
       }
     }
   }
@@ -311,6 +320,7 @@ class EnemyCharacter extends Character {
     // Perform the movement
     final success = moveTo(newPosition);
     if (success) {
+      _facingDirection = direction; // Update facing direction when moving successfully
       setActive(); // Enemy is moving, not idle
       movementCooldown = maxMovementCooldown;
       debugPrint('EnemyCharacter: $id moved to $newPosition');
@@ -367,6 +377,9 @@ class EnemyCharacter extends Character {
 
   /// Returns true if the enemy is satisfied
   bool get isSatisfied => state == EnemyState.satisfied;
+
+  /// Gets the current facing direction for animation purposes
+  Direction get facingDirection => _facingDirection;
 
   @override
   String toString() {

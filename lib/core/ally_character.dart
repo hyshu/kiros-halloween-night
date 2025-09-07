@@ -33,6 +33,9 @@ class AllyCharacter extends Character {
   /// Combat strength bonus from candy effects
   int combatStrengthBonus;
 
+  /// Current facing direction (for animation and visual feedback)
+  Direction _facingDirection = Direction.south;
+
   /// Satisfaction level (decreases over time or when taking damage)
   int satisfaction;
 
@@ -213,7 +216,7 @@ class AllyCharacter extends Character {
 
     for (final direction in shuffledDirections) {
       if (_attemptMove(direction, tileMap)) {
-        break; // Successfully moved
+        break; // Successfully moved (facing direction updated in _attemptMove)
       }
     }
   }
@@ -269,6 +272,7 @@ class AllyCharacter extends Character {
     final success = moveTo(newPosition);
     
     if (success) {
+      _facingDirection = direction; // Update facing direction when moving successfully
       setActive(); // Ally is moving, not idle
       movementCooldown = maxMovementCooldown;
     }
@@ -353,6 +357,9 @@ class AllyCharacter extends Character {
 
   /// Gets the original enemy AI type
   EnemyAIType get originalAIType => originalEnemy.aiType;
+
+  /// Gets the current facing direction for animation purposes
+  Direction get facingDirection => _facingDirection;
 
   @override
   String toString() {

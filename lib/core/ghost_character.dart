@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -29,6 +31,9 @@ class GhostCharacter extends Character {
 
   /// Last movement direction for animation purposes
   Direction? lastMovementDirection;
+
+  /// Current facing direction (for attacks and animation)
+  Direction _facingDirection = Direction.south;
 
   /// Player's base combat strength
   int baseCombatStrength;
@@ -81,7 +86,7 @@ class GhostCharacter extends Character {
       onInventoryToggle?.call();
       return true;
     }
-    
+
     // Handle gift toggle (G key)
     if (key == LogicalKeyboardKey.keyG) {
       onGiftToggle?.call();
@@ -163,6 +168,7 @@ class GhostCharacter extends Character {
       final success = moveTo(newPosition);
       if (success) {
         lastMovementDirection = direction;
+        _facingDirection = direction; // Update facing direction when moving
         setActive(); // Character is moving, not idle
         _moveAllies(direction, tileMap);
       } else {
@@ -187,6 +193,25 @@ class GhostCharacter extends Character {
       case Direction.east:
         return position.add(1, 0);
     }
+  }
+
+  /// Gets the direction towards a target position
+  Direction? _getDirectionTowards(Position target) {
+    final dx = target.x - position.x;
+    final dz = target.z - position.z;
+
+    // Prioritize the axis with the larger difference
+    if (dx.abs() > dz.abs()) {
+      return dx > 0 ? Direction.east : Direction.west;
+    } else if (dz.abs() > dx.abs()) {
+      return dz > 0 ? Direction.south : Direction.north;
+    } else if (dx != 0) {
+      return dx > 0 ? Direction.east : Direction.west;
+    } else if (dz != 0) {
+      return dz > 0 ? Direction.south : Direction.north;
+    }
+
+    return null; // Already at target
   }
 
   /// Checks if movement to the new position is valid
@@ -423,6 +448,12 @@ class GhostCharacter extends Character {
       'GhostCharacter: Attacking ${enemies.length} enemies at $targetPosition',
     );
 
+    // Update facing direction towards the attack target
+    final direction = _getDirectionTowards(targetPosition);
+    if (direction != null) {
+      _facingDirection = direction;
+    }
+
     // Attack the first enemy at the position
     if (enemies.isNotEmpty) {
       final enemy = enemies.first;
@@ -476,7 +507,7 @@ class GhostCharacter extends Character {
   }
 
   /// Gets the current facing direction for animation purposes
-  Direction? get facingDirection => lastMovementDirection;
+  Direction get facingDirection => _facingDirection;
 
   /// Returns true if the character is currently moving
   bool get isMoving => !isIdle && _isProcessingInput;
@@ -524,6 +555,21 @@ enum Direction {
         return 'East';
       case Direction.west:
         return 'West';
+    }
+  }
+
+  /// Returns the rotation angle in radians for this direction
+  /// Adjusted for 3D model default facing direction
+  double get rotationY {
+    switch (this) {
+      case Direction.north:
+        return pi;
+      case Direction.east:
+        return pi / 2.0;
+      case Direction.south:
+        return 0;
+      case Direction.west:
+        return -pi / 2.0;
     }
   }
 }

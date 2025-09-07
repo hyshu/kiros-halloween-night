@@ -123,7 +123,7 @@ void main() {
         expect(boss, isNotNull);
         expect(world.getTileAt(spawn), TileType.floor);
         expect(world.getTileAt(boss), TileType.floor);
-        
+
         // TODO: Fix path validation logic in WorldGenerator
         // expect(_hasPath(world, spawn, boss), isTrue, reason: 'There should be a navigable path from spawn to boss');
       });
@@ -215,14 +215,16 @@ void main() {
     group('obstacle placement', () {
       test('should not place obstacles that break the main path', () {
         final world = generator.generateWorld();
-        final spawn = world.playerSpawn!;
-        final boss = world.bossLocation!;
 
         // Verify obstacles were placed
         final obstacles = world.getPositionsOfType(TileType.obstacle);
-        expect(obstacles.isNotEmpty, isTrue, reason: 'World should contain obstacles');
+        expect(
+          obstacles.isNotEmpty,
+          isTrue,
+          reason: 'World should contain obstacles',
+        );
 
-        // TODO: Fix path validation logic in WorldGenerator  
+        // TODO: Fix path validation logic in WorldGenerator
         // expect(_hasPath(world, spawn, boss), isTrue);
       });
 

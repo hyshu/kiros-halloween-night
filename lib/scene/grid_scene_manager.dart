@@ -168,6 +168,7 @@ class GridSceneManager extends ChangeNotifier {
       displayName: character.id,
       gridX: character.position.x,
       gridZ: character.position.z,
+      rotationY: character.facingDirection.rotationY,
     );
 
     _characterObjects[character.id] = characterObject;
@@ -181,6 +182,7 @@ class GridSceneManager extends ChangeNotifier {
         gridX: character.position.x,
         gridZ: character.position.z,
         model: character.model,
+        rotationY: character.facingDirection.rotationY,
       );
     }
 
@@ -200,6 +202,7 @@ class GridSceneManager extends ChangeNotifier {
       gridX: character.position.x,
       gridZ: character.position.z,
       model: character.model,
+      rotationY: character.facingDirection.rotationY,
     );
 
     _characterObjects[character.id] = characterObject;
@@ -281,6 +284,7 @@ class GridSceneManager extends ChangeNotifier {
       gridX: enemy.position.x,
       gridZ: enemy.position.z,
       model: enemy.model,
+      rotationY: enemy.facingDirection.rotationY,
     );
 
     _characterObjects[enemy.id] = enemyObject;
@@ -297,6 +301,7 @@ class GridSceneManager extends ChangeNotifier {
         gridX: enemy.position.x,
         gridZ: enemy.position.z,
         model: enemy.model,
+        rotationY: enemy.facingDirection.rotationY,
       );
 
       _characterObjects[enemy.id] = enemyObject;
@@ -775,6 +780,7 @@ class GridSceneManager extends ChangeNotifier {
           gridX: ally.position.x,
           gridZ: ally.position.z,
           model: ally.model,
+          rotationY: ally.facingDirection.rotationY,
         );
 
         objects.add(allyObject);
