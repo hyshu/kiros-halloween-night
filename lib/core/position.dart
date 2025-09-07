@@ -1,5 +1,8 @@
 /// Represents a position in the game world grid
 class Position {
+  /// The spacing between tiles in world coordinates
+  static const double tileSpacing = 1.0;
+
   final int x;
   final int z;
 
@@ -30,9 +33,9 @@ class Position {
   }
 
   /// Returns the world coordinates for 3D rendering
-  /// Each grid cell is 2.0 units apart in world space
+  /// Each grid cell is tileSpacing units apart in world space
   (double x, double y, double z) toWorldCoordinates() {
-    return (x * 2.0, 0.0, z * 2.0);
+    return (x * tileSpacing, 0.0, z * tileSpacing);
   }
 
   @override

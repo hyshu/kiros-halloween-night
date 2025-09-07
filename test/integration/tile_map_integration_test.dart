@@ -19,9 +19,9 @@ void main() {
 
       // Test world coordinates conversion
       final (worldX, worldY, worldZ) = center.toWorldCoordinates();
-      expect(worldX, equals(200.0)); // 100 * 2.0
+      expect(worldX, equals(100.0 * Position.tileSpacing));
       expect(worldY, equals(0.0));
-      expect(worldZ, equals(400.0)); // 200 * 2.0
+      expect(worldZ, equals(200.0 * Position.tileSpacing));
     });
 
     test('should work with existing TileType enum methods', () {

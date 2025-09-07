@@ -24,7 +24,7 @@ class GridObject {
     this.model,
   });
 
-  Vector3 get worldPosition => Vector3(gridX * 2.0, 0.0, gridZ * 2.0);
+  Vector3 get worldPosition => Vector3(gridX * Position.tileSpacing, 0.0, gridZ * Position.tileSpacing);
 
   Matrix4 get modelMatrix {
     return Matrix4.identity()..translateByVector3(worldPosition);
@@ -78,9 +78,9 @@ class GridSceneManager extends ChangeNotifier {
 
   List<GridObject> _getObjectsInViewport() {
     final viewportObjects = <GridObject>[];
-    final cameraX = _cameraTarget.x / 2.0; // Convert world to grid coordinates
-    final cameraZ = _cameraTarget.z / 2.0;
-    final radius = _viewportRadius / 2.0; // Convert to grid units
+    final cameraX = _cameraTarget.x / Position.tileSpacing; // Convert world to grid coordinates
+    final cameraZ = _cameraTarget.z / Position.tileSpacing;
+    final radius = _viewportRadius / Position.tileSpacing; // Convert to grid units
 
     for (final obj in _objects.values) {
       final dx = obj.gridX - cameraX;
@@ -187,7 +187,7 @@ class GridSceneManager extends ChangeNotifier {
   void _updateCameraToFollowCharacter() {
     if (_ghostCharacter != null) {
       final pos = _ghostCharacter!.position;
-      _cameraTarget = Vector3(pos.x * 2.0, 0.0, pos.z * 2.0);
+      _cameraTarget = Vector3(pos.x * Position.tileSpacing, 0.0, pos.z * Position.tileSpacing);
 
       // Update enemy activation based on new player position
       if (_enemyManager != null) {
@@ -267,7 +267,7 @@ class GridSceneManager extends ChangeNotifier {
   void _updateCameraTarget() {
     if (_tileMap?.playerSpawn != null) {
       final spawn = _tileMap!.playerSpawn!;
-      _cameraTarget = Vector3(spawn.x * 2.0, 0.0, spawn.z * 2.0);
+      _cameraTarget = Vector3(spawn.x * Position.tileSpacing, 0.0, spawn.z * Position.tileSpacing);
     }
   }
 
@@ -377,9 +377,9 @@ class GridSceneManager extends ChangeNotifier {
   Future<void> _loadObjectsAroundCamera() async {
     if (_tileMap == null) return;
 
-    final cameraX = (_cameraTarget.x / 2.0).round();
-    final cameraZ = (_cameraTarget.z / 2.0).round();
-    final radius = (_viewportRadius / 2.0).round();
+    final cameraX = (_cameraTarget.x / Position.tileSpacing).round();
+    final cameraZ = (_cameraTarget.z / Position.tileSpacing).round();
+    final radius = (_viewportRadius / Position.tileSpacing).round();
 
     final objectsToPlace = <Future<void>>[];
 

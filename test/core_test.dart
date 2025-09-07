@@ -29,9 +29,9 @@ void main() {
       expect(pos1.isAdjacentTo(Position(7, 10)), isFalse);
 
       final (worldX, worldY, worldZ) = pos1.toWorldCoordinates();
-      expect(worldX, equals(10.0)); // 5 * 2.0
+      expect(worldX, equals(5.0 * Position.tileSpacing));
       expect(worldY, equals(0.0));
-      expect(worldZ, equals(20.0)); // 10 * 2.0
+      expect(worldZ, equals(10.0 * Position.tileSpacing));
     });
 
     test('TileType should have correct properties', () {

@@ -79,16 +79,16 @@ void main() {
       await sceneManager.addGhostCharacter(ghostCharacter);
 
       // Initial camera target should be at character position
-      expect(sceneManager.cameraTarget.x, equals(20.0)); // 10 * 2.0
-      expect(sceneManager.cameraTarget.z, equals(20.0)); // 10 * 2.0
+      expect(sceneManager.cameraTarget.x, equals(10.0 * Position.tileSpacing));
+      expect(sceneManager.cameraTarget.z, equals(10.0 * Position.tileSpacing));
 
       // Move character
       ghostCharacter.attemptMove(Direction.east, tileMap);
       sceneManager.updateGhostCharacterPosition();
 
       // Camera should follow
-      expect(sceneManager.cameraTarget.x, equals(22.0)); // 11 * 2.0
-      expect(sceneManager.cameraTarget.z, equals(20.0)); // 10 * 2.0
+      expect(sceneManager.cameraTarget.x, equals(11.0 * Position.tileSpacing));
+      expect(sceneManager.cameraTarget.z, equals(10.0 * Position.tileSpacing));
     });
 
     test('should handle character abilities', () {

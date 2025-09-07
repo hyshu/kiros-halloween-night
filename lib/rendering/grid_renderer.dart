@@ -6,6 +6,7 @@ import 'package:flutter_gpu/gpu.dart' as gpu;
 import 'package:vector_math/vector_math_64.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
+import '../core/position.dart';
 import '../core/shaders.dart';
 import '../scene/grid_scene_manager.dart';
 import '../models/model_3d.dart';
@@ -182,7 +183,7 @@ class _GridRendererState extends material.State<GridRenderer> {
                       ),
                     ),
                     material.Text(
-                      'Camera: (${(_cameraTarget.x / 2.0).round()}, ${(_cameraTarget.z / 2.0).round()})',
+                      'Camera: (${(_cameraTarget.x / Position.tileSpacing).round()}, ${(_cameraTarget.z / Position.tileSpacing).round()}),',
                       style: const material.TextStyle(
                         color: material.Colors.white,
                         fontSize: 12,
@@ -457,7 +458,7 @@ class GPUPainter extends material.CustomPainter {
       offsetX = cameraTarget.x - size / 2;
       offsetZ = cameraTarget.z - size / 2;
     } else {
-      size = GridSceneManager.gridSize * 2.0;
+      size = GridSceneManager.gridSize * Position.tileSpacing;
     }
 
     return Float32List.fromList([

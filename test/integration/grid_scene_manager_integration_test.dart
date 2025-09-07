@@ -16,8 +16,8 @@ void main() {
       final sceneManager = GridSceneManager.withTileMap(tileMap);
 
       expect(sceneManager.tileMap, equals(tileMap));
-      expect(sceneManager.cameraTarget.x, equals(20.0)); // 10 * 2.0
-      expect(sceneManager.cameraTarget.z, equals(20.0)); // 10 * 2.0
+      expect(sceneManager.cameraTarget.x, equals(10.0 * Position.tileSpacing));
+      expect(sceneManager.cameraTarget.z, equals(10.0 * Position.tileSpacing));
     });
 
     test('should initialize with generated world', () {
@@ -39,8 +39,8 @@ void main() {
       final sceneManager = GridSceneManager.withTileMap(tileMap);
 
       // Camera should be positioned at spawn
-      expect(sceneManager.cameraTarget.x, equals(200.0)); // 100 * 2.0
-      expect(sceneManager.cameraTarget.z, equals(400.0)); // 200 * 2.0
+      expect(sceneManager.cameraTarget.x, equals(100.0 * Position.tileSpacing));
+      expect(sceneManager.cameraTarget.z, equals(200.0 * Position.tileSpacing));
     });
 
     test('should update camera target', () {
