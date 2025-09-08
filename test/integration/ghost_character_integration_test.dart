@@ -124,7 +124,7 @@ void main() {
       expect(ghostCharacter.isIdle, isTrue);
       expect(ghostCharacter.isActive, isTrue);
       expect(ghostCharacter.canMove, isTrue);
-      expect(ghostCharacter.facingDirection, isNull);
+      expect(ghostCharacter.facingDirection, equals(Direction.south));
 
       // After movement
       ghostCharacter.attemptMove(Direction.north, tileMap);
@@ -134,7 +134,7 @@ void main() {
       // Set to idle
       ghostCharacter.setIdle();
       expect(ghostCharacter.isIdle, isTrue);
-      expect(ghostCharacter.facingDirection, isNull);
+      expect(ghostCharacter.facingDirection, equals(Direction.north)); // Facing direction persists after idle
     });
   });
 }
