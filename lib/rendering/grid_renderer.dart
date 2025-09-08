@@ -27,7 +27,7 @@ class GridRenderer extends material.StatefulWidget {
 }
 
 class _GridRendererState extends material.State<GridRenderer> {
-  double _rotationX = 0.3;
+  double _rotationX = 0.8;
   double _rotationY = 0.0;
   double _cameraDistance = 8.0;
   Vector3 _cameraPosition = Vector3(10, 15, 20);
