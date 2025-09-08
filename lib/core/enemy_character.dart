@@ -32,7 +32,7 @@ class EnemyCharacter extends Character {
   Direction _facingDirection = Direction.south;
 
   /// Maximum movement cooldown (in game ticks)
-  static const int maxMovementCooldown = 3;
+  static const int maxMovementCooldown = 1;
 
   /// Base combat strength for this enemy
   int? baseCombatStrength;
@@ -159,18 +159,12 @@ class EnemyCharacter extends Character {
       );
     }
 
-    // Only process AI if the enemy is proximity active
-    if (!isProximityActive || !isActive) {
+    // Only process AI if the enemy is active (within their own activation radius)
+    if (!isActive) {
       setIdle();
       return;
     }
 
-    // Update movement cooldown
-    if (movementCooldown > 0) {
-      movementCooldown--;
-      debugPrint('EnemyCharacter: $id waiting (cooldown: $movementCooldown)');
-      return;
-    }
 
     // Update last known player position if player is visible
     if (_canSeePlayer(player, tileMap)) {
@@ -207,15 +201,39 @@ class EnemyCharacter extends Character {
 
   /// Executes hostile AI behavior
   void _executeHostileAI(GhostCharacter player, TileMap tileMap) {
+    final distanceToPlayer = position.distanceTo(player.position);
+    
+    // If adjacent to player, stay in place to attack (combat happens in GameLoopManager)
+    if (distanceToPlayer == 1) {
+      // Face the player when adjacent
+      final direction = _getDirectionTowards(player.position);
+      if (direction != null) {
+        _facingDirection = direction;
+      }
+      setIdle();
+      debugPrint('EnemyCharacter: $id is adjacent to player, staying in place to attack');
+      return;
+    }
+    
+    // If player is within detection range, ALWAYS move towards player (no other behavior)
+    if (distanceToPlayer <= activationRadius) {
+      _moveTowardsPlayer(player, tileMap);
+      debugPrint('EnemyCharacter: $id pursuing player (distance: $distanceToPlayer)');
+      return;
+    }
+    
+    // Only use AI type behavior when player is out of detection range
     switch (aiType) {
       case EnemyAIType.aggressive:
-        _moveTowardsPlayer(player, tileMap);
+        // Aggressive enemies patrol when no player detected
+        _wanderRandomly(tileMap, player: player);
         break;
       case EnemyAIType.wanderer:
         _wanderRandomly(tileMap, player: player);
         break;
       case EnemyAIType.guard:
-        _guardBehavior(player, tileMap);
+        // Guards stay in place when no player detected
+        setIdle();
         break;
     }
   }
@@ -244,11 +262,45 @@ class EnemyCharacter extends Character {
     final direction = _getDirectionTowards(targetPosition);
 
     if (direction != null) {
-      _attemptMove(direction, tileMap, player: player);
+      if (!_attemptMove(direction, tileMap, player: player)) {
+        // If direct path is blocked, try alternative directions
+        _tryAlternativeDirections(targetPosition, tileMap, player);
+      }
     } else {
-      // If no direct path, try random movement
-      _wanderRandomly(tileMap, player: player);
+      // Already at target position, stay idle
+      setIdle();
     }
+  }
+
+  /// Tries alternative directions when direct path to player is blocked
+  void _tryAlternativeDirections(Position target, TileMap tileMap, GhostCharacter player) {
+    final dx = target.x - position.x;
+    final dz = target.z - position.z;
+    
+    // Try perpendicular directions first
+    List<Direction> alternativeDirections = [];
+    
+    if (dx.abs() > dz.abs()) {
+      // Moving primarily horizontal, try vertical alternatives
+      alternativeDirections = [Direction.north, Direction.south];
+    } else {
+      // Moving primarily vertical, try horizontal alternatives
+      alternativeDirections = [Direction.east, Direction.west];
+    }
+    
+    // Shuffle to avoid predictable patterns
+    alternativeDirections.shuffle(_random);
+    
+    for (final direction in alternativeDirections) {
+      if (_attemptMove(direction, tileMap, player: player)) {
+        debugPrint('EnemyCharacter: $id found alternative path toward player');
+        return;
+      }
+    }
+    
+    // If no alternative works, stay idle this turn
+    setIdle();
+    debugPrint('EnemyCharacter: $id blocked, staying in place');
   }
 
   /// Makes the enemy wander randomly
@@ -322,7 +374,6 @@ class EnemyCharacter extends Character {
     if (success) {
       _facingDirection = direction; // Update facing direction when moving successfully
       setActive(); // Enemy is moving, not idle
-      movementCooldown = maxMovementCooldown;
       debugPrint('EnemyCharacter: $id moved to $newPosition');
     }
 

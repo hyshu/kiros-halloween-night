@@ -75,11 +75,6 @@ class AllyCharacter extends Character {
 
   /// Updates the ally's AI behavior (called each game tick)
   void updateAI(TileMap tileMap, List<EnemyCharacter> hostileEnemies) {
-    // Update movement cooldown
-    if (movementCooldown > 0) {
-      movementCooldown--;
-      return;
-    }
 
     // Update satisfaction (decreases slowly over time)
     _updateSatisfaction();
@@ -126,17 +121,14 @@ class AllyCharacter extends Character {
     // Follow the player
     final distanceToPlayer = position.distanceTo(_followTarget!.position);
 
-    if (distanceToPlayer > maxFollowDistance) {
-      // Too far away, move towards player quickly
+    if (distanceToPlayer > 2) {
+      // Distance > 2: Always rush toward player
       _moveTowardsTarget(_followTarget!.position, tileMap);
-    } else if (distanceToPlayer > preferredFollowDistance) {
-      // Move closer to preferred distance
-      _moveTowardsTarget(_followTarget!.position, tileMap);
-    } else if (distanceToPlayer < preferredFollowDistance - 1) {
-      // Too close, move away slightly
-      _moveAwayFromTarget(_followTarget!.position, tileMap);
+    } else if (distanceToPlayer < 1) {
+      // Distance < 1: Stay in place (don't move away)
+      setIdle();
     } else {
-      // At good distance, stay put or move randomly
+      // Distance 1-2: At good distance, stay put or move randomly
       if (_random.nextDouble() < 0.3) {
         // 30% chance to move randomly
         _wanderRandomly(tileMap);
@@ -274,7 +266,6 @@ class AllyCharacter extends Character {
     if (success) {
       _facingDirection = direction; // Update facing direction when moving successfully
       setActive(); // Ally is moving, not idle
-      movementCooldown = maxMovementCooldown;
     }
 
     return success;
