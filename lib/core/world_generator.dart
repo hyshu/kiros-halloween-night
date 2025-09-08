@@ -501,29 +501,30 @@ class WorldGenerator {
     ];
   }
 
-  /// Creates a direct path between two positions (fallback)
+  /// Creates an L-shaped path between two positions (no diagonal movement)
   List<Position> _createDirectPath(Position start, Position end) {
-    final path = <Position>[];
-    int x = start.x;
-    int z = start.z;
+    final path = <Position>[start];
 
-    while (x != end.x || z != end.z) {
-      path.add(Position(x, z));
+    // First, move horizontally to align X coordinate
+    int currentX = start.x;
+    final int targetX = end.x;
+    final int deltaX = targetX > currentX ? 1 : -1;
 
-      if (x < end.x) {
-        x++;
-      } else if (x > end.x) {
-        x--;
-      }
-
-      if (z < end.z) {
-        z++;
-      } else if (z > end.z) {
-        z--;
-      }
+    while (currentX != targetX) {
+      currentX += deltaX;
+      path.add(Position(currentX, start.z));
     }
 
-    path.add(end);
+    // Then, move vertically to reach the end position
+    int currentZ = start.z;
+    final int targetZ = end.z;
+    final int deltaZ = targetZ > currentZ ? 1 : -1;
+
+    while (currentZ != targetZ) {
+      currentZ += deltaZ;
+      path.add(Position(targetX, currentZ));
+    }
+
     return path;
   }
 

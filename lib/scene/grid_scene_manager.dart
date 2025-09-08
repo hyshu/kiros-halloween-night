@@ -476,7 +476,9 @@ class GridSceneManager extends ChangeNotifier {
     final cameraZ = (_cameraTarget.z / Position.tileSpacing).round();
     final radius = (_viewportRadius / Position.tileSpacing).round();
 
-    debugPrint('Loading objects in ${radius * 2}x${radius * 2} viewport around camera ($cameraX, $cameraZ)');
+    debugPrint(
+      'Loading objects in ${radius * 2}x${radius * 2} viewport around camera ($cameraX, $cameraZ)',
+    );
 
     final objectsToPlace = <Future<void>>[];
     int tilesScanned = 0;
@@ -499,8 +501,8 @@ class GridSceneManager extends ChangeNotifier {
         final tileType = _tileMap!.getTileAt(position);
         final modelData = _getTileModelData(tileType, position);
 
-        if (modelData?.modelKey != null) {
-          final libraryData = _modelLibrary[modelData!.modelKey];
+        if (modelData != null && modelData.modelKey != null) {
+          final libraryData = _modelLibrary[modelData.modelKey];
           if (libraryData != null) {
             objectsToLoad++;
             objectsToPlace.add(
@@ -517,16 +519,22 @@ class GridSceneManager extends ChangeNotifier {
       }
     }
     scanStopwatch.stop();
-    debugPrint('Tile scanning: ${scanStopwatch.elapsedMilliseconds}ms (scanned $tilesScanned tiles, found $objectsToLoad objects to load)');
+    debugPrint(
+      'Tile scanning: ${scanStopwatch.elapsedMilliseconds}ms (scanned $tilesScanned tiles, found $objectsToLoad objects to load)',
+    );
 
     // Execute all object placements
     final modelLoadStopwatch = Stopwatch()..start();
     await Future.wait(objectsToPlace);
     modelLoadStopwatch.stop();
-    debugPrint('Model loading: ${modelLoadStopwatch.elapsedMilliseconds}ms (loaded $objectsToLoad 3D models)');
+    debugPrint(
+      'Model loading: ${modelLoadStopwatch.elapsedMilliseconds}ms (loaded $objectsToLoad 3D models)',
+    );
 
     loadObjectsStopwatch.stop();
-    debugPrint('Total _loadObjectsAroundCamera: ${loadObjectsStopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+      'Total _loadObjectsAroundCamera: ${loadObjectsStopwatch.elapsedMilliseconds}ms',
+    );
   }
 
   /// Get the appropriate model key and rotation for a tile type and position
@@ -560,7 +568,7 @@ class GridSceneManager extends ChangeNotifier {
   }
 
   /// Get smart wall model and rotation based on neighboring tiles
-  ({String modelKey, double rotation}) _getSmartWallModelData(
+  ({String? modelKey, double rotation}) _getSmartWallModelData(
     Position position,
   ) {
     if (_tileMap == null) {
@@ -659,8 +667,53 @@ class GridSceneManager extends ChangeNotifier {
       return (modelKey: 'brick-wall', rotation: rotation);
     }
 
-    // Default to gravestone-bevel if completely surrounded by walls
-    return (modelKey: 'gravestone-bevel', rotation: 0.0);
+    // Use random graveyard decoration if completely surrounded by walls
+    return _getRandomGraveyardDecoration(position);
+  }
+
+  /// Get random graveyard decoration using seeded random based on position
+  ({String? modelKey, double rotation}) _getRandomGraveyardDecoration(
+    Position position,
+  ) {
+    // Create seeded random based on position and world generator seed
+    final seed =
+        (position.x * 31 + position.z * 17) ^ 42; // Simple seed combination
+    final random = Random(seed);
+
+    // 50% chance for empty space (no decoration)
+    if (random.nextBool()) {
+      return (modelKey: null, rotation: 0.0);
+    }
+
+    // List of graveyard decoration models
+    const graveyardDecorations = [
+      'gravestone-flat',
+      'gravestone-cross',
+      'gravestone-bevel',
+      'gravestone-round',
+      'gravestone-broken',
+      'gravestone-wide',
+      'pumpkin-tall-carved',
+      'rocks',
+      'rocks-tall',
+      'pine',
+      'pine-crooked',
+      'debris',
+      'debris-wood',
+      'trunk',
+      'trunk-long',
+      'shovel-dirt',
+    ];
+
+    // Select random decoration
+    final decorationIndex = random.nextInt(graveyardDecorations.length);
+    final decoration = graveyardDecorations[decorationIndex];
+
+    // Random rotation (0, 90, 180, 270 degrees)
+    final rotations = [0.0, -pi / 2, pi, -3 * pi / 2];
+    final rotation = rotations[random.nextInt(rotations.length)];
+
+    return (modelKey: decoration, rotation: rotation);
   }
 
   /// Get smart obstacle model based on neighboring tiles
@@ -696,6 +749,47 @@ class GridSceneManager extends ChangeNotifier {
     'gravestone-bevel': {
       'path': 'assets/graveyard/gravestone-bevel.obj',
       'name': 'Gravestone Bevel',
+    },
+
+    // Graveyard decorations for non-corridor walls
+    'gravestone-flat': {
+      'path': 'assets/graveyard/gravestone-flat.obj',
+      'name': 'Gravestone Flat',
+    },
+    'gravestone-cross': {
+      'path': 'assets/graveyard/gravestone-cross.obj',
+      'name': 'Gravestone Cross',
+    },
+    'gravestone-round': {
+      'path': 'assets/graveyard/gravestone-round.obj',
+      'name': 'Gravestone Round',
+    },
+    'gravestone-broken': {
+      'path': 'assets/graveyard/gravestone-broken.obj',
+      'name': 'Gravestone Broken',
+    },
+    'gravestone-wide': {
+      'path': 'assets/graveyard/gravestone-wide.obj',
+      'name': 'Gravestone Wide',
+    },
+    'rocks': {'path': 'assets/graveyard/rocks.obj', 'name': 'Rocks'},
+    'rocks-tall': {
+      'path': 'assets/graveyard/rocks-tall.obj',
+      'name': 'Tall Rocks',
+    },
+    'pine': {'path': 'assets/graveyard/pine.obj', 'name': 'Pine Tree'},
+    'pine-crooked': {
+      'path': 'assets/graveyard/pine-crooked.obj',
+      'name': 'Crooked Pine',
+    },
+    'pine-fall': {
+      'path': 'assets/graveyard/pine-fall.obj',
+      'name': 'Fallen Pine',
+    },
+    'debris': {'path': 'assets/graveyard/debris.obj', 'name': 'Stone Debris'},
+    'debris-wood': {
+      'path': 'assets/graveyard/debris-wood.obj',
+      'name': 'Wood Debris',
     },
 
     // Obstacles and structures
@@ -806,12 +900,13 @@ class GridSceneManager extends ChangeNotifier {
       if (tile == TileType.candy) {
         // Create a random candy item
         final candyType = _getRandomCandyType();
-        final candyId = 'candy_${pos.x}_${pos.z}_${DateTime.now().millisecondsSinceEpoch}';
+        final candyId =
+            'candy_${pos.x}_${pos.z}_${DateTime.now().millisecondsSinceEpoch}';
         final candy = CandyItem.create(candyType, candyId, position: pos);
 
         // Try to add to player's inventory
         final success = _ghostCharacter!.collectCandy(candy);
-        
+
         if (success) {
           // Show candy collection dialogue with variety
           _showCandyCollectionMessage(candy);
