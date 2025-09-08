@@ -10,3 +10,4 @@ export 'world_generator.dart';
 export 'game_state.dart';
 export 'game_manager.dart';
 export 'animation_phase_manager.dart';
+export 'camera_animation_system.dart';

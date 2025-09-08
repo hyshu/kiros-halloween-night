@@ -12,6 +12,7 @@ import '../core/enemy_manager.dart';
 import '../core/enemy_character.dart';
 import '../core/game_loop_manager.dart';
 import '../core/ally_character.dart';
+import '../core/camera_animation_system.dart';
 import '../core/dialogue_manager.dart';
 import '../core/candy_item.dart';
 
@@ -63,6 +64,9 @@ class GridSceneManager extends ChangeNotifier {
   // Dialogue manager for narrative and feedback
   final DialogueManager _dialogueManager = DialogueManager();
 
+  // Camera animation system for smooth transitions
+  final CameraAnimationSystem _cameraAnimationSystem = CameraAnimationSystem();
+
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
   final double _viewportRadius = 50.0; // Only render objects within this radius
@@ -72,6 +76,12 @@ class GridSceneManager extends ChangeNotifier {
     if (_tileMap != null) {
       _updateCameraTarget();
     }
+    
+    // Listen to camera animation updates
+    _cameraAnimationSystem.addListener(() {
+      _cameraTarget = _cameraAnimationSystem.currentPosition;
+      notifyListeners();
+    });
   }
 
   // Default constructor for backward compatibility
@@ -134,7 +144,10 @@ class GridSceneManager extends ChangeNotifier {
   TileMap? get tileMap => _tileMap;
 
   // Get camera target for renderer
-  Vector3 get cameraTarget => _cameraTarget;
+  Vector3 get cameraTarget => _cameraAnimationSystem.currentPosition;
+
+  // Get camera animation system
+  CameraAnimationSystem get cameraAnimationSystem => _cameraAnimationSystem;
 
   // Get the ghost character
   GhostCharacter? get ghostCharacter => _ghostCharacter;
@@ -186,8 +199,8 @@ class GridSceneManager extends ChangeNotifier {
       );
     }
 
-    // Update camera to follow the character
-    _updateCameraToFollowCharacter();
+    // Update camera to follow the character (no animation for adding character)
+    await _updateCameraToFollowCharacter(animate: false);
     notifyListeners();
   }
 
@@ -207,8 +220,8 @@ class GridSceneManager extends ChangeNotifier {
 
     _characterObjects[character.id] = characterObject;
 
-    // Update camera to follow the character
-    _updateCameraToFollowCharacter();
+    // Update camera to follow the character (with animation for movement)
+    await _updateCameraToFollowCharacter(animate: true);
 
     // Reload objects around new position for large world
     if (_tileMap != null) {
@@ -230,14 +243,24 @@ class GridSceneManager extends ChangeNotifier {
   }
 
   /// Updates camera to follow the ghost character
-  void _updateCameraToFollowCharacter() {
+  Future<void> _updateCameraToFollowCharacter({bool animate = true}) async {
     if (_ghostCharacter != null) {
       final pos = _ghostCharacter!.position;
-      _cameraTarget = Vector3(
+      final newCameraTarget = Vector3(
         pos.x * Position.tileSpacing,
         0.0,
         pos.z * Position.tileSpacing,
       );
+      
+      if (animate) {
+        await _cameraAnimationSystem.animateToPosition(
+          newCameraTarget,
+          easingCurve: EasingCurve.easeInOut,
+        );
+      } else {
+        _cameraAnimationSystem.setPosition(newCameraTarget);
+      }
+      _cameraTarget = newCameraTarget;
 
       // Update enemy activation based on new player position
       if (_enemyManager != null) {
@@ -319,11 +342,13 @@ class GridSceneManager extends ChangeNotifier {
   void _updateCameraTarget() {
     if (_tileMap?.playerSpawn != null) {
       final spawn = _tileMap!.playerSpawn!;
-      _cameraTarget = Vector3(
+      final initialTarget = Vector3(
         spawn.x * Position.tileSpacing,
         0.0,
         spawn.z * Position.tileSpacing,
       );
+      _cameraTarget = initialTarget;
+      _cameraAnimationSystem.initialize(initialTarget);
     }
   }
 
@@ -444,6 +469,12 @@ class GridSceneManager extends ChangeNotifier {
         onEnemyDefeated: (enemyId) {
           // Remove the defeated enemy's 3D model from the scene
           removeEnemyFromScene(enemyId);
+        },
+        onMovementAnimation: () async {
+          // Trigger camera animation to follow player movement
+          if (_ghostCharacter != null) {
+            await _updateCameraToFollowCharacter(animate: true);
+          }
         },
       );
 
@@ -963,6 +994,7 @@ class GridSceneManager extends ChangeNotifier {
     _gameLoopManager?.stopTurnBasedSystem();
     _gameLoopManager?.removeListener(_onGameLoopUpdate);
     _gameLoopManager?.dispose();
+    _cameraAnimationSystem.dispose();
     super.dispose();
   }
 }

@@ -39,6 +39,9 @@ class GameLoopManager extends ChangeNotifier {
   /// Reference to dialogue manager for combat messages
   DialogueManager? _dialogueManager;
 
+  /// Reference to scene manager for camera animations
+  Function()? _onMovementAnimation;
+
   /// Callback for when an enemy is defeated and should be removed from scene
   Function(String enemyId)? _onEnemyDefeated;
 
@@ -80,12 +83,14 @@ class GameLoopManager extends ChangeNotifier {
     required TileMap tileMap,
     DialogueManager? dialogueManager,
     Function(String enemyId)? onEnemyDefeated,
+    Function()? onMovementAnimation,
   }) {
     _ghostCharacter = ghostCharacter;
     _enemyManager = enemyManager;
     _tileMap = tileMap;
     _dialogueManager = dialogueManager;
     _onEnemyDefeated = onEnemyDefeated;
+    _onMovementAnimation = onMovementAnimation;
 
     // Set player reference for ally manager
     _allyManager.setPlayer(ghostCharacter);
@@ -287,7 +292,9 @@ class GameLoopManager extends ChangeNotifier {
       }
 
       // Animation Phase 1: Player Movement Animation
-      await _animationManager.playMovementAnimation();
+      await _animationManager.playMovementAnimation(
+        onMovementAnimation: _onMovementAnimation,
+      );
 
       // Update enemy activation based on new player position
       _enemyManager!.updateEnemyActivation(_ghostCharacter!.position);

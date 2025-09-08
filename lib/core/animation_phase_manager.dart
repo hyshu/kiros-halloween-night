@@ -18,8 +18,13 @@ class AnimationPhaseManager extends ChangeNotifier {
   bool get isAnimating => _isAnimating;
 
   /// Plays the movement animation phase
-  Future<void> playMovementAnimation() async {
-    await _playAnimationPhase(AnimationPhase.movement);
+  Future<void> playMovementAnimation({
+    Function()? onMovementAnimation,
+  }) async {
+    await _playAnimationPhase(
+      AnimationPhase.movement, 
+      customAction: onMovementAnimation,
+    );
   }
 
   /// Plays the combat animation phase
@@ -43,7 +48,10 @@ class AnimationPhaseManager extends ChangeNotifier {
   }
 
   /// Generic method to play any animation phase
-  Future<void> _playAnimationPhase(AnimationPhase phase) async {
+  Future<void> _playAnimationPhase(
+    AnimationPhase phase, {
+    Function()? customAction,
+  }) async {
     if (_isAnimating) return; // Prevent overlapping animations
 
     _currentPhase = phase;
@@ -54,9 +62,13 @@ class AnimationPhaseManager extends ChangeNotifier {
       'AnimationPhaseManager: Starting ${phase.displayName} animation',
     );
 
-    // Placeholder: Use Future.delayed for now
-    // In the future, this will trigger actual character animations
-    await Future.delayed(animationDuration);
+    // Execute custom action if provided (e.g., camera animation)
+    if (customAction != null) {
+      await customAction();
+    } else {
+      // Placeholder: Use Future.delayed for phases without custom actions
+      await Future.delayed(animationDuration);
+    }
 
     _isAnimating = false;
     _currentPhase = AnimationPhase.none;
