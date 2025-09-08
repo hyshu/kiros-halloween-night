@@ -93,14 +93,10 @@ class WorldGenerator {
     final maxRoomSize = 20;
     final roomPadding = 2;
 
-    // First, create guaranteed rooms around spawn and boss locations
-    const spawnLocation = Position(10, 390);
-    const bossLocation = Position(190, 10);
-    
-    final spawnRoom = Room(5, 385, 15, 15);  // Room around spawn
-    final bossRoom = Room(185, 5, 15, 15);   // Room around boss
+    final spawnRoom = Room(5, 385, 15, 15); // Room around spawn
+    final bossRoom = Room(185, 5, 15, 15); // Room around boss
     rooms.addAll([spawnRoom, bossRoom]);
-    
+
     // Carve rooms - ensure they have floor tiles inside
     _carveRoom(tileMap, spawnRoom);
     _carveRoom(tileMap, bossRoom);
@@ -149,23 +145,26 @@ class WorldGenerator {
   void _carveRoom(TileMap tileMap, Room room) {
     // Skip rooms that are too small to have an interior
     if (room.width <= 2 || room.height <= 2) return;
-    
+
     for (int z = room.z + 1; z < room.z + room.height - 1; z++) {
       for (int x = room.x + 1; x < room.x + room.width - 1; x++) {
         final position = Position(x, z);
-        if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
+        if (tileMap.isValidPosition(position) &&
+            !tileMap.isPerimeterPosition(position)) {
           tileMap.setTileAt(position, TileType.floor);
         }
       }
     }
-    
+
     // Ensure spawn and boss locations are definitely floor tiles
     const spawnLocation = Position(10, 390);
     const bossLocation = Position(190, 10);
-    if (tileMap.isValidPosition(spawnLocation) && !tileMap.isPerimeterPosition(spawnLocation)) {
+    if (tileMap.isValidPosition(spawnLocation) &&
+        !tileMap.isPerimeterPosition(spawnLocation)) {
       tileMap.setTileAt(spawnLocation, TileType.floor);
     }
-    if (tileMap.isValidPosition(bossLocation) && !tileMap.isPerimeterPosition(bossLocation)) {
+    if (tileMap.isValidPosition(bossLocation) &&
+        !tileMap.isPerimeterPosition(bossLocation)) {
       tileMap.setTileAt(bossLocation, TileType.floor);
     }
   }
@@ -294,8 +293,18 @@ class WorldGenerator {
     final rooms = <Room>[];
 
     // Create rooms around the fixed spawn and boss locations (well within boundaries)
-    final room1 = Room(5, 380, 15, 18);   // Room around spawn (10, 390) - z from 380-397
-    final room2 = Room(180, 5, 18, 15);   // Room around boss (190, 10) - x from 180-197
+    final room1 = Room(
+      5,
+      380,
+      15,
+      18,
+    ); // Room around spawn (10, 390) - z from 380-397
+    final room2 = Room(
+      180,
+      5,
+      18,
+      15,
+    ); // Room around boss (190, 10) - x from 180-197
 
     // Start with all walls
     for (int z = 1; z < TileMap.worldHeight - 1; z++) {
@@ -314,14 +323,14 @@ class WorldGenerator {
     // For test mode, create a simple direct floor path between fixed positions
     const start = Position(10, 390);
     const end = Position(190, 10);
-    
+
     // Create horizontal path
     final minX = math.min(start.x, end.x);
     final maxX = math.max(start.x, end.x);
     for (int x = minX; x <= maxX; x++) {
       tileMap.setTileAt(Position(x, start.z), TileType.floor);
     }
-    
+
     // Create vertical path
     final minZ = math.min(start.z, end.z);
     final maxZ = math.max(start.z, end.z);
@@ -330,32 +339,6 @@ class WorldGenerator {
     }
 
     return rooms;
-  }
-
-  /// Places the player spawn location within the first room
-  Position _placePlayerSpawnInRoom(TileMap tileMap, Room room) {
-    final spawn = Position(
-      room.x + 2 + _random.nextInt(room.width - 4),
-      room.z + 2 + _random.nextInt(room.height - 4),
-    );
-
-    // Ensure spawn is on floor
-    tileMap.setTileAt(spawn, TileType.floor);
-    tileMap.setPlayerSpawn(spawn);
-    return spawn;
-  }
-
-  /// Places the boss within the last room (furthest from spawn)
-  Position _placeBossInRoom(TileMap tileMap, Room room) {
-    final boss = Position(
-      room.x + 2 + _random.nextInt(room.width - 4),
-      room.z + 2 + _random.nextInt(room.height - 4),
-    );
-
-    // Ensure boss is on floor
-    tileMap.setTileAt(boss, TileType.floor);
-    tileMap.setBossLocation(boss);
-    return boss;
   }
 
   /// Validates that a path exists between two positions using optimized BFS
@@ -398,7 +381,8 @@ class WorldGenerator {
 
     // Clear the path by setting all positions to floor
     for (final position in path) {
-      if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
+      if (tileMap.isValidPosition(position) &&
+          !tileMap.isPerimeterPosition(position)) {
         tileMap.setTileAt(position, TileType.floor);
       }
     }
@@ -559,16 +543,24 @@ class WorldGenerator {
     // Batch place obstacles
     candidatePositions.shuffle(_random);
     final placementCount = (obstacleCount).clamp(0, candidatePositions.length);
-    
+
     for (int i = 0; i < placementCount; i++) {
       tileMap.setTileAt(candidatePositions[i], TileType.obstacle);
     }
 
     // Validate path after placing obstacles (same as optimized version)
     if (tileMap.playerSpawn != null && tileMap.bossLocation != null) {
-      if (!_validatePath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!)) {
+      if (!_validatePath(
+        tileMap,
+        tileMap.playerSpawn!,
+        tileMap.bossLocation!,
+      )) {
         // If path is broken, create guaranteed path
-        _createGuaranteedPath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!);
+        _createGuaranteedPath(
+          tileMap,
+          tileMap.playerSpawn!,
+          tileMap.bossLocation!,
+        );
       }
     }
   }
@@ -598,7 +590,7 @@ class WorldGenerator {
     // Step 2: Conservative batch placement (use only 1/4 of candidates)
     candidatePositions.shuffle(_random);
     final targetCount = (candidatePositions.length ~/ 4).clamp(0, 80);
-    
+
     for (int i = 0; i < targetCount; i++) {
       final position = candidatePositions[i];
       tileMap.setTileAt(position, TileType.obstacle);
@@ -606,9 +598,17 @@ class WorldGenerator {
 
     // Step 3: Single path validation after batch placement
     if (tileMap.playerSpawn != null && tileMap.bossLocation != null) {
-      if (!_validatePath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!)) {
+      if (!_validatePath(
+        tileMap,
+        tileMap.playerSpawn!,
+        tileMap.bossLocation!,
+      )) {
         // If path is broken, create guaranteed path
-        _createGuaranteedPath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!);
+        _createGuaranteedPath(
+          tileMap,
+          tileMap.playerSpawn!,
+          tileMap.bossLocation!,
+        );
       }
     }
   }
@@ -623,32 +623,31 @@ class WorldGenerator {
       Position(position.x, position.z - 1),
       Position(position.x, position.z + 1),
     ]) {
-      if (tileMap.isValidPosition(neighbor) && 
+      if (tileMap.isValidPosition(neighbor) &&
           tileMap.getTileAt(neighbor) == TileType.floor) {
         walkableNeighbors++;
       }
     }
-    
+
     // Only place obstacle if position has enough walkable neighbors
     return walkableNeighbors >= 3;
   }
-
 
   /// Adds candy items throughout the rooms and corridors
   void _addCandyItems(TileMap tileMap) {
     if (_isTestMode) {
       // Place candy in known floor positions for tests
       final candyPositions = [
-        Position(9, 389),   // Near spawn
-        Position(11, 391),  // Near spawn  
-        Position(189, 9),   // Near boss
-        Position(191, 11),  // Near boss
-        Position(50, 390),  // On path
+        Position(9, 389), // Near spawn
+        Position(11, 391), // Near spawn
+        Position(189, 9), // Near boss
+        Position(191, 11), // Near boss
+        Position(50, 390), // On path
         Position(100, 390), // On path
         Position(150, 390), // On path
         Position(190, 100), // On vertical path
       ];
-      
+
       for (final position in candyPositions) {
         if (tileMap.getTileAt(position) == TileType.floor &&
             position != tileMap.playerSpawn &&

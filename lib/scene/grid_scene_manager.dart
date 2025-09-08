@@ -192,7 +192,7 @@ class GridSceneManager extends ChangeNotifier {
   }
 
   /// Updates the ghost character's position in the scene
-  void updateGhostCharacterPosition() {
+  Future<void> updateGhostCharacterPosition() async {
     if (_ghostCharacter == null) return;
 
     final character = _ghostCharacter!;
@@ -217,7 +217,7 @@ class GridSceneManager extends ChangeNotifier {
 
     // Notify game loop manager of player movement
     if (_gameLoopManager != null) {
-      _gameLoopManager!.onPlayerMoved();
+      await _gameLoopManager!.onPlayerMoved();
     }
 
     // Update dialogue system

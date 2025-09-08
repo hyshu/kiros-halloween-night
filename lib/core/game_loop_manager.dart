@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'ally_character.dart';
 import 'ally_manager.dart';
+import 'animation_phase_manager.dart';
 import 'combat_manager.dart';
 import 'enemy_character.dart';
 import 'enemy_manager.dart';
@@ -29,6 +30,9 @@ class GameLoopManager extends ChangeNotifier {
   /// Gift system manager
   final GiftSystem _giftSystem = GiftSystem();
 
+  /// Animation phase manager
+  final AnimationPhaseManager _animationManager = AnimationPhaseManager();
+
   /// Reference to the tile map
   TileMap? _tileMap;
 
@@ -55,6 +59,7 @@ class GameLoopManager extends ChangeNotifier {
   AllyManager get allyManager => _allyManager;
   CombatManager get combatManager => _combatManager;
   GiftSystem get giftSystem => _giftSystem;
+  AnimationPhaseManager get animationManager => _animationManager;
   EnemyManager? get enemyManager => _enemyManager;
   GhostCharacter? get ghostCharacter => _ghostCharacter;
 
@@ -267,7 +272,7 @@ class GameLoopManager extends ChangeNotifier {
   }
 
   /// Called when the player character moves - processes one turn
-  void onPlayerMoved() {
+  Future<void> onPlayerMoved() async {
     if (_ghostCharacter == null || _enemyManager == null || _tileMap == null) {
       return;
     }
@@ -280,11 +285,21 @@ class GameLoopManager extends ChangeNotifier {
         _dialogueManager!.clearTurnEvents();
         _dialogueManager!.onNewTurn();
       }
+
+      // Animation Phase 1: Player Movement Animation
+      await _animationManager.playMovementAnimation();
+
       // Update enemy activation based on new player position
       _enemyManager!.updateEnemyActivation(_ghostCharacter!.position);
 
+      // Animation Phase 2: Enemy AI Movement
+      await _animationManager.playAIMovementAnimation();
+
       // Process enemy AI (one turn)
       _enemyManager!.processEnemyAI(_ghostCharacter!);
+
+      // Animation Phase 3: Combat Animation
+      await _animationManager.playCombatAnimation();
 
       // Process player vs enemy combat
       _processPlayerCombat();
@@ -292,11 +307,17 @@ class GameLoopManager extends ChangeNotifier {
       // Get all active hostile enemies (after player combat)
       final hostileEnemies = _getHostileEnemies();
 
+      // Animation Phase 4: Ally Movement Animation
+      await _animationManager.playAllyMovementAnimation();
+
       // Update ally AI (one turn)
       _allyManager.updateAllies(_tileMap!, hostileEnemies);
 
       // Process combat between allies and hostile enemies
       _processCombat(hostileEnemies);
+
+      // Animation Phase 5: Effects Animation (cleanup, status changes)
+      await _animationManager.playEffectsAnimation();
 
       // Clean up satisfied enemies
       _cleanupSatisfiedEnemies();
@@ -407,9 +428,9 @@ class GameLoopManager extends ChangeNotifier {
   }
 
   /// Forces a manual turn processing (useful for debugging)
-  void forceTurn() {
+  Future<void> forceTurn() async {
     if (_isRunning) {
-      onPlayerMoved();
+      await onPlayerMoved();
     }
   }
 
@@ -462,6 +483,7 @@ class GameLoopManager extends ChangeNotifier {
   void dispose() {
     stopTurnBasedSystem();
     _allyManager.dispose();
+    _animationManager.dispose();
     super.dispose();
   }
 

@@ -9,3 +9,4 @@ export 'tile_map.dart';
 export 'world_generator.dart';
 export 'game_state.dart';
 export 'game_manager.dart';
+export 'animation_phase_manager.dart';

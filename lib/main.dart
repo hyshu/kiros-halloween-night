@@ -144,9 +144,9 @@ class _GridSceneViewState extends State<GridSceneView> {
       ghostCharacter: _ghostCharacter,
       tileMap: _tileMap,
       sceneManager: _sceneManager,
-      onCharacterMoved: () {
+      onCharacterMoved: () async {
         // Update the scene when character moves
-        _sceneManager.updateGhostCharacterPosition();
+        await _sceneManager.updateGhostCharacterPosition();
       },
       onInventoryToggle: () {
         setState(() {

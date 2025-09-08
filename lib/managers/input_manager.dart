@@ -12,7 +12,7 @@ class InputManager {
   final GridSceneManager? _sceneManager;
 
   /// Callback for when the character moves successfully
-  final VoidCallback? onCharacterMoved;
+  final Future<void> Function()? onCharacterMoved;
 
   /// Callback for when inventory toggle is requested
   final VoidCallback? onInventoryToggle;
@@ -33,7 +33,7 @@ class InputManager {
 
   /// Handles a key press event
   /// Returns true if the key was handled
-  bool handleKeyPress(LogicalKeyboardKey key) {
+  Future<bool> handleKeyPress(LogicalKeyboardKey key) async {
     final enemyManager = _sceneManager?.enemyManager;
     final wasHandled = _ghostCharacter.handleInput(
       key,
@@ -45,10 +45,10 @@ class InputManager {
 
     if (wasHandled && !_ghostCharacter.isIdle) {
       // Character moved successfully
-      onCharacterMoved?.call();
+      await onCharacterMoved?.call();
     } else if (wasHandled && _ghostCharacter.isIdle) {
       // Character attacked but didn't move, still trigger turn
-      onCharacterMoved?.call();
+      await onCharacterMoved?.call();
     }
 
     return wasHandled;
@@ -62,9 +62,9 @@ class InputManager {
     return KeyboardListener(
       focusNode: FocusNode()..requestFocus(),
       autofocus: autofocus,
-      onKeyEvent: (KeyEvent event) {
+      onKeyEvent: (KeyEvent event) async {
         if (event is KeyDownEvent) {
-          final handled = handleKeyPress(event.logicalKey);
+          final handled = await handleKeyPress(event.logicalKey);
           if (handled) {
             // Prevent default behavior for handled keys
             return;
