@@ -219,13 +219,14 @@ class GameLoopManager extends ChangeNotifier {
           'GameLoopManager: Player defeated enemy with directional attack',
         );
       }
-      return; // Directional attack processed, no adjacent combat
     }
 
-    // Legacy adjacent combat (in case of multiple adjacent enemies)
+    // Process adjacent combat (both as counter-attack after directional attack and standalone)
     final playerPos = _ghostCharacter!.position;
     final adjacentEnemies = _enemyManager!.activeEnemies.where((enemy) {
-      return playerPos.distanceTo(enemy.position) == 1 && enemy.isHostile;
+      return playerPos.distanceTo(enemy.position) == 1 &&
+          enemy.isHostile &&
+          enemy.isAlive;
     }).toList();
 
     if (adjacentEnemies.isEmpty) return;
@@ -235,7 +236,7 @@ class GameLoopManager extends ChangeNotifier {
     );
 
     for (final enemy in adjacentEnemies) {
-      // Enemy attacks player (since player didn't initiate directional attack)
+      // Enemy attacks player (either as counter-attack or standalone)
       final enemyDamage = enemy.attackPlayer(_ghostCharacter!);
       _ghostCharacter!.takeDamageFromEnemy(enemyDamage, enemy);
 
@@ -316,18 +317,22 @@ class GameLoopManager extends ChangeNotifier {
       if (success && _enemyManager != null) {
         // Remove enemy from enemy manager
         _enemyManager!.removeEnemy(enemy.id);
-        
+
         // Remove enemy from the scene manager (3D model)
         if (_onEnemyDefeated != null) {
           _onEnemyDefeated!(enemy.id);
         }
-        
+
         // Show dialogue message
         if (_dialogueManager != null) {
-          _dialogueManager!.showCombatFeedback('${enemy.id} has become your ally!');
+          _dialogueManager!.showCombatFeedback(
+            '${enemy.id} has become your ally!',
+          );
         }
-        
-        debugPrint('GameLoopManager: Enemy ${enemy.id} converted to ally and model loaded');
+
+        debugPrint(
+          'GameLoopManager: Enemy ${enemy.id} converted to ally and model loaded',
+        );
         return true;
       }
     }
@@ -337,17 +342,17 @@ class GameLoopManager extends ChangeNotifier {
   /// Initiates the gift process with an adjacent enemy
   bool initiateGiftToEnemy(EnemyCharacter enemy) {
     if (_ghostCharacter == null) return false;
-    
+
     return _giftSystem.initiateGift(_ghostCharacter!, enemy);
   }
 
   /// Confirms the gift and completes the enemy conversion
   bool confirmGift() {
     if (_ghostCharacter == null) return false;
-    
+
     final targetEnemy = _giftSystem.targetEnemy;
     final success = _giftSystem.confirmGift(_ghostCharacter!);
-    
+
     if (success && targetEnemy != null) {
       // Convert the target enemy to ally
       convertEnemyToAlly(targetEnemy);
@@ -363,7 +368,7 @@ class GameLoopManager extends ChangeNotifier {
   /// Gets all adjacent enemies that can receive gifts
   List<EnemyCharacter> getAdjacentGiftableEnemies() {
     if (_ghostCharacter == null || _enemyManager == null) return [];
-    
+
     final allEnemies = _enemyManager!.activeEnemies;
     return _giftSystem.getAdjacentGiftableEnemies(_ghostCharacter!, allEnemies);
   }
@@ -371,7 +376,7 @@ class GameLoopManager extends ChangeNotifier {
   /// Checks if the player can give gifts to any adjacent enemies
   bool canGiveGifts() {
     if (_ghostCharacter == null || _enemyManager == null) return false;
-    
+
     final allEnemies = _enemyManager!.activeEnemies;
     return _giftSystem.canGiveGifts(_ghostCharacter!, allEnemies);
   }
