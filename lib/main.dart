@@ -77,7 +77,7 @@ class _GridSceneViewState extends State<GridSceneView> {
 
     // Generate the large world map
     final worldGenStopwatch = Stopwatch()..start();
-    final worldGenerator = WorldGenerator(seed: 42);
+    final worldGenerator = WorldGenerator(); // Use random seed for varied maps
     _tileMap = worldGenerator.generateWorld();
     worldGenStopwatch.stop();
     debugPrint('World generation: ${worldGenStopwatch.elapsedMilliseconds}ms');

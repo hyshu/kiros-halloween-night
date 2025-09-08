@@ -44,12 +44,18 @@ class WorldGenerator {
   TileMap generateWorld() {
     final tileMap = TileMap();
 
+    // Use fixed spawn and boss locations
+    final spawnLocation = const Position(10, 390);
+    final bossLocation = const Position(190, 10);
+
     // Generate roguelike room and corridor structure
     final rooms = _generateRoomsAndCorridors(tileMap);
 
-    // Place spawn and boss locations in appropriate rooms
-    final spawnLocation = _placePlayerSpawnInRoom(tileMap, rooms.first);
-    final bossLocation = _placeBossInRoom(tileMap, rooms.last);
+    // Set fixed spawn and boss locations
+    tileMap.setTileAt(spawnLocation, TileType.floor);
+    tileMap.setPlayerSpawn(spawnLocation);
+    tileMap.setTileAt(bossLocation, TileType.floor);
+    tileMap.setBossLocation(bossLocation);
 
     // Always create guaranteed path first - before obstacles
     _createGuaranteedPath(tileMap, spawnLocation, bossLocation);
@@ -59,9 +65,9 @@ class WorldGenerator {
     _addCandyItems(tileMap);
 
     // Final path validation - ensure path still exists after obstacles
-    if (!_validatePath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!)) {
+    if (!_validatePath(tileMap, spawnLocation, bossLocation)) {
       // If path was broken by obstacles, recreate it
-      _createGuaranteedPath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!);
+      _createGuaranteedPath(tileMap, spawnLocation, bossLocation);
     }
 
     return tileMap;
@@ -82,15 +88,27 @@ class WorldGenerator {
     }
 
     final rooms = <Room>[];
-    final maxRooms = 50; // More rooms for shorter corridors
+    final maxRooms = 50;
     final minRoomSize = 8;
     final maxRoomSize = 20;
     final roomPadding = 2;
 
+    // First, create guaranteed rooms around spawn and boss locations
+    const spawnLocation = Position(10, 390);
+    const bossLocation = Position(190, 10);
+    
+    final spawnRoom = Room(5, 385, 15, 15);  // Room around spawn
+    final bossRoom = Room(185, 5, 15, 15);   // Room around boss
+    rooms.addAll([spawnRoom, bossRoom]);
+    
+    // Carve rooms - ensure they have floor tiles inside
+    _carveRoom(tileMap, spawnRoom);
+    _carveRoom(tileMap, bossRoom);
+
     int attempts = 0;
     final maxAttempts = 2000;
 
-    // Generate non-overlapping rooms across the large world
+    // Generate additional non-overlapping rooms across the large world
     while (rooms.length < maxRooms && attempts < maxAttempts) {
       attempts++;
 
@@ -129,10 +147,26 @@ class WorldGenerator {
 
   /// Carves out a room by setting its interior to floor tiles
   void _carveRoom(TileMap tileMap, Room room) {
+    // Skip rooms that are too small to have an interior
+    if (room.width <= 2 || room.height <= 2) return;
+    
     for (int z = room.z + 1; z < room.z + room.height - 1; z++) {
       for (int x = room.x + 1; x < room.x + room.width - 1; x++) {
-        tileMap.setTileAt(Position(x, z), TileType.floor);
+        final position = Position(x, z);
+        if (tileMap.isValidPosition(position) && !tileMap.isPerimeterPosition(position)) {
+          tileMap.setTileAt(position, TileType.floor);
+        }
       }
+    }
+    
+    // Ensure spawn and boss locations are definitely floor tiles
+    const spawnLocation = Position(10, 390);
+    const bossLocation = Position(190, 10);
+    if (tileMap.isValidPosition(spawnLocation) && !tileMap.isPerimeterPosition(spawnLocation)) {
+      tileMap.setTileAt(spawnLocation, TileType.floor);
+    }
+    if (tileMap.isValidPosition(bossLocation) && !tileMap.isPerimeterPosition(bossLocation)) {
+      tileMap.setTileAt(bossLocation, TileType.floor);
     }
   }
 
@@ -259,11 +293,9 @@ class WorldGenerator {
   List<Room> _generateSimpleRoomWorld(TileMap tileMap) {
     final rooms = <Room>[];
 
-    // Create very simple rooms with guaranteed floor area for easy path creation
-    final room1 = Room(10, 10, 20, 20);  // Large spawn room
-    final room2 = Room(100, 100, 20, 20); // Large boss room
-
-    rooms.addAll([room1, room2]);
+    // Create rooms around the fixed spawn and boss locations (well within boundaries)
+    final room1 = Room(5, 380, 15, 18);   // Room around spawn (10, 390) - z from 380-397
+    final room2 = Room(180, 5, 18, 15);   // Room around boss (190, 10) - x from 180-197
 
     // Start with all walls
     for (int z = 1; z < TileMap.worldHeight - 1; z++) {
@@ -272,29 +304,29 @@ class WorldGenerator {
       }
     }
 
-    // Carve out rooms
+    rooms.addAll([room1, room2]);
+
+    // Carve out rooms AFTER setting walls
     for (final room in rooms) {
       _carveRoom(tileMap, room);
     }
 
-    // For test mode, create a simple direct floor path between room centers
-    if (rooms.length >= 2) {
-      final start = rooms.first.center;
-      final end = rooms.last.center;
-      
-      // Create horizontal path
-      final minX = math.min(start.x, end.x);
-      final maxX = math.max(start.x, end.x);
-      for (int x = minX; x <= maxX; x++) {
-        tileMap.setTileAt(Position(x, start.z), TileType.floor);
-      }
-      
-      // Create vertical path
-      final minZ = math.min(start.z, end.z);
-      final maxZ = math.max(start.z, end.z);
-      for (int z = minZ; z <= maxZ; z++) {
-        tileMap.setTileAt(Position(end.x, z), TileType.floor);
-      }
+    // For test mode, create a simple direct floor path between fixed positions
+    const start = Position(10, 390);
+    const end = Position(190, 10);
+    
+    // Create horizontal path
+    final minX = math.min(start.x, end.x);
+    final maxX = math.max(start.x, end.x);
+    for (int x = minX; x <= maxX; x++) {
+      tileMap.setTileAt(Position(x, start.z), TileType.floor);
+    }
+    
+    // Create vertical path
+    final minZ = math.min(start.z, end.z);
+    final maxZ = math.max(start.z, end.z);
+    for (int z = minZ; z <= maxZ; z++) {
+      tileMap.setTileAt(Position(end.x, z), TileType.floor);
     }
 
     return rooms;
@@ -604,24 +636,23 @@ class WorldGenerator {
   /// Adds candy items throughout the rooms and corridors
   void _addCandyItems(TileMap tileMap) {
     if (_isTestMode) {
-      // Simplified candy placement for tests in room-based structure
-      final candyCount = 8;
-      int placed = 0;
-      int attempts = 0;
-      final maxAttempts = 100;
-
-      while (placed < candyCount && attempts < maxAttempts) {
-        attempts++;
-
-        final x = 10 + _random.nextInt(TileMap.worldWidth - 20);
-        final z = 10 + _random.nextInt(TileMap.worldHeight - 20);
-        final position = Position(x, z);
-
+      // Place candy in known floor positions for tests
+      final candyPositions = [
+        Position(9, 389),   // Near spawn
+        Position(11, 391),  // Near spawn  
+        Position(189, 9),   // Near boss
+        Position(191, 11),  // Near boss
+        Position(50, 390),  // On path
+        Position(100, 390), // On path
+        Position(150, 390), // On path
+        Position(190, 100), // On vertical path
+      ];
+      
+      for (final position in candyPositions) {
         if (tileMap.getTileAt(position) == TileType.floor &&
             position != tileMap.playerSpawn &&
             position != tileMap.bossLocation) {
           tileMap.setTileAt(position, TileType.candy);
-          placed++;
         }
       }
       return;
