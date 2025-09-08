@@ -3,6 +3,7 @@ import 'narrative_controller.dart';
 import 'candy_item.dart';
 import 'enemy_character.dart';
 import 'ally_character.dart';
+import '../l10n/strings.g.dart';
 
 /// System for triggering dialogue events based on game interactions
 class DialogueTriggerSystem {
@@ -230,7 +231,7 @@ class DialogueTriggerSystem {
   String _getCombatStartDialogue(AllyCharacter? ally, EnemyCharacter? enemy) {
     final allyName = ally != null ? _getAllyName(ally) : 'Your ally';
     final enemyName = enemy != null ? _getEnemyName(enemy) : 'the enemy';
-    return '$allyName engages $enemyName in combat!';
+    return t.combat.messages.combatStarted.replaceAll('{ally}', allyName).replaceAll('{enemy}', enemyName);
   }
 
   String _getCombatEndDialogue(
@@ -240,24 +241,24 @@ class DialogueTriggerSystem {
   ) {
     switch (outcome) {
       case 'ally_victory':
-        return 'Your ally emerges victorious!';
+        return t.combat.messages.allyVictory;
       case 'enemy_victory':
-        return 'The enemy has defeated your ally.';
+        return t.combat.messages.enemyVictory;
       case 'draw':
-        return 'The battle ends in a stalemate.';
+        return t.combat.messages.combatDraw;
       default:
-        return 'The combat has concluded.';
+        return t.combat.messages.combatConcluded;
     }
   }
 
   String _getAllyDefeatedDialogue(AllyCharacter? ally) {
     final allyName = ally != null ? _getAllyName(ally) : 'Your ally';
-    return '$allyName has been defeated but feels satisfied with their service.';
+    return t.combat.messages.allyDefeatedSatisfied.replaceAll('{ally}', allyName);
   }
 
   String _getEnemyDefeatedDialogue(EnemyCharacter? enemy) {
     final enemyName = enemy != null ? _getEnemyName(enemy) : 'The enemy';
-    return '$enemyName has been defeated!';
+    return t.combat.messages.hasBeenDefeated.replaceAll('{enemy}', enemyName);
   }
 
   String _getAllyName(AllyCharacter ally) {

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'ally_character.dart';
 import 'enemy_character.dart';
 import 'combat_manager.dart';
+import '../l10n/strings.g.dart';
 
 /// System for providing combat feedback through dialogue and events
 class CombatFeedbackSystem {
@@ -171,9 +172,9 @@ class CombatFeedbackSystem {
   CombatFeedbackMessage _createEnemyDefeatedMessage(EnemyCharacter enemy) {
     final enemyName = _getCharacterDisplayName(enemy);
     final messages = [
-      '$enemyName has been defeated!',
-      '$enemyName falls to the ground, defeated.',
-      '$enemyName is no longer a threat.',
+      t.combat.messages.hasBeenDefeated.replaceAll(' ', enemyName),
+      t.combat.messages.fallsToGround.replaceAll(' ', enemyName),
+      t.combat.messages.noLongerThreat.replaceAll(' ', enemyName),
     ];
 
     return CombatFeedbackMessage(
@@ -195,17 +196,17 @@ class CombatFeedbackSystem {
 
     if (satisfactionChange > 0) {
       final messages = [
-        '$allyName looks more content.',
-        '$allyName seems pleased with the situation.',
-        '$allyName appears happier.',
+        t.combat.messages.looksContent.replaceAll(' ', allyName),
+        t.combat.messages.seemsPleased.replaceAll(' ', allyName),
+        t.combat.messages.appearsHappier.replaceAll(' ', allyName),
       ];
       messageText = messages[_random.nextInt(messages.length)];
       messageType = CombatFeedbackType.satisfactionIncrease;
     } else {
       final messages = [
-        '$allyName looks less satisfied.',
-        '$allyName seems troubled.',
-        '$allyName appears unhappy.',
+        t.combat.messages.looksLessSatisfied.replaceAll(' ', allyName),
+        t.combat.messages.seemsTroubled.replaceAll(' ', allyName),
+        t.combat.messages.appearsUnhappy.replaceAll(' ', allyName),
       ];
       messageText = messages[_random.nextInt(messages.length)];
       messageType = CombatFeedbackType.satisfactionDecrease;
@@ -228,9 +229,15 @@ class CombatFeedbackSystem {
     final enemyName = _getCharacterDisplayName(enemy);
 
     final messages = [
-      '$allyName engages $enemyName in combat!',
-      '$allyName moves to attack $enemyName!',
-      '$allyName confronts $enemyName!',
+      t.combat.messages.engagesInCombat
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.movesToAttack
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.confronts
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
     ];
 
     return CombatFeedbackMessage(
@@ -245,9 +252,15 @@ class CombatFeedbackSystem {
   /// Gets victory message variations
   String _getVictoryMessage(String allyName, String enemyName, int damage) {
     final messages = [
-      '$allyName defeats $enemyName with a powerful strike!',
-      '$allyName emerges victorious against $enemyName!',
-      '$allyName overcomes $enemyName in battle!',
+      t.combat.messages.allyDefeatsEnemyStrike
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.allyEmergesVictorious
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.allyOvercomes
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
     ];
     return messages[_random.nextInt(messages.length)];
   }
@@ -255,9 +268,15 @@ class CombatFeedbackSystem {
   /// Gets defeat message variations
   String _getDefeatMessage(String allyName, String enemyName, int damage) {
     final messages = [
-      '$allyName is defeated by $enemyName.',
-      '$enemyName overcomes $allyName in combat.',
-      '$allyName falls to $enemyName.',
+      t.combat.messages.allyDefeatedBy
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.enemyOvercomes
+          .replaceAll(' ', enemyName)
+          .replaceAll(' ', allyName),
+      t.combat.messages.allyFalls
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
     ];
     return messages[_random.nextInt(messages.length)];
   }
@@ -265,9 +284,15 @@ class CombatFeedbackSystem {
   /// Gets mutual defeat message variations
   String _getMutualDefeatMessage(String allyName, String enemyName) {
     final messages = [
-      '$allyName and $enemyName defeat each other!',
-      'Both $allyName and $enemyName fall in combat!',
-      '$allyName and $enemyName are both defeated!',
+      t.combat.messages.bothDefeatEachOther
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.bothFallInCombat
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.bothDefeated
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
     ];
     return messages[_random.nextInt(messages.length)];
   }
@@ -280,9 +305,15 @@ class CombatFeedbackSystem {
     int enemyDamage,
   ) {
     final messages = [
-      '$allyName and $enemyName exchange blows!',
-      'The battle between $allyName and $enemyName continues!',
-      '$allyName and $enemyName fight fiercely!',
+      t.combat.messages.exchangeBlows
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.battleContinues
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
+      t.combat.messages.fightFiercely
+          .replaceAll(' ', allyName)
+          .replaceAll(' ', enemyName),
     ];
     return messages[_random.nextInt(messages.length)];
   }
@@ -292,21 +323,21 @@ class CombatFeedbackSystem {
     switch (state) {
       case 'combat':
         return [
-          '{ally} enters combat mode!',
-          '{ally} prepares for battle!',
-          '{ally} readies for combat!',
+          t.combat.messages.entersCombat,
+          t.combat.messages.preparesForBattle,
+          t.combat.messages.readiesForCombat,
         ];
       case 'following':
         return [
-          '{ally} returns to following you.',
-          '{ally} comes back to your side.',
-          '{ally} resumes following.',
+          t.combat.messages.returnsToFollowing,
+          t.combat.messages.comesBack,
+          t.combat.messages.resumesFollowing,
         ];
       case 'satisfied':
         return [
-          '{ally} looks satisfied and wanders away.',
-          '{ally} seems content and departs.',
-          '{ally} appears fulfilled and leaves.',
+          t.combat.messages.looksSatisfied,
+          t.combat.messages.seemsContent,
+          t.combat.messages.appearsFullfilled,
         ];
       default:
         return ['{ally} changes state.'];

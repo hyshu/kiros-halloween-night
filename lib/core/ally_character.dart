@@ -75,7 +75,6 @@ class AllyCharacter extends Character {
 
   /// Updates the ally's AI behavior (called each game tick)
   void updateAI(TileMap tileMap, List<EnemyCharacter> hostileEnemies) {
-
     // Update satisfaction (decreases slowly over time)
     _updateSatisfaction();
 
@@ -189,17 +188,6 @@ class AllyCharacter extends Character {
     }
   }
 
-  /// Moves away from a target position
-  void _moveAwayFromTarget(Position target, TileMap tileMap) {
-    final direction = _getDirectionAwayFrom(target);
-
-    if (direction != null) {
-      _attemptMove(direction, tileMap);
-    } else {
-      setIdle();
-    }
-  }
-
   /// Makes the ally wander randomly
   void _wanderRandomly(TileMap tileMap) {
     final directions = Direction.values;
@@ -232,25 +220,6 @@ class AllyCharacter extends Character {
     return null; // Already at target
   }
 
-  /// Gets the best direction to move away from a target position
-  Direction? _getDirectionAwayFrom(Position target) {
-    final dx = target.x - position.x;
-    final dz = target.z - position.z;
-
-    // Move in the opposite direction of the largest difference
-    if (dx.abs() > dz.abs()) {
-      return dx > 0 ? Direction.west : Direction.east;
-    } else if (dz.abs() > dx.abs()) {
-      return dz > 0 ? Direction.north : Direction.south;
-    } else if (dx != 0) {
-      return dx > 0 ? Direction.west : Direction.east;
-    } else if (dz != 0) {
-      return dz > 0 ? Direction.north : Direction.south;
-    }
-
-    return null; // Already at target
-  }
-
   /// Attempts to move in the specified direction
   bool _attemptMove(Direction direction, TileMap tileMap) {
     final newPosition = _getNewPosition(direction);
@@ -262,9 +231,10 @@ class AllyCharacter extends Character {
 
     // Perform the movement
     final success = moveTo(newPosition);
-    
+
     if (success) {
-      _facingDirection = direction; // Update facing direction when moving successfully
+      _facingDirection =
+          direction; // Update facing direction when moving successfully
       setActive(); // Ally is moving, not idle
     }
 

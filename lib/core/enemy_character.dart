@@ -165,7 +165,6 @@ class EnemyCharacter extends Character {
       return;
     }
 
-
     // Update last known player position if player is visible
     if (_canSeePlayer(player, tileMap)) {
       lastKnownPlayerPosition = player.position;
@@ -202,7 +201,7 @@ class EnemyCharacter extends Character {
   /// Executes hostile AI behavior
   void _executeHostileAI(GhostCharacter player, TileMap tileMap) {
     final distanceToPlayer = position.distanceTo(player.position);
-    
+
     // If adjacent to player, stay in place to attack (combat happens in GameLoopManager)
     if (distanceToPlayer == 1) {
       // Face the player when adjacent
@@ -211,17 +210,21 @@ class EnemyCharacter extends Character {
         _facingDirection = direction;
       }
       setIdle();
-      debugPrint('EnemyCharacter: $id is adjacent to player, staying in place to attack');
+      debugPrint(
+        'EnemyCharacter: $id is adjacent to player, staying in place to attack',
+      );
       return;
     }
-    
+
     // If player is within detection range, ALWAYS move towards player (no other behavior)
     if (distanceToPlayer <= activationRadius) {
       _moveTowardsPlayer(player, tileMap);
-      debugPrint('EnemyCharacter: $id pursuing player (distance: $distanceToPlayer)');
+      debugPrint(
+        'EnemyCharacter: $id pursuing player (distance: $distanceToPlayer)',
+      );
       return;
     }
-    
+
     // Only use AI type behavior when player is out of detection range
     switch (aiType) {
       case EnemyAIType.aggressive:
@@ -273,13 +276,17 @@ class EnemyCharacter extends Character {
   }
 
   /// Tries alternative directions when direct path to player is blocked
-  void _tryAlternativeDirections(Position target, TileMap tileMap, GhostCharacter player) {
+  void _tryAlternativeDirections(
+    Position target,
+    TileMap tileMap,
+    GhostCharacter player,
+  ) {
     final dx = target.x - position.x;
     final dz = target.z - position.z;
-    
+
     // Try perpendicular directions first
     List<Direction> alternativeDirections = [];
-    
+
     if (dx.abs() > dz.abs()) {
       // Moving primarily horizontal, try vertical alternatives
       alternativeDirections = [Direction.north, Direction.south];
@@ -287,17 +294,17 @@ class EnemyCharacter extends Character {
       // Moving primarily vertical, try horizontal alternatives
       alternativeDirections = [Direction.east, Direction.west];
     }
-    
+
     // Shuffle to avoid predictable patterns
     alternativeDirections.shuffle(_random);
-    
+
     for (final direction in alternativeDirections) {
       if (_attemptMove(direction, tileMap, player: player)) {
         debugPrint('EnemyCharacter: $id found alternative path toward player');
         return;
       }
     }
-    
+
     // If no alternative works, stay idle this turn
     setIdle();
     debugPrint('EnemyCharacter: $id blocked, staying in place');
@@ -313,19 +320,6 @@ class EnemyCharacter extends Character {
       if (_attemptMove(direction, tileMap, player: player)) {
         break; // Successfully moved (facing direction updated in _attemptMove)
       }
-    }
-  }
-
-  /// Guard behavior - stay in place unless player gets too close
-  void _guardBehavior(GhostCharacter player, TileMap tileMap) {
-    final distanceToPlayer = position.distanceTo(player.position);
-
-    if (distanceToPlayer <= 2) {
-      // Player is too close, move towards them
-      _moveTowardsPlayer(player, tileMap);
-    } else {
-      // Stay in place
-      setIdle();
     }
   }
 
@@ -372,7 +366,8 @@ class EnemyCharacter extends Character {
     // Perform the movement
     final success = moveTo(newPosition);
     if (success) {
-      _facingDirection = direction; // Update facing direction when moving successfully
+      _facingDirection =
+          direction; // Update facing direction when moving successfully
       setActive(); // Enemy is moving, not idle
       debugPrint('EnemyCharacter: $id moved to $newPosition');
     }
