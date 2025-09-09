@@ -146,7 +146,7 @@ void main() {
       // Make ally satisfied
       ally.satisfaction = 0;
 
-      allyManager.updateAllies(tileMap, []);
+      await allyManager.updateAllies(tileMap, []);
 
       // Satisfied ally should be removed
       expect(allyManager.count, 0);

@@ -25,6 +25,9 @@ class CameraAnimationSystem extends ChangeNotifier {
 
   /// Animation update timer
   Timer? _animationTimer;
+  
+  /// Current animation completer
+  Completer<void>? _animationCompleter;
 
   /// Animation frame rate (60 FPS)
   static const int _frameRate = 60;
@@ -71,31 +74,32 @@ class CameraAnimationSystem extends ChangeNotifier {
     _isAnimating = true;
 
     // Create completer for the animation
-    final completer = Completer<void>();
+    _animationCompleter = Completer<void>();
 
     // Start animation timer
     _animationTimer = Timer.periodic(
       Duration(milliseconds: _frameTimeMs),
-      (timer) => _updateAnimation(timer, completer),
+      (timer) => _updateAnimation(timer),
     );
 
     notifyListeners();
-    return completer.future;
+    return _animationCompleter!.future;
   }
 
   /// Instantly move camera to position (no animation)
   void setPosition(Vector3 newPosition) {
     _stopAnimation();
+    _completeAnimation();
     _currentPosition = Vector3.copy(newPosition);
     _targetPosition = Vector3.copy(newPosition);
     notifyListeners();
   }
 
   /// Update animation frame
-  void _updateAnimation(Timer timer, Completer<void> completer) {
+  void _updateAnimation(Timer timer) {
     if (!_isAnimating || _animationStartTime == null) {
       _stopAnimation();
-      completer.complete();
+      _completeAnimation();
       return;
     }
 
@@ -107,7 +111,7 @@ class CameraAnimationSystem extends ChangeNotifier {
       _currentPosition = Vector3.copy(_targetPosition);
       _stopAnimation();
       notifyListeners();
-      completer.complete();
+      _completeAnimation();
       return;
     }
 
@@ -137,11 +141,20 @@ class CameraAnimationSystem extends ChangeNotifier {
     _animationStartTime = null;
   }
 
+  /// Complete the current animation future
+  void _completeAnimation() {
+    if (_animationCompleter != null && !_animationCompleter!.isCompleted) {
+      _animationCompleter!.complete();
+    }
+    _animationCompleter = null;
+  }
+
   /// Skip current animation (jump to end)
   void skipAnimation() {
     if (_isAnimating) {
       _currentPosition = Vector3.copy(_targetPosition);
       _stopAnimation();
+      _completeAnimation();
       notifyListeners();
     }
   }
@@ -167,6 +180,7 @@ class CameraAnimationSystem extends ChangeNotifier {
   @override
   void dispose() {
     _stopAnimation();
+    _completeAnimation();
     super.dispose();
   }
 }

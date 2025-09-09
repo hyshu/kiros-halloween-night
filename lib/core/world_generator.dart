@@ -528,9 +528,9 @@ class WorldGenerator {
     final obstacleCount = 15;
     final candidatePositions = <Position>[];
 
-    // Collect all valid floor positions
-    for (int z = 20; z < TileMap.worldHeight - 20; z++) {
-      for (int x = 20; x < TileMap.worldWidth - 20; x++) {
+    // Collect all valid floor positions (use smaller margins for test mode)
+    for (int z = 5; z < TileMap.worldHeight - 5; z++) {
+      for (int x = 5; x < TileMap.worldWidth - 5; x++) {
         final position = Position(x, z);
         if (tileMap.getTileAt(position) == TileType.floor &&
             position != tileMap.playerSpawn &&
@@ -540,29 +540,30 @@ class WorldGenerator {
       }
     }
 
-    // Batch place obstacles
+    // Batch place obstacles, avoiding critical path
     candidatePositions.shuffle(_random);
     final placementCount = (obstacleCount).clamp(0, candidatePositions.length);
 
-    for (int i = 0; i < placementCount; i++) {
-      tileMap.setTileAt(candidatePositions[i], TileType.obstacle);
-    }
-
-    // Validate path after placing obstacles (same as optimized version)
-    if (tileMap.playerSpawn != null && tileMap.bossLocation != null) {
-      if (!_validatePath(
-        tileMap,
-        tileMap.playerSpawn!,
-        tileMap.bossLocation!,
-      )) {
-        // If path is broken, create guaranteed path
-        _createGuaranteedPath(
-          tileMap,
-          tileMap.playerSpawn!,
-          tileMap.bossLocation!,
-        );
+    int placed = 0;
+    for (int i = 0; i < candidatePositions.length && placed < placementCount; i++) {
+      final position = candidatePositions[i];
+      
+      // Temporarily place obstacle to test if it blocks the path
+      tileMap.setTileAt(position, TileType.obstacle);
+      
+      // Check if path still exists
+      if (tileMap.playerSpawn != null && tileMap.bossLocation != null) {
+        if (_validatePath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!)) {
+          placed++; // Keep the obstacle
+        } else {
+          tileMap.setTileAt(position, TileType.floor); // Remove obstacle
+        }
+      } else {
+        placed++; // Keep obstacle if spawn/boss not set yet
       }
     }
+
+    // Path validation is done during placement, so no need to recheck
   }
 
   /// Optimized obstacle placement using batch approach with safety checks

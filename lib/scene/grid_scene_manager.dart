@@ -217,6 +217,7 @@ class GridSceneManager extends ChangeNotifier {
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
     _cameraTarget = newTarget;
+    _cameraAnimationSystem.setPosition(newTarget);
     // Reload objects around new camera position for large world
     if (_tileMap != null) {
       _loadObjectsAroundCamera();
@@ -285,6 +286,9 @@ class GridSceneManager extends ChangeNotifier {
     if (_tileMap != null) {
       _loadObjectsAroundCamera();
     }
+
+    // Update camera to follow character
+    await _updateCameraToFollowCharacter(animate: false);
 
     // Notify game loop manager of player movement (this will handle animations)
     if (_gameLoopManager != null) {
