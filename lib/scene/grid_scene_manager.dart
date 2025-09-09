@@ -228,6 +228,9 @@ class GridSceneManager extends ChangeNotifier {
   /// Adds the ghost character to the scene
   Future<void> addGhostCharacter(GhostCharacter character) async {
     _ghostCharacter = character;
+    
+    // Set animation system reference for character movement coordination
+    character.setAnimationSystem(_characterAnimationSystem);
 
     // Create a GridObject for the character
     final characterObject = GridObject(
@@ -287,8 +290,8 @@ class GridSceneManager extends ChangeNotifier {
       _loadObjectsAroundCamera();
     }
 
-    // Update camera to follow character
-    await _updateCameraToFollowCharacter(animate: false);
+    // Skip immediate camera update - let animation system handle it
+    debugPrint('GridSceneManager: Skipping camera update in updateGhostCharacterPosition - animation system will handle it');
 
     // Notify game loop manager of player movement (this will handle animations)
     if (_gameLoopManager != null) {
@@ -491,11 +494,14 @@ class GridSceneManager extends ChangeNotifier {
       );
       
       if (animate) {
+        debugPrint('GridSceneManager: Starting camera animation to $newCameraTarget');
         await _cameraAnimationSystem.animateToPosition(
           newCameraTarget,
           easingCurve: EasingCurve.easeInOut,
         );
+        debugPrint('GridSceneManager: Camera animation completed');
       } else {
+        debugPrint('GridSceneManager: Setting camera position instantly to $newCameraTarget');
         _cameraAnimationSystem.setPosition(newCameraTarget);
       }
       _cameraTarget = newCameraTarget;
