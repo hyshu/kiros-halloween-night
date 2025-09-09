@@ -533,6 +533,12 @@ class GhostCharacter extends Character {
   /// Returns true if the character is currently moving
   bool get isMoving => !isIdle && _isProcessingInput;
 
+  /// Returns true if the character is currently processing input
+  bool get isProcessingInput => _isProcessingInput;
+
+  /// Gets the animation system for character movement
+  CharacterMovementAnimationSystem? get animationSystem => _animationSystem;
+
   /// Gets the number of active allies
   int get allyCount => allyManager.count;
 
