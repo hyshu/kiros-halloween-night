@@ -1,6 +1,7 @@
 import 'package:vector_math/vector_math.dart';
 import '../models/model_3d.dart';
 import 'position.dart';
+import 'character_movement_animation_system.dart';
 
 /// Base class for all characters in the game
 abstract class Character {
@@ -65,6 +66,34 @@ abstract class Character {
 
     position = newPosition;
     isIdle = false;
+    return true;
+  }
+
+  /// Attempts to move to a new position with animation
+  /// Returns a Future that completes when the animation finishes
+  Future<bool> moveToAnimated(
+    Position newPosition,
+    CharacterMovementAnimationSystem animationSystem, {
+    int? duration,
+    MovementEasing? easing,
+  }) async {
+    if (!canMove) return false;
+
+    final fromPosition = position;
+    
+    // Update position immediately for game logic
+    position = newPosition;
+    isIdle = false;
+    
+    // Start animation from old position to new position
+    await animationSystem.animateCharacterMovement(
+      id,
+      fromPosition,
+      newPosition,
+      duration: duration,
+      easing: easing,
+    );
+    
     return true;
   }
 

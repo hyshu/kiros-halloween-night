@@ -148,7 +148,11 @@ class EnemyCharacter extends Character {
   }
 
   /// Updates the enemy's AI behavior (called each player turn)
-  void updateAI(GhostCharacter player, TileMap tileMap) {
+  Future<void> updateAI(
+    GhostCharacter player, 
+    TileMap tileMap, {
+    Function(String, Position, Position)? onAnimateMovement,
+  }) async {
     final distance = position.distanceTo(player.position);
 
     // Debug AI processing (only for interesting cases)
@@ -173,10 +177,10 @@ class EnemyCharacter extends Character {
     // Execute AI behavior based on state and type
     switch (state) {
       case EnemyState.hostile:
-        _executeHostileAI(player, tileMap);
+        await _executeHostileAI(player, tileMap, onAnimateMovement: onAnimateMovement);
         break;
       case EnemyState.ally:
-        _executeAllyAI(player, tileMap);
+        await _executeAllyAI(player, tileMap, onAnimateMovement: onAnimateMovement);
         break;
       case EnemyState.satisfied:
         // Satisfied enemies don't move or act
@@ -199,7 +203,11 @@ class EnemyCharacter extends Character {
   }
 
   /// Executes hostile AI behavior
-  void _executeHostileAI(GhostCharacter player, TileMap tileMap) {
+  Future<void> _executeHostileAI(
+    GhostCharacter player, 
+    TileMap tileMap, {
+    Function(String, Position, Position)? onAnimateMovement,
+  }) async {
     final distanceToPlayer = position.distanceTo(player.position);
 
     // If adjacent to player, stay in place to attack (combat happens in GameLoopManager)
@@ -218,7 +226,7 @@ class EnemyCharacter extends Character {
 
     // If player is within detection range, ALWAYS move towards player (no other behavior)
     if (distanceToPlayer <= activationRadius) {
-      _moveTowardsPlayer(player, tileMap);
+      await _moveTowardsPlayer(player, tileMap, onAnimateMovement: onAnimateMovement);
       debugPrint(
         'EnemyCharacter: $id pursuing player (distance: $distanceToPlayer)',
       );
@@ -229,10 +237,10 @@ class EnemyCharacter extends Character {
     switch (aiType) {
       case EnemyAIType.aggressive:
         // Aggressive enemies patrol when no player detected
-        _wanderRandomly(tileMap, player: player);
+        await _wanderRandomly(tileMap, player: player, onAnimateMovement: onAnimateMovement);
         break;
       case EnemyAIType.wanderer:
-        _wanderRandomly(tileMap, player: player);
+        await _wanderRandomly(tileMap, player: player, onAnimateMovement: onAnimateMovement);
         break;
       case EnemyAIType.guard:
         // Guards stay in place when no player detected
@@ -242,13 +250,17 @@ class EnemyCharacter extends Character {
   }
 
   /// Executes ally AI behavior
-  void _executeAllyAI(GhostCharacter player, TileMap tileMap) {
+  Future<void> _executeAllyAI(
+    GhostCharacter player, 
+    TileMap tileMap, {
+    Function(String, Position, Position)? onAnimateMovement,
+  }) async {
     // Allies follow the player and attack hostile enemies
     final distanceToPlayer = position.distanceTo(player.position);
 
     if (distanceToPlayer > 2) {
       // Follow player if too far away
-      _moveTowardsPlayer(player, tileMap);
+      await _moveTowardsPlayer(player, tileMap, onAnimateMovement: onAnimateMovement);
     } else if (distanceToPlayer == 1) {
       // Stay close but not on top of player
       setIdle();
@@ -260,14 +272,18 @@ class EnemyCharacter extends Character {
   }
 
   /// Moves the enemy towards the player's position
-  void _moveTowardsPlayer(GhostCharacter player, TileMap tileMap) {
+  Future<void> _moveTowardsPlayer(
+    GhostCharacter player, 
+    TileMap tileMap, {
+    Function(String, Position, Position)? onAnimateMovement,
+  }) async {
     final targetPosition = lastKnownPlayerPosition ?? player.position;
     final direction = _getDirectionTowards(targetPosition);
 
     if (direction != null) {
-      if (!_attemptMove(direction, tileMap, player: player)) {
+      if (!await _attemptMove(direction, tileMap, player: player, onAnimateMovement: onAnimateMovement)) {
         // If direct path is blocked, try alternative directions
-        _tryAlternativeDirections(targetPosition, tileMap, player);
+        await _tryAlternativeDirections(targetPosition, tileMap, player, onAnimateMovement: onAnimateMovement);
       }
     } else {
       // Already at target position, stay idle
@@ -276,11 +292,12 @@ class EnemyCharacter extends Character {
   }
 
   /// Tries alternative directions when direct path to player is blocked
-  void _tryAlternativeDirections(
+  Future<void> _tryAlternativeDirections(
     Position target,
     TileMap tileMap,
-    GhostCharacter player,
-  ) {
+    GhostCharacter player, {
+    Function(String, Position, Position)? onAnimateMovement,
+  }) async {
     final dx = target.x - position.x;
     final dz = target.z - position.z;
 
@@ -299,7 +316,7 @@ class EnemyCharacter extends Character {
     alternativeDirections.shuffle(_random);
 
     for (final direction in alternativeDirections) {
-      if (_attemptMove(direction, tileMap, player: player)) {
+      if (await _attemptMove(direction, tileMap, player: player, onAnimateMovement: onAnimateMovement)) {
         debugPrint('EnemyCharacter: $id found alternative path toward player');
         return;
       }
@@ -311,13 +328,17 @@ class EnemyCharacter extends Character {
   }
 
   /// Makes the enemy wander randomly
-  void _wanderRandomly(TileMap tileMap, {GhostCharacter? player}) {
+  Future<void> _wanderRandomly(
+    TileMap tileMap, {
+    GhostCharacter? player,
+    Function(String, Position, Position)? onAnimateMovement,
+  }) async {
     final directions = Direction.values;
     final shuffledDirections = List<Direction>.from(directions)
       ..shuffle(_random);
 
     for (final direction in shuffledDirections) {
-      if (_attemptMove(direction, tileMap, player: player)) {
+      if (await _attemptMove(direction, tileMap, player: player, onAnimateMovement: onAnimateMovement)) {
         break; // Successfully moved (facing direction updated in _attemptMove)
       }
     }
@@ -343,11 +364,12 @@ class EnemyCharacter extends Character {
   }
 
   /// Attempts to move in the specified direction
-  bool _attemptMove(
+  Future<bool> _attemptMove(
     Direction direction,
     TileMap tileMap, {
     GhostCharacter? player,
-  }) {
+    Function(String, Position, Position)? onAnimateMovement,
+  }) async {
     final newPosition = _getNewPosition(direction);
 
     // Check if the new position would overlap with player
@@ -363,12 +385,21 @@ class EnemyCharacter extends Character {
       return false;
     }
 
-    // Perform the movement
+    // Store previous position for animation
+    final fromPosition = position;
+    
+    // Perform the movement (update game logic position immediately)
     final success = moveTo(newPosition);
     if (success) {
       _facingDirection =
           direction; // Update facing direction when moving successfully
       setActive(); // Enemy is moving, not idle
+      
+      // Trigger animation if callback provided
+      if (onAnimateMovement != null) {
+        onAnimateMovement(id, fromPosition, newPosition);
+      }
+      
       debugPrint('EnemyCharacter: $id moved to $newPosition');
     }
 

@@ -9,6 +9,7 @@ import 'enemy_manager.dart';
 import 'ghost_character.dart';
 import 'gift_system.dart';
 import 'player_combat_result.dart';
+import 'position.dart';
 import 'tile_map.dart';
 import 'dialogue_manager.dart';
 import '../l10n/strings.g.dart';
@@ -41,6 +42,12 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Reference to scene manager for movement animations
   Future<void> Function()? _onMovementAnimation;
+
+  /// Callback for animating enemy movement
+  Future<void> Function(String, Position, Position)? _onAnimateEnemyMovement;
+
+  /// Callback for animating ally movement
+  Future<void> Function(String, Position, Position)? _onAnimateAllyMovement;
 
   /// Callback for when an enemy is defeated and should be removed from scene
   Function(String enemyId)? _onEnemyDefeated;
@@ -84,6 +91,8 @@ class GameLoopManager extends ChangeNotifier {
     DialogueManager? dialogueManager,
     Function(String enemyId)? onEnemyDefeated,
     Future<void> Function()? onMovementAnimation,
+    Future<void> Function(String, Position, Position)? onAnimateEnemyMovement,
+    Future<void> Function(String, Position, Position)? onAnimateAllyMovement,
   }) {
     _ghostCharacter = ghostCharacter;
     _enemyManager = enemyManager;
@@ -91,6 +100,8 @@ class GameLoopManager extends ChangeNotifier {
     _dialogueManager = dialogueManager;
     _onEnemyDefeated = onEnemyDefeated;
     _onMovementAnimation = onMovementAnimation;
+    _onAnimateEnemyMovement = onAnimateEnemyMovement;
+    _onAnimateAllyMovement = onAnimateAllyMovement;
 
     // Set player reference for ally manager
     _allyManager.setPlayer(ghostCharacter);
@@ -303,7 +314,7 @@ class GameLoopManager extends ChangeNotifier {
       await _animationManager.playAIMovementAnimation();
 
       // Process enemy AI (one turn)
-      _enemyManager!.processEnemyAI(_ghostCharacter!);
+      await _enemyManager!.processEnemyAI(_ghostCharacter!, _onAnimateEnemyMovement);
 
       // Animation Phase 3: Combat Animation
       await _animationManager.playCombatAnimation();
@@ -318,7 +329,7 @@ class GameLoopManager extends ChangeNotifier {
       await _animationManager.playAllyMovementAnimation();
 
       // Update ally AI (one turn)
-      _allyManager.updateAllies(_tileMap!, hostileEnemies);
+      await _allyManager.updateAllies(_tileMap!, hostileEnemies, onAnimateMovement: _onAnimateAllyMovement);
 
       // Process combat between allies and hostile enemies
       _processCombat(hostileEnemies);

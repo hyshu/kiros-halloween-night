@@ -109,6 +109,10 @@ class GridSceneManager extends ChangeNotifier {
 
   // Player position tracking for animations
   Position? _lastPlayerPosition;
+  
+  // Enemy and ally position tracking for animations
+  final Map<String, Position> _lastEnemyPositions = {};
+  final Map<String, Position> _lastAllyPositions = {};
 
   // Constructor for large world
   GridSceneManager.withTileMap(this._tileMap) {
@@ -311,6 +315,7 @@ class GridSceneManager extends ChangeNotifier {
         gridObject.setAnimatedPosition(animatedPosition);
       } else {
         // Character is not animating, clear animated position
+        // Grid position should already be updated by animation completion callbacks
         gridObject.clearAnimatedPosition();
       }
     }
@@ -340,6 +345,92 @@ class GridSceneManager extends ChangeNotifier {
         }
       },
     );
+  }
+
+  /// Animate enemy movement from current position to new position
+  Future<void> animateEnemyMovement(
+    String enemyId,
+    Position fromPosition,
+    Position toPosition,
+  ) async {
+    await _characterAnimationSystem.animateCharacterMovement(
+      enemyId,
+      fromPosition,
+      toPosition,
+      duration: 200, // Enemies move slightly faster
+      easing: MovementEasing.easeOut,
+      onUpdate: (worldPosition) {
+        // Update the enemy's GridObject with animated position
+        final gridObject = _characterObjects[enemyId];
+        if (gridObject != null) {
+          gridObject.setAnimatedPosition(worldPosition);
+          // Trigger re-render
+          notifyListeners();
+        }
+      },
+    );
+    
+    // After animation completes, update the GridObject's grid position
+    _updateCharacterGridPosition(enemyId, toPosition);
+  }
+
+  /// Animate ally movement from current position to new position
+  Future<void> animateAllyMovement(
+    String allyId,
+    Position fromPosition,
+    Position toPosition,
+  ) async {
+    await _characterAnimationSystem.animateCharacterMovement(
+      allyId,
+      fromPosition,
+      toPosition,
+      duration: 250, // Allies move at normal speed
+      easing: MovementEasing.easeInOut,
+      onUpdate: (worldPosition) {
+        // Update the ally's GridObject with animated position
+        final gridObject = _characterObjects[allyId];
+        if (gridObject != null) {
+          gridObject.setAnimatedPosition(worldPosition);
+          // Trigger re-render
+          notifyListeners();
+        }
+      },
+    );
+    
+    // After animation completes, update the GridObject's grid position
+    _updateCharacterGridPosition(allyId, toPosition);
+  }
+
+  /// Store enemy position for animation tracking
+  void trackEnemyPosition(String enemyId, Position position) {
+    _lastEnemyPositions[enemyId] = position;
+  }
+
+  /// Store ally position for animation tracking
+  void trackAllyPosition(String allyId, Position position) {
+    _lastAllyPositions[allyId] = position;
+  }
+
+  /// Get last known enemy position
+  Position? getLastEnemyPosition(String enemyId) {
+    return _lastEnemyPositions[enemyId];
+  }
+
+  /// Get last known ally position
+  Position? getLastAllyPosition(String allyId) {
+    return _lastAllyPositions[allyId];
+  }
+
+  /// Update character's GridObject grid position after animation
+  void _updateCharacterGridPosition(String characterId, Position newPosition) {
+    final gridObject = _characterObjects[characterId];
+    if (gridObject != null) {
+      final updatedGridObject = gridObject.copyWithGridPosition(
+        newPosition.x,
+        newPosition.z,
+      );
+      _characterObjects[characterId] = updatedGridObject;
+    }
   }
 
   /// Handle player movement animation (called during animation phase)
@@ -378,6 +469,9 @@ class GridSceneManager extends ChangeNotifier {
       characterAnimationFuture,
       cameraAnimationFuture,
     ]);
+
+    // Update the player's GridObject grid position after animation
+    _updateCharacterGridPosition(_ghostCharacter!.id, currentPosition);
 
     debugPrint('GridSceneManager: Player movement animation completed');
   }
@@ -613,6 +707,14 @@ class GridSceneManager extends ChangeNotifier {
         onMovementAnimation: () async {
           // Trigger both character and camera animations
           await _handlePlayerMovementAnimation();
+        },
+        onAnimateEnemyMovement: (String enemyId, Position fromPosition, Position toPosition) async {
+          // Animate enemy movement
+          await animateEnemyMovement(enemyId, fromPosition, toPosition);
+        },
+        onAnimateAllyMovement: (String allyId, Position fromPosition, Position toPosition) async {
+          // Animate ally movement
+          await animateAllyMovement(allyId, fromPosition, toPosition);
         },
       );
 

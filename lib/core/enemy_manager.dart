@@ -199,7 +199,10 @@ class EnemyManager {
   }
 
   /// Processes AI for all active enemies (turn-based)
-  void processEnemyAI([GhostCharacter? playerCharacter]) {
+  Future<void> processEnemyAI([
+    GhostCharacter? playerCharacter,
+    Function(String, Position, Position)? onAnimateMovement,
+  ]) async {
     if (_playerPosition == null) return;
 
     final activeEnemiesList = activeEnemies;
@@ -214,12 +217,16 @@ class EnemyManager {
 
     for (final enemy in activeEnemiesList) {
       // Process enemy AI based on their type and state
-      _processEnemyAI(enemy, playerCharacter);
+      await _processEnemyAI(enemy, playerCharacter, onAnimateMovement);
     }
   }
 
   /// Processes AI for a single enemy
-  void _processEnemyAI(EnemyCharacter enemy, GhostCharacter? playerCharacter) {
+  Future<void> _processEnemyAI(
+    EnemyCharacter enemy, 
+    GhostCharacter? playerCharacter,
+    Function(String, Position, Position)? onAnimateMovement,
+  ) async {
     if (_tileMap == null || _playerPosition == null) return;
 
     // Use provided player character or create a temporary one
@@ -227,7 +234,7 @@ class EnemyManager {
     if (playerGhost == null) return;
 
     // Use the enemy's own AI processing method
-    enemy.updateAI(playerGhost, _tileMap!);
+    await enemy.updateAI(playerGhost, _tileMap!, onAnimateMovement: onAnimateMovement);
   }
 
   /// Creates a temporary ghost character for AI processing
