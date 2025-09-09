@@ -23,7 +23,7 @@ class CharacterMovementAnimationSystem extends ChangeNotifier {
   bool _isRunning = false;
 
   /// Get all active animations
-  Map<String, CharacterMovementAnimation> get activeAnimations => 
+  Map<String, CharacterMovementAnimation> get activeAnimations =>
       Map.unmodifiable(_activeAnimations);
 
   /// Whether a character is currently animating
@@ -37,24 +37,24 @@ class CharacterMovementAnimationSystem extends ChangeNotifier {
   /// Start the animation system
   void start() {
     if (_isRunning) return;
-    
+
     _isRunning = true;
     _animationTimer = Timer.periodic(
       Duration(milliseconds: _frameTimeMs),
       _updateAnimations,
     );
-    
+
     debugPrint('CharacterMovementAnimationSystem: Started');
   }
 
   /// Stop the animation system
   void stop() {
     if (!_isRunning) return;
-    
+
     _isRunning = false;
     _animationTimer?.cancel();
     _animationTimer = null;
-    
+
     // Complete all active animations immediately
     final completers = <Completer<void>>[];
     for (final animation in _activeAnimations.values) {
@@ -63,16 +63,16 @@ class CharacterMovementAnimationSystem extends ChangeNotifier {
         completers.add(animation._completer);
       }
     }
-    
+
     _activeAnimations.clear();
-    
+
     // Complete all futures
     for (final completer in completers) {
       if (!completer.isCompleted) {
         completer.complete();
       }
     }
-    
+
     debugPrint('CharacterMovementAnimationSystem: Stopped');
   }
 
@@ -150,13 +150,13 @@ class CharacterMovementAnimationSystem extends ChangeNotifier {
 
     final now = DateTime.now();
     final completedAnimations = <String>[];
-    
+
     for (final entry in _activeAnimations.entries) {
       final characterId = entry.key;
       final animation = entry.value;
-      
+
       animation._update(now);
-      
+
       if (animation.isCompleted) {
         completedAnimations.add(characterId);
         if (!animation._completer.isCompleted) {
@@ -226,7 +226,7 @@ class CharacterMovementAnimation {
   }) {
     _startTime = DateTime.now();
     _completer = Completer<void>();
-    
+
     // Convert positions to world coordinates
     _fromWorldPosition = Vector3(
       fromPosition.x * Position.tileSpacing,
@@ -238,7 +238,7 @@ class CharacterMovementAnimation {
       0.0,
       toPosition.z * Position.tileSpacing,
     );
-    
+
     _currentWorldPosition = Vector3.copy(_fromWorldPosition);
   }
 
@@ -348,10 +348,10 @@ enum MovementEasing {
 
 /// Animation speed presets for character movement
 enum CharacterAnimationSpeed {
-  slow,     // 400ms
-  normal,   // 250ms
-  fast,     // 150ms
-  instant;  // 0ms (no animation)
+  slow, // 400ms
+  normal, // 250ms
+  fast, // 150ms
+  instant; // 0ms (no animation)
 
   /// Duration in milliseconds
   int get durationMs {

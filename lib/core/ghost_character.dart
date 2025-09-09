@@ -14,6 +14,7 @@ import 'ally_character.dart';
 import 'enemy_character.dart';
 import 'enemy_manager.dart';
 import 'player_combat_result.dart';
+import 'character_movement_animation_system.dart';
 
 /// Represents the player-controlled ghost character Kiro
 class GhostCharacter extends Character {
@@ -25,6 +26,9 @@ class GhostCharacter extends Character {
 
   /// Ally manager for handling converted enemies
   final AllyManager allyManager;
+
+  /// Animation system for character movements
+  CharacterMovementAnimationSystem? _animationSystem;
 
   /// Movement input state
   bool _isProcessingInput = false;
@@ -164,8 +168,24 @@ class GhostCharacter extends Character {
         }
       }
 
-      // Perform the movement
-      final success = moveTo(newPosition);
+      // Check if previous animation is still running
+      bool skipAnimation = false;
+      if (_animationSystem != null && _animationSystem!.isCharacterAnimating(id)) {
+        // Cancel current animation and move immediately
+        _animationSystem!.cancelCharacterAnimation(id);
+        skipAnimation = true;
+      }
+
+      bool success;
+      if (skipAnimation || _animationSystem == null) {
+        // Perform immediate movement without animation
+        success = moveTo(newPosition);
+      } else {
+        // Perform animated movement
+        _performAnimatedMove(newPosition);
+        success = true;
+      }
+
       if (success) {
         lastMovementDirection = direction;
         _facingDirection = direction; // Update facing direction when moving
@@ -517,6 +537,32 @@ class GhostCharacter extends Character {
 
   /// Gets all active allies
   List<AllyCharacter> get allies => allyManager.allies;
+
+  /// Sets the animation system for character movement
+  void setAnimationSystem(CharacterMovementAnimationSystem? animationSystem) {
+    _animationSystem = animationSystem;
+  }
+
+  /// Performs animated movement to a new position
+  void _performAnimatedMove(Position newPosition) {
+    if (_animationSystem == null) {
+      // Fallback to immediate movement if no animation system
+      moveTo(newPosition);
+      return;
+    }
+
+    final fromPosition = position;
+    
+    // Update position immediately for game logic
+    position = newPosition;
+    
+    // Start animation (fire and forget)
+    _animationSystem!.animateCharacterMovement(
+      id,
+      fromPosition,
+      newPosition,
+    );
+  }
 
   @override
   String toString() =>
