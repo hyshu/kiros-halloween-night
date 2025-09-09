@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/character.dart';
+import '../core/collision_detector.dart';
 import '../core/ghost_character.dart';
 import '../core/tile_map.dart';
 import '../scene/grid_scene_manager.dart';
@@ -11,6 +13,7 @@ class InputManager {
   final GhostCharacter _ghostCharacter;
   final TileMap? _tileMap;
   final GridSceneManager? _sceneManager;
+  CollisionDetector? _collisionDetector;
 
   /// Callback for when the character moves successfully
   final Future<void> Function()? onCharacterMoved;
@@ -30,7 +33,12 @@ class InputManager {
     this.onGiftToggle,
   }) : _ghostCharacter = ghostCharacter,
        _tileMap = tileMap,
-       _sceneManager = sceneManager;
+       _sceneManager = sceneManager {
+    // Initialize collision detector if we have a tile map and scene manager
+    if (_tileMap != null && _sceneManager != null) {
+      _initializeCollisionDetector();
+    }
+  }
 
   /// Handles a key press event
   /// Returns true if the key was handled
@@ -46,6 +54,7 @@ class InputManager {
       key,
       _tileMap,
       enemyManager: enemyManager,
+      collisionDetector: _collisionDetector,
       onInventoryToggle: onInventoryToggle,
       onGiftToggle: onGiftToggle,
     );
@@ -117,5 +126,39 @@ class InputManager {
     }
 
     return false; // Input is allowed
+  }
+
+  /// Initializes the collision detector with all current characters
+  void _initializeCollisionDetector() {
+    if (_tileMap == null || _sceneManager == null) return;
+    
+    final allCharacters = <Character>[];
+    
+    // Add the player character
+    allCharacters.add(_ghostCharacter);
+    
+    // Add enemies from enemy manager
+    final enemyManager = _sceneManager!.enemyManager;
+    if (enemyManager != null) {
+      allCharacters.addAll(enemyManager.activeEnemies);
+    }
+    
+    // Note: Add allies when ally manager is available
+    // final allyManager = _sceneManager!.allyManager;
+    // if (allyManager != null) {
+    //   allCharacters.addAll(allyManager.allies);
+    // }
+    
+    _collisionDetector = CollisionDetector(
+      tileMap: _tileMap!,
+      characters: allCharacters,
+    );
+  }
+
+  /// Updates the collision detector when characters change
+  void updateCollisionDetector() {
+    if (_collisionDetector != null) {
+      _initializeCollisionDetector(); // Reinitialize with current characters
+    }
   }
 }

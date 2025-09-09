@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import 'character.dart';
+import 'collision_detector.dart';
 import 'position.dart';
 import 'tile_map.dart';
 import 'ghost_character.dart';
@@ -151,6 +152,7 @@ class EnemyCharacter extends Character {
   Future<void> updateAI(
     GhostCharacter player,
     TileMap tileMap, {
+    CollisionDetector? collisionDetector,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final distance = position.distanceTo(player.position);
@@ -180,6 +182,7 @@ class EnemyCharacter extends Character {
         await _executeHostileAI(
           player,
           tileMap,
+          collisionDetector: collisionDetector,
           onAnimateMovement: onAnimateMovement,
         );
         break;
@@ -187,6 +190,7 @@ class EnemyCharacter extends Character {
         await _executeAllyAI(
           player,
           tileMap,
+          collisionDetector: collisionDetector,
           onAnimateMovement: onAnimateMovement,
         );
         break;
@@ -214,6 +218,7 @@ class EnemyCharacter extends Character {
   Future<void> _executeHostileAI(
     GhostCharacter player,
     TileMap tileMap, {
+    CollisionDetector? collisionDetector,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final distanceToPlayer = position.distanceTo(player.position);
@@ -237,6 +242,7 @@ class EnemyCharacter extends Character {
       await _moveTowardsPlayer(
         player,
         tileMap,
+        collisionDetector: collisionDetector,
         onAnimateMovement: onAnimateMovement,
       );
       debugPrint(
@@ -252,6 +258,7 @@ class EnemyCharacter extends Character {
         await _wanderRandomly(
           tileMap,
           player: player,
+          collisionDetector: collisionDetector,
           onAnimateMovement: onAnimateMovement,
         );
         break;
@@ -259,6 +266,7 @@ class EnemyCharacter extends Character {
         await _wanderRandomly(
           tileMap,
           player: player,
+          collisionDetector: collisionDetector,
           onAnimateMovement: onAnimateMovement,
         );
         break;
@@ -273,6 +281,7 @@ class EnemyCharacter extends Character {
   Future<void> _executeAllyAI(
     GhostCharacter player,
     TileMap tileMap, {
+    CollisionDetector? collisionDetector,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     // Allies follow the player and attack hostile enemies
@@ -283,6 +292,7 @@ class EnemyCharacter extends Character {
       await _moveTowardsPlayer(
         player,
         tileMap,
+        collisionDetector: collisionDetector,
         onAnimateMovement: onAnimateMovement,
       );
     } else if (distanceToPlayer == 1) {
@@ -299,6 +309,7 @@ class EnemyCharacter extends Character {
   Future<void> _moveTowardsPlayer(
     GhostCharacter player,
     TileMap tileMap, {
+    CollisionDetector? collisionDetector,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final targetPosition = lastKnownPlayerPosition ?? player.position;
@@ -309,6 +320,7 @@ class EnemyCharacter extends Character {
         direction,
         tileMap,
         player: player,
+        collisionDetector: collisionDetector,
         onAnimateMovement: onAnimateMovement,
       )) {
         // If direct path is blocked, try alternative directions
@@ -316,6 +328,7 @@ class EnemyCharacter extends Character {
           targetPosition,
           tileMap,
           player,
+          collisionDetector: collisionDetector,
           onAnimateMovement: onAnimateMovement,
         );
       }
@@ -330,6 +343,7 @@ class EnemyCharacter extends Character {
     Position target,
     TileMap tileMap,
     GhostCharacter player, {
+    CollisionDetector? collisionDetector,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final dx = target.x - position.x;
@@ -354,6 +368,7 @@ class EnemyCharacter extends Character {
         direction,
         tileMap,
         player: player,
+        collisionDetector: collisionDetector,
         onAnimateMovement: onAnimateMovement,
       )) {
         debugPrint('EnemyCharacter: $id found alternative path toward player');
@@ -370,6 +385,7 @@ class EnemyCharacter extends Character {
   Future<void> _wanderRandomly(
     TileMap tileMap, {
     GhostCharacter? player,
+    CollisionDetector? collisionDetector,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final directions = Direction.values;
@@ -381,6 +397,7 @@ class EnemyCharacter extends Character {
         direction,
         tileMap,
         player: player,
+        collisionDetector: collisionDetector,
         onAnimateMovement: onAnimateMovement,
       )) {
         break; // Successfully moved (facing direction updated in _attemptMove)
@@ -412,28 +429,38 @@ class EnemyCharacter extends Character {
     Direction direction,
     TileMap tileMap, {
     GhostCharacter? player,
+    CollisionDetector? collisionDetector,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final newPosition = _getNewPosition(direction);
 
-    // Check if the new position would overlap with player
-    if (player != null && newPosition == player.position) {
-      debugPrint(
-        'EnemyCharacter: $id cannot move to $newPosition - player is there',
-      );
-      return false;
-    }
+    // Use CollisionDetector if available, otherwise fall back to manual checks
+    if (collisionDetector != null) {
+      if (!collisionDetector.canMoveTo(this, newPosition)) {
+        return false;
+      }
+    } else {
+      // Legacy collision detection (keep for backward compatibility)
+      
+      // Check if the new position would overlap with player
+      if (player != null && newPosition == player.position) {
+        debugPrint(
+          'EnemyCharacter: $id cannot move to $newPosition - player is there',
+        );
+        return false;
+      }
 
-    // Check if the new position is valid and walkable
-    if (!tileMap.isWalkable(newPosition)) {
-      return false;
+      // Check if the new position is valid and walkable
+      if (!tileMap.isWalkable(newPosition)) {
+        return false;
+      }
     }
 
     // Store previous position for animation
     final fromPosition = position;
 
     // Perform the movement (update game logic position immediately)
-    final success = moveTo(newPosition);
+    final success = moveTo(newPosition, collisionDetector);
     if (success) {
       _facingDirection =
           direction; // Update facing direction when moving successfully

@@ -2,6 +2,7 @@ import 'package:vector_math/vector_math.dart';
 import '../models/model_3d.dart';
 import 'position.dart';
 import 'character_movement_animation_system.dart';
+import 'collision_detector.dart';
 
 /// Base class for all characters in the game
 abstract class Character {
@@ -59,25 +60,40 @@ abstract class Character {
     return Matrix4.identity()..translateByVector3(worldPos);
   }
 
-  /// Attempts to move to a new position
-  /// Returns true if the move was successful
-  bool moveTo(Position newPosition) {
+  /// Attempts to move to a new position with collision detection
+  /// Returns true if the move was successful and no collision occurred
+  bool moveTo(Position newPosition, [CollisionDetector? collisionDetector]) {
     if (!canMove) return false;
+    
+    // If collision detector provided, check for collisions
+    if (collisionDetector != null) {
+      if (!collisionDetector.canMoveTo(this, newPosition)) {
+        return false;
+      }
+    }
 
     position = newPosition;
     isIdle = false;
     return true;
   }
 
-  /// Attempts to move to a new position with animation
-  /// Returns a Future that completes when the animation finishes
+  /// Attempts to move to a new position with animation and collision detection
+  /// Returns a Future that completes when the animation finishes, or immediately if collision occurs
   Future<bool> moveToAnimated(
     Position newPosition,
     CharacterMovementAnimationSystem animationSystem, {
+    CollisionDetector? collisionDetector,
     int? duration,
     MovementEasing? easing,
   }) async {
     if (!canMove) return false;
+    
+    // If collision detector provided, check for collisions
+    if (collisionDetector != null) {
+      if (!collisionDetector.canMoveTo(this, newPosition)) {
+        return false;
+      }
+    }
 
     final fromPosition = position;
 

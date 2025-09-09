@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'character.dart';
+import 'collision_detector.dart';
 import 'position.dart';
 import 'tile_map.dart';
 import 'tile_type.dart';
@@ -80,6 +81,7 @@ class GhostCharacter extends Character {
     LogicalKeyboardKey key,
     TileMap? tileMap, {
     EnemyManager? enemyManager,
+    CollisionDetector? collisionDetector,
     Function()? onInventoryToggle,
     Function()? onGiftToggle,
   }) {
@@ -133,7 +135,7 @@ class GhostCharacter extends Character {
     }
 
     // No enemy at target, attempt normal movement
-    attemptMove(direction, tileMap, enemyManager: enemyManager);
+    attemptMove(direction, tileMap, enemyManager: enemyManager, collisionDetector: collisionDetector);
     return true; // Key was handled, regardless of movement success
   }
 
@@ -143,6 +145,7 @@ class GhostCharacter extends Character {
     Direction direction,
     TileMap? tileMap, {
     EnemyManager? enemyManager,
+    CollisionDetector? collisionDetector,
   }) {
     if (_isProcessingInput || !canMove) return false;
 
@@ -151,20 +154,30 @@ class GhostCharacter extends Character {
     try {
       final newPosition = _getNewPosition(direction);
 
-      // Check for enemies at target position (prevent overlap)
-      if (enemyManager != null) {
-        final enemiesAtTarget = enemyManager.getEnemiesAt(newPosition);
-        if (enemiesAtTarget.isNotEmpty) {
-          setIdle();
-          return false; // Cannot move into enemy position
-        }
-      }
-
-      // Validate movement with tile map if available
-      if (tileMap != null) {
-        if (!_canMoveTo(newPosition, tileMap)) {
+      // Use CollisionDetector if available, otherwise fall back to manual checks
+      if (collisionDetector != null) {
+        if (!collisionDetector.canMoveTo(this, newPosition)) {
           setIdle();
           return false;
+        }
+      } else {
+        // Legacy collision detection (keep for backward compatibility)
+        
+        // Check for enemies at target position (prevent overlap)
+        if (enemyManager != null) {
+          final enemiesAtTarget = enemyManager.getEnemiesAt(newPosition);
+          if (enemiesAtTarget.isNotEmpty) {
+            setIdle();
+            return false; // Cannot move into enemy position
+          }
+        }
+
+        // Validate movement with tile map if available
+        if (tileMap != null) {
+          if (!_canMoveTo(newPosition, tileMap)) {
+            setIdle();
+            return false;
+          }
         }
       }
 
@@ -180,7 +193,8 @@ class GhostCharacter extends Character {
       bool success;
       if (skipAnimation || _animationSystem == null) {
         // Perform immediate movement without animation
-        success = moveTo(newPosition);
+        // Use collision-aware movement if collision detector was provided for validation
+        success = moveTo(newPosition, collisionDetector);
       } else {
         // Perform animated movement
         _performAnimatedMove(newPosition);
