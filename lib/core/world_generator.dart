@@ -545,15 +545,23 @@ class WorldGenerator {
     final placementCount = (obstacleCount).clamp(0, candidatePositions.length);
 
     int placed = 0;
-    for (int i = 0; i < candidatePositions.length && placed < placementCount; i++) {
+    for (
+      int i = 0;
+      i < candidatePositions.length && placed < placementCount;
+      i++
+    ) {
       final position = candidatePositions[i];
-      
+
       // Temporarily place obstacle to test if it blocks the path
       tileMap.setTileAt(position, TileType.obstacle);
-      
+
       // Check if path still exists
       if (tileMap.playerSpawn != null && tileMap.bossLocation != null) {
-        if (_validatePath(tileMap, tileMap.playerSpawn!, tileMap.bossLocation!)) {
+        if (_validatePath(
+          tileMap,
+          tileMap.playerSpawn!,
+          tileMap.bossLocation!,
+        )) {
           placed++; // Keep the obstacle
         } else {
           tileMap.setTileAt(position, TileType.floor); // Remove obstacle

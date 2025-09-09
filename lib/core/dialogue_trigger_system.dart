@@ -231,7 +231,9 @@ class DialogueTriggerSystem {
   String _getCombatStartDialogue(AllyCharacter? ally, EnemyCharacter? enemy) {
     final allyName = ally != null ? _getAllyName(ally) : 'Your ally';
     final enemyName = enemy != null ? _getEnemyName(enemy) : 'the enemy';
-    return t.combat.messages.combatStarted.replaceAll('{ally}', allyName).replaceAll('{enemy}', enemyName);
+    return t.combat.messages.combatStarted
+        .replaceAll('{ally}', allyName)
+        .replaceAll('{enemy}', enemyName);
   }
 
   String _getCombatEndDialogue(
@@ -253,7 +255,10 @@ class DialogueTriggerSystem {
 
   String _getAllyDefeatedDialogue(AllyCharacter? ally) {
     final allyName = ally != null ? _getAllyName(ally) : 'Your ally';
-    return t.combat.messages.allyDefeatedSatisfied.replaceAll('{ally}', allyName);
+    return t.combat.messages.allyDefeatedSatisfied.replaceAll(
+      '{ally}',
+      allyName,
+    );
   }
 
   String _getEnemyDefeatedDialogue(EnemyCharacter? enemy) {

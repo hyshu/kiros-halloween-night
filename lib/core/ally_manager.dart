@@ -97,7 +97,7 @@ class AllyManager extends ChangeNotifier {
 
   /// Updates all allies (called each game tick)
   Future<void> updateAllies(
-    TileMap tileMap, 
+    TileMap tileMap,
     List<EnemyCharacter> hostileEnemies, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
@@ -105,7 +105,11 @@ class AllyManager extends ChangeNotifier {
 
     // Update each ally
     for (final ally in _allies) {
-      await ally.updateAI(tileMap, hostileEnemies, onAnimateMovement: onAnimateMovement);
+      await ally.updateAI(
+        tileMap,
+        hostileEnemies,
+        onAnimateMovement: onAnimateMovement,
+      );
 
       // Check if ally is satisfied and should be removed
       if (ally.isSatisfied) {

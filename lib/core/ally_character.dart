@@ -75,7 +75,7 @@ class AllyCharacter extends Character {
 
   /// Updates the ally's AI behavior (called each game tick)
   Future<void> updateAI(
-    TileMap tileMap, 
+    TileMap tileMap,
     List<EnemyCharacter> hostileEnemies, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
@@ -91,10 +91,18 @@ class AllyCharacter extends Character {
     // Execute behavior based on current state
     switch (state) {
       case AllyState.following:
-        await _executeFollowingBehavior(tileMap, hostileEnemies, onAnimateMovement: onAnimateMovement);
+        await _executeFollowingBehavior(
+          tileMap,
+          hostileEnemies,
+          onAnimateMovement: onAnimateMovement,
+        );
         break;
       case AllyState.combat:
-        await _executeCombatBehavior(tileMap, hostileEnemies, onAnimateMovement: onAnimateMovement);
+        await _executeCombatBehavior(
+          tileMap,
+          hostileEnemies,
+          onAnimateMovement: onAnimateMovement,
+        );
         break;
       case AllyState.satisfied:
         // Satisfied allies don't move or act
@@ -118,7 +126,11 @@ class AllyCharacter extends Character {
     final nearbyEnemies = _getNearbyHostileEnemies(hostileEnemies);
     if (nearbyEnemies.isNotEmpty) {
       state = AllyState.combat;
-      await _executeCombatBehavior(tileMap, hostileEnemies, onAnimateMovement: onAnimateMovement);
+      await _executeCombatBehavior(
+        tileMap,
+        hostileEnemies,
+        onAnimateMovement: onAnimateMovement,
+      );
       return;
     }
 
@@ -127,7 +139,11 @@ class AllyCharacter extends Character {
 
     if (distanceToPlayer > 2) {
       // Distance > 2: Always rush toward player
-      await _moveTowardsTarget(_followTarget!.position, tileMap, onAnimateMovement: onAnimateMovement);
+      await _moveTowardsTarget(
+        _followTarget!.position,
+        tileMap,
+        onAnimateMovement: onAnimateMovement,
+      );
     } else if (distanceToPlayer < 1) {
       // Distance < 1: Stay in place (don't move away)
       setIdle();
@@ -153,7 +169,11 @@ class AllyCharacter extends Character {
     if (nearbyEnemies.isEmpty) {
       // No enemies nearby, return to following
       state = AllyState.following;
-      await _executeFollowingBehavior(tileMap, hostileEnemies, onAnimateMovement: onAnimateMovement);
+      await _executeFollowingBehavior(
+        tileMap,
+        hostileEnemies,
+        onAnimateMovement: onAnimateMovement,
+      );
       return;
     }
 
@@ -166,7 +186,11 @@ class AllyCharacter extends Character {
     );
 
     // Move towards the closest enemy
-    await _moveTowardsTarget(closestEnemy.position, tileMap, onAnimateMovement: onAnimateMovement);
+    await _moveTowardsTarget(
+      closestEnemy.position,
+      tileMap,
+      onAnimateMovement: onAnimateMovement,
+    );
   }
 
   /// Gets nearby hostile enemies within combat range
@@ -184,14 +208,18 @@ class AllyCharacter extends Character {
 
   /// Moves towards a target position
   Future<void> _moveTowardsTarget(
-    Position target, 
+    Position target,
     TileMap tileMap, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final direction = _getDirectionTowards(target);
 
     if (direction != null) {
-      await _attemptMove(direction, tileMap, onAnimateMovement: onAnimateMovement);
+      await _attemptMove(
+        direction,
+        tileMap,
+        onAnimateMovement: onAnimateMovement,
+      );
     } else {
       // If no direct path, try random movement
       await _wanderRandomly(tileMap, onAnimateMovement: onAnimateMovement);
@@ -208,7 +236,11 @@ class AllyCharacter extends Character {
       ..shuffle(_random);
 
     for (final direction in shuffledDirections) {
-      if (await _attemptMove(direction, tileMap, onAnimateMovement: onAnimateMovement)) {
+      if (await _attemptMove(
+        direction,
+        tileMap,
+        onAnimateMovement: onAnimateMovement,
+      )) {
         break; // Successfully moved (facing direction updated in _attemptMove)
       }
     }
@@ -235,7 +267,7 @@ class AllyCharacter extends Character {
 
   /// Attempts to move in the specified direction
   Future<bool> _attemptMove(
-    Direction direction, 
+    Direction direction,
     TileMap tileMap, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
@@ -248,7 +280,7 @@ class AllyCharacter extends Character {
 
     // Store previous position for animation
     final fromPosition = position;
-    
+
     // Perform the movement (update game logic position immediately)
     final success = moveTo(newPosition);
 
@@ -256,7 +288,7 @@ class AllyCharacter extends Character {
       _facingDirection =
           direction; // Update facing direction when moving successfully
       setActive(); // Ally is moving, not idle
-      
+
       // Trigger animation if callback provided
       if (onAnimateMovement != null) {
         onAnimateMovement(id, fromPosition, newPosition);

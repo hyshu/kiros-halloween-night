@@ -56,7 +56,7 @@ class _GiftOverlayState extends State<GiftOverlay> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              
+
               // Enemy info
               if (targetEnemy != null) ...[
                 Container(
@@ -86,27 +86,30 @@ class _GiftOverlayState extends State<GiftOverlay> {
                 ),
                 const SizedBox(height: 16),
               ],
-              
+
               // Available candy list
               Text(
                 'Choose candy to give:',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 12),
-              
+
               Container(
                 constraints: const BoxConstraints(maxHeight: 200),
                 child: SingleChildScrollView(
                   child: Column(
                     children: availableCandy.map((candy) {
                       final isSelected = selectedCandy?.id == candy.id;
-                      final isRecommended = targetEnemy != null && 
-                          widget.giftSystem.getRecommendedCandy(
-                            targetEnemy, availableCandy)?.id == candy.id;
-                      
+                      final isRecommended =
+                          targetEnemy != null &&
+                          widget.giftSystem
+                                  .getRecommendedCandy(
+                                    targetEnemy,
+                                    availableCandy,
+                                  )
+                                  ?.id ==
+                              candy.id;
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: InkWell(
@@ -117,7 +120,7 @@ class _GiftOverlayState extends State<GiftOverlay> {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: isSelected 
+                              color: isSelected
                                   ? Colors.deepPurple.withValues(alpha: 0.3)
                                   : const Color(0xFF0F0F1E),
                               borderRadius: BorderRadius.circular(8),
@@ -125,8 +128,8 @@ class _GiftOverlayState extends State<GiftOverlay> {
                                 color: isSelected
                                     ? Colors.deepPurple
                                     : isRecommended
-                                        ? Colors.amber.withValues(alpha: 0.7)
-                                        : Colors.transparent,
+                                    ? Colors.amber.withValues(alpha: 0.7)
+                                    : Colors.transparent,
                                 width: 2,
                               ),
                             ),
@@ -148,7 +151,8 @@ class _GiftOverlayState extends State<GiftOverlay> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         candy.name,
@@ -183,9 +187,9 @@ class _GiftOverlayState extends State<GiftOverlay> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Action buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -203,7 +207,9 @@ class _GiftOverlayState extends State<GiftOverlay> {
                     child: const Text('Cancel'),
                   ),
                   ElevatedButton(
-                    onPressed: selectedCandy != null ? widget.onConfirmGift : null,
+                    onPressed: selectedCandy != null
+                        ? widget.onConfirmGift
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple,
                       foregroundColor: Colors.white,

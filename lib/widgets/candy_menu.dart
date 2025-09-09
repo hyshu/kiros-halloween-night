@@ -21,13 +21,13 @@ class CandyMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    
+
     // Calculate menu position - center it in the screen
     final menuWidth = 120.0;
     final menuHeight = 80.0;
     final left = (screenSize.width - menuWidth) / 2;
     final top = (screenSize.height - menuHeight) / 2;
-    
+
     return GestureDetector(
       onTap: onCancel,
       child: Container(
@@ -36,9 +36,7 @@ class CandyMenu extends StatelessWidget {
           children: [
             // Semi-transparent background
             Positioned.fill(
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.3),
-              ),
+              child: Container(color: Colors.black.withValues(alpha: 0.3)),
             ),
             // Menu centered on screen
             Positioned(
@@ -103,11 +101,7 @@ class CandyMenu extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: enabled ? color : Colors.grey,
-              size: 16,
-            ),
+            Icon(icon, color: enabled ? color : Colors.grey, size: 16),
             const SizedBox(width: 8),
             Text(
               label,

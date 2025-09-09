@@ -80,11 +80,11 @@ abstract class Character {
     if (!canMove) return false;
 
     final fromPosition = position;
-    
+
     // Update position immediately for game logic
     position = newPosition;
     isIdle = false;
-    
+
     // Start animation from old position to new position
     await animationSystem.animateCharacterMovement(
       id,
@@ -93,7 +93,7 @@ abstract class Character {
       duration: duration,
       easing: easing,
     );
-    
+
     return true;
   }
 

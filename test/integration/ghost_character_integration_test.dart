@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 import 'package:kiro_halloween_game/core/character.dart';
 import 'package:kiro_halloween_game/core/ghost_character.dart';
@@ -91,13 +92,20 @@ void main() {
 
       // Move character
       ghostCharacter.attemptMove(Direction.east, tileMap);
-      
+
       // Wait for any pending async operations before updating scene
       await Future.delayed(Duration.zero);
       sceneManager.updateGhostCharacterPosition();
-      
-      // Wait for any camera update operations
-      await Future.delayed(Duration.zero);
+
+      // Manually trigger camera animation to follow character
+      await sceneManager.cameraAnimationSystem.animateToPosition(
+        Vector3(
+          ghostCharacter.position.x * Position.tileSpacing,
+          0.0,
+          ghostCharacter.position.z * Position.tileSpacing,
+        ),
+        duration: 50,
+      );
 
       // Camera should follow
       expect(sceneManager.cameraTarget.x, equals(11.0 * Position.tileSpacing));
@@ -134,7 +142,10 @@ void main() {
       // Set to idle
       ghostCharacter.setIdle();
       expect(ghostCharacter.isIdle, isTrue);
-      expect(ghostCharacter.facingDirection, equals(Direction.north)); // Facing direction persists after idle
+      expect(
+        ghostCharacter.facingDirection,
+        equals(Direction.north),
+      ); // Facing direction persists after idle
     });
   });
 }

@@ -44,21 +44,26 @@ void main() {
         expect(cameraSystem.animationProgress, equals(1.0));
       });
 
-      test('should cancel ongoing animation when setting position instantly', () async {
-        cameraSystem.initialize(Vector3.zero());
-        
-        // Start animation
-        final animationFuture = cameraSystem.animateToPosition(Vector3(10, 0, 0));
-        expect(cameraSystem.isAnimating, isTrue);
+      test(
+        'should cancel ongoing animation when setting position instantly',
+        () async {
+          cameraSystem.initialize(Vector3.zero());
 
-        // Set position instantly (should cancel animation)
-        cameraSystem.setPosition(Vector3(5, 5, 5));
-        expect(cameraSystem.isAnimating, isFalse);
-        expect(cameraSystem.currentPosition, equals(Vector3(5, 5, 5)));
+          // Start animation
+          final animationFuture = cameraSystem.animateToPosition(
+            Vector3(10, 0, 0),
+          );
+          expect(cameraSystem.isAnimating, isTrue);
 
-        // Wait for animation future to complete
-        await animationFuture;
-      });
+          // Set position instantly (should cancel animation)
+          cameraSystem.setPosition(Vector3(5, 5, 5));
+          expect(cameraSystem.isAnimating, isFalse);
+          expect(cameraSystem.currentPosition, equals(Vector3(5, 5, 5)));
+
+          // Wait for animation future to complete
+          await animationFuture;
+        },
+      );
     });
 
     group('Animated Movement', () {
@@ -148,10 +153,10 @@ void main() {
 
       test('should handle skip when no animation is running', () {
         cameraSystem.initialize(Vector3(5, 5, 5));
-        
+
         // Should not throw when skipping with no animation
         cameraSystem.skipAnimation();
-        
+
         expect(cameraSystem.isAnimating, isFalse);
         expect(cameraSystem.currentPosition, equals(Vector3(5, 5, 5)));
       });
@@ -161,12 +166,18 @@ void main() {
 
         // Start first animation
         final firstTarget = Vector3(10, 0, 0);
-        final firstAnimation = cameraSystem.animateToPosition(firstTarget, duration: 200);
+        final firstAnimation = cameraSystem.animateToPosition(
+          firstTarget,
+          duration: 200,
+        );
         expect(cameraSystem.isAnimating, isTrue);
 
         // Attempt second animation (should be ignored)
         final secondTarget = Vector3(0, 10, 0);
-        final secondAnimation = cameraSystem.animateToPosition(secondTarget, duration: 100);
+        final secondAnimation = cameraSystem.animateToPosition(
+          secondTarget,
+          duration: 100,
+        );
 
         // Wait for both futures
         await Future.wait([firstAnimation, secondAnimation]);
@@ -183,10 +194,14 @@ void main() {
       test('should set animation speed correctly', () {
         cameraSystem.setAnimationSpeed(CameraAnimationSpeed.slow);
         // Duration is internal, but we can test that it doesn't throw
-        expect(() => cameraSystem.setAnimationSpeed(CameraAnimationSpeed.fast), 
-               returnsNormally);
-        expect(() => cameraSystem.setAnimationSpeed(CameraAnimationSpeed.instant), 
-               returnsNormally);
+        expect(
+          () => cameraSystem.setAnimationSpeed(CameraAnimationSpeed.fast),
+          returnsNormally,
+        );
+        expect(
+          () => cameraSystem.setAnimationSpeed(CameraAnimationSpeed.instant),
+          returnsNormally,
+        );
       });
     });
   });
@@ -211,12 +226,18 @@ void main() {
       // Test easeIn curve
       expect(EasingCurve.easeIn.apply(0.0), equals(0.0));
       expect(EasingCurve.easeIn.apply(1.0), equals(1.0));
-      expect(EasingCurve.easeIn.apply(0.5), lessThan(0.5)); // Should be slower at start
+      expect(
+        EasingCurve.easeIn.apply(0.5),
+        lessThan(0.5),
+      ); // Should be slower at start
 
       // Test easeOut curve
       expect(EasingCurve.easeOut.apply(0.0), equals(0.0));
       expect(EasingCurve.easeOut.apply(1.0), equals(1.0));
-      expect(EasingCurve.easeOut.apply(0.5), greaterThan(0.5)); // Should be faster at start
+      expect(
+        EasingCurve.easeOut.apply(0.5),
+        greaterThan(0.5),
+      ); // Should be faster at start
 
       // Test easeInOut curve
       expect(EasingCurve.easeInOut.apply(0.0), equals(0.0));

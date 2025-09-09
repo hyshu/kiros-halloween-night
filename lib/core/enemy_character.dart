@@ -149,7 +149,7 @@ class EnemyCharacter extends Character {
 
   /// Updates the enemy's AI behavior (called each player turn)
   Future<void> updateAI(
-    GhostCharacter player, 
+    GhostCharacter player,
     TileMap tileMap, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
@@ -177,10 +177,18 @@ class EnemyCharacter extends Character {
     // Execute AI behavior based on state and type
     switch (state) {
       case EnemyState.hostile:
-        await _executeHostileAI(player, tileMap, onAnimateMovement: onAnimateMovement);
+        await _executeHostileAI(
+          player,
+          tileMap,
+          onAnimateMovement: onAnimateMovement,
+        );
         break;
       case EnemyState.ally:
-        await _executeAllyAI(player, tileMap, onAnimateMovement: onAnimateMovement);
+        await _executeAllyAI(
+          player,
+          tileMap,
+          onAnimateMovement: onAnimateMovement,
+        );
         break;
       case EnemyState.satisfied:
         // Satisfied enemies don't move or act
@@ -204,7 +212,7 @@ class EnemyCharacter extends Character {
 
   /// Executes hostile AI behavior
   Future<void> _executeHostileAI(
-    GhostCharacter player, 
+    GhostCharacter player,
     TileMap tileMap, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
@@ -226,7 +234,11 @@ class EnemyCharacter extends Character {
 
     // If player is within detection range, ALWAYS move towards player (no other behavior)
     if (distanceToPlayer <= activationRadius) {
-      await _moveTowardsPlayer(player, tileMap, onAnimateMovement: onAnimateMovement);
+      await _moveTowardsPlayer(
+        player,
+        tileMap,
+        onAnimateMovement: onAnimateMovement,
+      );
       debugPrint(
         'EnemyCharacter: $id pursuing player (distance: $distanceToPlayer)',
       );
@@ -237,10 +249,18 @@ class EnemyCharacter extends Character {
     switch (aiType) {
       case EnemyAIType.aggressive:
         // Aggressive enemies patrol when no player detected
-        await _wanderRandomly(tileMap, player: player, onAnimateMovement: onAnimateMovement);
+        await _wanderRandomly(
+          tileMap,
+          player: player,
+          onAnimateMovement: onAnimateMovement,
+        );
         break;
       case EnemyAIType.wanderer:
-        await _wanderRandomly(tileMap, player: player, onAnimateMovement: onAnimateMovement);
+        await _wanderRandomly(
+          tileMap,
+          player: player,
+          onAnimateMovement: onAnimateMovement,
+        );
         break;
       case EnemyAIType.guard:
         // Guards stay in place when no player detected
@@ -251,7 +271,7 @@ class EnemyCharacter extends Character {
 
   /// Executes ally AI behavior
   Future<void> _executeAllyAI(
-    GhostCharacter player, 
+    GhostCharacter player,
     TileMap tileMap, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
@@ -260,7 +280,11 @@ class EnemyCharacter extends Character {
 
     if (distanceToPlayer > 2) {
       // Follow player if too far away
-      await _moveTowardsPlayer(player, tileMap, onAnimateMovement: onAnimateMovement);
+      await _moveTowardsPlayer(
+        player,
+        tileMap,
+        onAnimateMovement: onAnimateMovement,
+      );
     } else if (distanceToPlayer == 1) {
       // Stay close but not on top of player
       setIdle();
@@ -273,7 +297,7 @@ class EnemyCharacter extends Character {
 
   /// Moves the enemy towards the player's position
   Future<void> _moveTowardsPlayer(
-    GhostCharacter player, 
+    GhostCharacter player,
     TileMap tileMap, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
@@ -281,9 +305,19 @@ class EnemyCharacter extends Character {
     final direction = _getDirectionTowards(targetPosition);
 
     if (direction != null) {
-      if (!await _attemptMove(direction, tileMap, player: player, onAnimateMovement: onAnimateMovement)) {
+      if (!await _attemptMove(
+        direction,
+        tileMap,
+        player: player,
+        onAnimateMovement: onAnimateMovement,
+      )) {
         // If direct path is blocked, try alternative directions
-        await _tryAlternativeDirections(targetPosition, tileMap, player, onAnimateMovement: onAnimateMovement);
+        await _tryAlternativeDirections(
+          targetPosition,
+          tileMap,
+          player,
+          onAnimateMovement: onAnimateMovement,
+        );
       }
     } else {
       // Already at target position, stay idle
@@ -316,7 +350,12 @@ class EnemyCharacter extends Character {
     alternativeDirections.shuffle(_random);
 
     for (final direction in alternativeDirections) {
-      if (await _attemptMove(direction, tileMap, player: player, onAnimateMovement: onAnimateMovement)) {
+      if (await _attemptMove(
+        direction,
+        tileMap,
+        player: player,
+        onAnimateMovement: onAnimateMovement,
+      )) {
         debugPrint('EnemyCharacter: $id found alternative path toward player');
         return;
       }
@@ -338,7 +377,12 @@ class EnemyCharacter extends Character {
       ..shuffle(_random);
 
     for (final direction in shuffledDirections) {
-      if (await _attemptMove(direction, tileMap, player: player, onAnimateMovement: onAnimateMovement)) {
+      if (await _attemptMove(
+        direction,
+        tileMap,
+        player: player,
+        onAnimateMovement: onAnimateMovement,
+      )) {
         break; // Successfully moved (facing direction updated in _attemptMove)
       }
     }
@@ -387,19 +431,19 @@ class EnemyCharacter extends Character {
 
     // Store previous position for animation
     final fromPosition = position;
-    
+
     // Perform the movement (update game logic position immediately)
     final success = moveTo(newPosition);
     if (success) {
       _facingDirection =
           direction; // Update facing direction when moving successfully
       setActive(); // Enemy is moving, not idle
-      
+
       // Trigger animation if callback provided
       if (onAnimateMovement != null) {
         onAnimateMovement(id, fromPosition, newPosition);
       }
-      
+
       debugPrint('EnemyCharacter: $id moved to $newPosition');
     }
 

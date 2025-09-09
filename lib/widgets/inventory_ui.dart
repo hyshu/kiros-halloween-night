@@ -28,7 +28,6 @@ class InventoryUI extends StatefulWidget {
 }
 
 class _InventoryUIState extends State<InventoryUI> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -82,10 +81,7 @@ class _InventoryUIState extends State<InventoryUI> {
             children: [
               Text(
                 '${widget.inventory.count}/${widget.inventory.maxCapacity}',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(width: 12),
               IconButton(
@@ -125,22 +121,24 @@ class _InventoryUIState extends State<InventoryUI> {
             ),
           ),
           const SizedBox(height: 8),
-          ...activeEffects.values.map((effect) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      effect.name,
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                    Text(
-                      '${effect.remainingDuration} turns',
-                      style: const TextStyle(color: Colors.amber, fontSize: 12),
-                    ),
-                  ],
-                ),
-              )),
+          ...activeEffects.values.map(
+            (effect) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    effect.name,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  Text(
+                    '${effect.remainingDuration} turns',
+                    style: const TextStyle(color: Colors.amber, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -157,7 +155,7 @@ class _InventoryUIState extends State<InventoryUI> {
     }
 
     final candyGroups = _groupCandyByType();
-    
+
     return ListView.builder(
       padding: const EdgeInsets.all(8),
       itemCount: candyGroups.length,
@@ -201,7 +199,10 @@ class _InventoryUIState extends State<InventoryUI> {
                 ),
                 if (count > 1)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.deepPurple.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12),
@@ -329,7 +330,7 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    
+
     return Container(
       width: screenSize.width,
       height: screenSize.height,

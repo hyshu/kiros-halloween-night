@@ -64,7 +64,7 @@ void main() {
           // Test the fixed spawn and boss locations and their rooms
           Position(10, 390), // Spawn location - should be floor
           Position(190, 10), // Boss location - should be floor
-          Position(8, 385), // Inside spawn room 
+          Position(8, 385), // Inside spawn room
           Position(12, 392), // Inside spawn room
           Position(185, 8), // Inside boss room
           Position(192, 12), // Inside boss room
@@ -179,7 +179,7 @@ void main() {
         final samplePositions = [
           Position(10, 390), // Spawn location - should be floor
           Position(190, 10), // Boss location - should be floor
-          Position(8, 385), // Inside spawn room 
+          Position(8, 385), // Inside spawn room
           Position(12, 392), // Inside spawn room
           Position(185, 8), // Inside boss room
           Position(192, 12), // Inside boss room
@@ -354,16 +354,12 @@ void main() {
         final world1 = generator1.generateWorld();
         final world2 = generator2.generateWorld();
 
-        // Since spawn and boss locations are now fixed, check candy positions instead
-        final candyPositions1 = world1.getPositionsOfType(TileType.candy).toSet();
-        final candyPositions2 = world2.getPositionsOfType(TileType.candy).toSet();
-        
         // For test mode, candy positions might be fixed too, so check if at least spawn and boss are fixed as expected
         expect(world1.playerSpawn, equals(const Position(10, 390)));
         expect(world1.bossLocation, equals(const Position(190, 10)));
         expect(world2.playerSpawn, equals(const Position(10, 390)));
         expect(world2.bossLocation, equals(const Position(190, 10)));
-        
+
         // Test passes if both worlds have the expected fixed positions
         expect(true, isTrue, reason: 'Fixed positions work correctly');
       });

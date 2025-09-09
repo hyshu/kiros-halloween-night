@@ -223,7 +223,7 @@ class EnemyManager {
 
   /// Processes AI for a single enemy
   Future<void> _processEnemyAI(
-    EnemyCharacter enemy, 
+    EnemyCharacter enemy,
     GhostCharacter? playerCharacter,
     Function(String, Position, Position)? onAnimateMovement,
   ) async {
@@ -234,7 +234,11 @@ class EnemyManager {
     if (playerGhost == null) return;
 
     // Use the enemy's own AI processing method
-    await enemy.updateAI(playerGhost, _tileMap!, onAnimateMovement: onAnimateMovement);
+    await enemy.updateAI(
+      playerGhost,
+      _tileMap!,
+      onAnimateMovement: onAnimateMovement,
+    );
   }
 
   /// Creates a temporary ghost character for AI processing

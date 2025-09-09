@@ -25,7 +25,7 @@ class CameraAnimationSystem extends ChangeNotifier {
 
   /// Animation update timer
   Timer? _animationTimer;
-  
+
   /// Current animation completer
   Completer<void>? _animationCompleter;
 
@@ -42,8 +42,10 @@ class CameraAnimationSystem extends ChangeNotifier {
   /// Current animation progress (0.0 to 1.0)
   double get animationProgress {
     if (!_isAnimating || _animationStartTime == null) return 1.0;
-    
-    final elapsed = DateTime.now().difference(_animationStartTime!).inMilliseconds;
+
+    final elapsed = DateTime.now()
+        .difference(_animationStartTime!)
+        .inMilliseconds;
     final progress = (elapsed / _animationDuration).clamp(0.0, 1.0);
     return progress;
   }
@@ -103,7 +105,9 @@ class CameraAnimationSystem extends ChangeNotifier {
       return;
     }
 
-    final elapsed = DateTime.now().difference(_animationStartTime!).inMilliseconds;
+    final elapsed = DateTime.now()
+        .difference(_animationStartTime!)
+        .inMilliseconds;
     final progress = (elapsed / _animationDuration).clamp(0.0, 1.0);
 
     if (progress >= 1.0) {
@@ -263,10 +267,10 @@ enum EasingCurve {
 
 /// Animation speed presets
 enum CameraAnimationSpeed {
-  slow,     // 500ms
-  normal,   // 300ms
-  fast,     // 150ms
-  instant;  // 0ms (no animation)
+  slow, // 500ms
+  normal, // 300ms
+  fast, // 150ms
+  instant; // 0ms (no animation)
 
   /// Human-readable display name
   String get displayName {

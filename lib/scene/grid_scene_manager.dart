@@ -39,8 +39,12 @@ class GridObject {
 
   /// Get the current world position (animated or static)
   Vector3 get worldPosition {
-    return _animatedWorldPosition ?? 
-        Vector3(gridX * Position.tileSpacing, 0.0, gridZ * Position.tileSpacing);
+    return _animatedWorldPosition ??
+        Vector3(
+          gridX * Position.tileSpacing,
+          0.0,
+          gridZ * Position.tileSpacing,
+        );
   }
 
   /// Set the animated world position
@@ -100,8 +104,7 @@ class GridSceneManager extends ChangeNotifier {
   final CameraAnimationSystem _cameraAnimationSystem = CameraAnimationSystem();
 
   // Character movement animation system
-  final CharacterMovementAnimationSystem _characterAnimationSystem = 
-      CharacterMovementAnimationSystem();
+  final _characterAnimationSystem = CharacterMovementAnimationSystem();
 
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
@@ -109,7 +112,7 @@ class GridSceneManager extends ChangeNotifier {
 
   // Player position tracking for animations
   Position? _lastPlayerPosition;
-  
+
   // Enemy and ally position tracking for animations
   final Map<String, Position> _lastEnemyPositions = {};
   final Map<String, Position> _lastAllyPositions = {};
@@ -119,7 +122,7 @@ class GridSceneManager extends ChangeNotifier {
     if (_tileMap != null) {
       _updateCameraTarget();
     }
-    
+
     // Listen to camera animation updates
     _cameraAnimationSystem.addListener(() {
       _cameraTarget = _cameraAnimationSystem.currentPosition;
@@ -199,7 +202,7 @@ class GridSceneManager extends ChangeNotifier {
   CameraAnimationSystem get cameraAnimationSystem => _cameraAnimationSystem;
 
   // Get character movement animation system
-  CharacterMovementAnimationSystem get characterAnimationSystem => 
+  CharacterMovementAnimationSystem get characterAnimationSystem =>
       _characterAnimationSystem;
 
   // Get the ghost character
@@ -228,7 +231,7 @@ class GridSceneManager extends ChangeNotifier {
   /// Adds the ghost character to the scene
   Future<void> addGhostCharacter(GhostCharacter character) async {
     _ghostCharacter = character;
-    
+
     // Set animation system reference for character movement coordination
     character.setAnimationSystem(_characterAnimationSystem);
 
@@ -267,12 +270,12 @@ class GridSceneManager extends ChangeNotifier {
 
     final character = _ghostCharacter!;
     final currentPosition = character.position;
-    
+
     // Update position tracking for animations
     if (fromPosition != null) {
       _lastPlayerPosition = fromPosition;
     }
-    
+
     // Update or create the character object with new grid position
     final characterObject = GridObject(
       modelPath: character.modelPath,
@@ -291,7 +294,9 @@ class GridSceneManager extends ChangeNotifier {
     }
 
     // Skip immediate camera update - let animation system handle it
-    debugPrint('GridSceneManager: Skipping camera update in updateGhostCharacterPosition - animation system will handle it');
+    debugPrint(
+      'GridSceneManager: Skipping camera update in updateGhostCharacterPosition - animation system will handle it',
+    );
 
     // Notify game loop manager of player movement (this will handle animations)
     if (_gameLoopManager != null) {
@@ -312,11 +317,11 @@ class GridSceneManager extends ChangeNotifier {
     for (final entry in _characterObjects.entries) {
       final characterId = entry.key;
       final gridObject = entry.value;
-      
+
       // Get current animated position from animation system
       final animatedPosition = _characterAnimationSystem
           .getCharacterWorldPosition(characterId);
-      
+
       if (animatedPosition != null) {
         // Character is animating, use animated position
         gridObject.setAnimatedPosition(animatedPosition);
@@ -364,7 +369,6 @@ class GridSceneManager extends ChangeNotifier {
       enemyId,
       fromPosition,
       toPosition,
-      duration: 200, // Enemies move slightly faster
       easing: MovementEasing.easeOut,
       onUpdate: (worldPosition) {
         // Update the enemy's GridObject with animated position
@@ -376,7 +380,7 @@ class GridSceneManager extends ChangeNotifier {
         }
       },
     );
-    
+
     // After animation completes, update the GridObject's grid position
     _updateCharacterGridPosition(enemyId, toPosition);
   }
@@ -391,7 +395,6 @@ class GridSceneManager extends ChangeNotifier {
       allyId,
       fromPosition,
       toPosition,
-      duration: 250, // Allies move at normal speed
       easing: MovementEasing.easeInOut,
       onUpdate: (worldPosition) {
         // Update the ally's GridObject with animated position
@@ -403,7 +406,7 @@ class GridSceneManager extends ChangeNotifier {
         }
       },
     );
-    
+
     // After animation completes, update the GridObject's grid position
     _updateCharacterGridPosition(allyId, toPosition);
   }
@@ -446,10 +449,10 @@ class GridSceneManager extends ChangeNotifier {
 
     // Get stored previous and current positions from main.dart tracking
     final currentPosition = _ghostCharacter!.position;
-    
+
     // We need to get the previous position from somewhere - let's store it
     Position? previousPosition = _lastPlayerPosition;
-    
+
     // If this is the first move or no previous position, don't animate
     if (previousPosition == null || previousPosition == currentPosition) {
       debugPrint('GridSceneManager: No movement to animate');
@@ -465,17 +468,13 @@ class GridSceneManager extends ChangeNotifier {
       _ghostCharacter!.id,
       previousPosition,
       currentPosition,
-      duration: 250,
       easing: MovementEasing.easeInOut,
     );
 
     final cameraAnimationFuture = _updateCameraToFollowCharacter(animate: true);
 
     // Wait for both animations to complete
-    await Future.wait([
-      characterAnimationFuture,
-      cameraAnimationFuture,
-    ]);
+    await Future.wait([characterAnimationFuture, cameraAnimationFuture]);
 
     // Update the player's GridObject grid position after animation
     _updateCharacterGridPosition(_ghostCharacter!.id, currentPosition);
@@ -492,16 +491,22 @@ class GridSceneManager extends ChangeNotifier {
         0.0,
         pos.z * Position.tileSpacing,
       );
-      
+
       if (animate) {
-        debugPrint('GridSceneManager: Starting camera animation to $newCameraTarget');
+        debugPrint(
+          'GridSceneManager: Starting camera animation to $newCameraTarget',
+        );
         await _cameraAnimationSystem.animateToPosition(
           newCameraTarget,
+          duration:
+              CharacterMovementAnimationSystem.globalAnimationSpeed.durationMs,
           easingCurve: EasingCurve.easeInOut,
         );
         debugPrint('GridSceneManager: Camera animation completed');
       } else {
-        debugPrint('GridSceneManager: Setting camera position instantly to $newCameraTarget');
+        debugPrint(
+          'GridSceneManager: Setting camera position instantly to $newCameraTarget',
+        );
         _cameraAnimationSystem.setPosition(newCameraTarget);
       }
       _cameraTarget = newCameraTarget;
@@ -718,14 +723,16 @@ class GridSceneManager extends ChangeNotifier {
           // Trigger both character and camera animations
           await _handlePlayerMovementAnimation();
         },
-        onAnimateEnemyMovement: (String enemyId, Position fromPosition, Position toPosition) async {
-          // Animate enemy movement
-          await animateEnemyMovement(enemyId, fromPosition, toPosition);
-        },
-        onAnimateAllyMovement: (String allyId, Position fromPosition, Position toPosition) async {
-          // Animate ally movement
-          await animateAllyMovement(allyId, fromPosition, toPosition);
-        },
+        onAnimateEnemyMovement:
+            (String enemyId, Position fromPosition, Position toPosition) async {
+              // Animate enemy movement
+              await animateEnemyMovement(enemyId, fromPosition, toPosition);
+            },
+        onAnimateAllyMovement:
+            (String allyId, Position fromPosition, Position toPosition) async {
+              // Animate ally movement
+              await animateAllyMovement(allyId, fromPosition, toPosition);
+            },
       );
 
       // Initialize turn-based system

@@ -60,7 +60,7 @@ class _GridSceneViewState extends State<GridSceneView> {
 
   Future<void> _initializeWorldMap() async {
     final totalStopwatch = Stopwatch()..start();
-    
+
     setState(() {
       _loadingStatus = 'Preloading common 3D models...';
     });
@@ -71,7 +71,7 @@ class _GridSceneViewState extends State<GridSceneView> {
     await modelManager.preloadCommonModels();
     preloadStopwatch.stop();
     debugPrint('Model preloading: ${preloadStopwatch.elapsedMilliseconds}ms');
-    
+
     setState(() {
       _loadingStatus = 'Generating 200x400 world map...';
     });
@@ -91,7 +91,9 @@ class _GridSceneViewState extends State<GridSceneView> {
     final sceneManagerStopwatch = Stopwatch()..start();
     _sceneManager = GridSceneManager.withTileMap(_tileMap);
     sceneManagerStopwatch.stop();
-    debugPrint('Scene manager creation: ${sceneManagerStopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+      'Scene manager creation: ${sceneManagerStopwatch.elapsedMilliseconds}ms',
+    );
 
     setState(() {
       _loadingStatus = 'Loading world objects...';
@@ -101,7 +103,9 @@ class _GridSceneViewState extends State<GridSceneView> {
     final sceneInitStopwatch = Stopwatch()..start();
     await _sceneManager.initializeWithTileMap(_tileMap);
     sceneInitStopwatch.stop();
-    debugPrint('Scene initialization: ${sceneInitStopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+      'Scene initialization: ${sceneInitStopwatch.elapsedMilliseconds}ms',
+    );
 
     setState(() {
       _loadingStatus = 'Creating Kiro ghost character...';
@@ -119,12 +123,14 @@ class _GridSceneViewState extends State<GridSceneView> {
 
     // Add the ghost character to the scene
     await _sceneManager.addGhostCharacter(_ghostCharacter);
-    
+
     // Initialize previous position for animation tracking
     _previousPlayerPosition = spawnPosition;
-    
+
     ghostCharStopwatch.stop();
-    debugPrint('Ghost character creation and adding: ${ghostCharStopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+      'Ghost character creation and adding: ${ghostCharStopwatch.elapsedMilliseconds}ms',
+    );
 
     setState(() {
       _loadingStatus = 'Spawning enemies across the world...';
@@ -152,12 +158,12 @@ class _GridSceneViewState extends State<GridSceneView> {
       onCharacterMoved: () async {
         // Track previous position for animation
         final currentPosition = _ghostCharacter.position;
-        
+
         // Update the scene when character moves
         await _sceneManager.updateGhostCharacterPosition(
           fromPosition: _previousPlayerPosition,
         );
-        
+
         // Update previous position for next move
         _previousPlayerPosition = currentPosition;
       },
@@ -168,9 +174,12 @@ class _GridSceneViewState extends State<GridSceneView> {
       },
       onGiftToggle: () {
         // Start gift process with first adjacent enemy - this shows the candy selection UI
-        final adjacentEnemies = _sceneManager.gameLoopManager!.getAdjacentGiftableEnemies();
+        final adjacentEnemies = _sceneManager.gameLoopManager!
+            .getAdjacentGiftableEnemies();
         if (adjacentEnemies.isNotEmpty) {
-          final success = _sceneManager.gameLoopManager!.initiateGiftToEnemy(adjacentEnemies.first);
+          final success = _sceneManager.gameLoopManager!.initiateGiftToEnemy(
+            adjacentEnemies.first,
+          );
           if (success) {
             setState(() {
               _showInventory = false; // Close inventory if open
@@ -182,7 +191,9 @@ class _GridSceneViewState extends State<GridSceneView> {
       },
     );
     inputManagerStopwatch.stop();
-    debugPrint('Input manager setup: ${inputManagerStopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+      'Input manager setup: ${inputManagerStopwatch.elapsedMilliseconds}ms',
+    );
 
     setState(() {
       _loadingStatus = 'Initializing combat systems...';
@@ -192,10 +203,14 @@ class _GridSceneViewState extends State<GridSceneView> {
     final gameLoopStopwatch = Stopwatch()..start();
     _sceneManager.initializeGameLoop();
     gameLoopStopwatch.stop();
-    debugPrint('Game loop initialization: ${gameLoopStopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+      'Game loop initialization: ${gameLoopStopwatch.elapsedMilliseconds}ms',
+    );
 
     totalStopwatch.stop();
-    debugPrint('=== TOTAL INITIALIZATION TIME: ${totalStopwatch.elapsedMilliseconds}ms ===');
+    debugPrint(
+      '=== TOTAL INITIALIZATION TIME: ${totalStopwatch.elapsedMilliseconds}ms ===',
+    );
 
     setState(() {
       _isLoading = false;
@@ -238,7 +253,8 @@ class _GridSceneViewState extends State<GridSceneView> {
               sceneManager: _sceneManager,
             ),
             DialogueUI(dialogueManager: _sceneManager.dialogueManager),
-            if (_sceneManager.gameLoopManager?.giftSystem.isGiftUIActive == true)
+            if (_sceneManager.gameLoopManager?.giftSystem.isGiftUIActive ==
+                true)
               GiftOverlay(
                 giftSystem: _sceneManager.gameLoopManager!.giftSystem,
                 onConfirmGift: () {
@@ -259,23 +275,30 @@ class _GridSceneViewState extends State<GridSceneView> {
                 },
                 onGiveCandy: (candyId) {
                   // Find adjacent giftable enemies
-                  final adjacentEnemies = _sceneManager.gameLoopManager!.getAdjacentGiftableEnemies();
+                  final adjacentEnemies = _sceneManager.gameLoopManager!
+                      .getAdjacentGiftableEnemies();
                   if (adjacentEnemies.isNotEmpty) {
                     // Directly give the selected candy to the first adjacent enemy
                     final targetEnemy = adjacentEnemies.first;
-                    final success = _sceneManager.gameLoopManager!.initiateGiftToEnemy(targetEnemy);
+                    final success = _sceneManager.gameLoopManager!
+                        .initiateGiftToEnemy(targetEnemy);
                     if (success) {
                       // Find and select the candy that was chosen
-                      final availableCandy = _sceneManager.gameLoopManager!.giftSystem.availableCandy;
+                      final availableCandy = _sceneManager
+                          .gameLoopManager!
+                          .giftSystem
+                          .availableCandy;
                       final selectedCandy = availableCandy.firstWhere(
                         (candy) => candy.id == candyId,
                         orElse: () => availableCandy.first,
                       );
-                      _sceneManager.gameLoopManager!.giftSystem.selectCandy(selectedCandy);
-                      
+                      _sceneManager.gameLoopManager!.giftSystem.selectCandy(
+                        selectedCandy,
+                      );
+
                       // Immediately confirm the gift
                       _sceneManager.gameLoopManager!.confirmGift();
-                      
+
                       setState(() {
                         _showInventory = false; // Close inventory
                       });

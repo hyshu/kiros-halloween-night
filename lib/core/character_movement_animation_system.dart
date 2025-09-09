@@ -16,8 +16,8 @@ class CharacterMovementAnimationSystem extends ChangeNotifier {
   static const int _frameRate = 60;
   static const int _frameTimeMs = 1000 ~/ _frameRate;
 
-  /// Default animation duration in milliseconds
-  static const int _defaultDuration = 250;
+  /// Global animation speed setting
+  static const globalAnimationSpeed = CharacterAnimationSpeed.fast;
 
   /// Whether the system is running
   bool _isRunning = false;
@@ -93,7 +93,7 @@ class CharacterMovementAnimationSystem extends ChangeNotifier {
       characterId: characterId,
       fromPosition: fromPosition,
       toPosition: toPosition,
-      duration: duration ?? _defaultDuration,
+      duration: duration ?? globalAnimationSpeed.durationMs,
       easing: easing ?? MovementEasing.easeInOut,
       onUpdate: onUpdate,
     );
@@ -357,11 +357,11 @@ enum CharacterAnimationSpeed {
   int get durationMs {
     switch (this) {
       case CharacterAnimationSpeed.slow:
-        return 400;
+        return 300;
       case CharacterAnimationSpeed.normal:
-        return 250;
-      case CharacterAnimationSpeed.fast:
         return 150;
+      case CharacterAnimationSpeed.fast:
+        return 100;
       case CharacterAnimationSpeed.instant:
         return 0;
     }

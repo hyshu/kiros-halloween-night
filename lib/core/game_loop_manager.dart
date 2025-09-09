@@ -314,7 +314,10 @@ class GameLoopManager extends ChangeNotifier {
       await _animationManager.playAIMovementAnimation();
 
       // Process enemy AI (one turn)
-      await _enemyManager!.processEnemyAI(_ghostCharacter!, _onAnimateEnemyMovement);
+      await _enemyManager!.processEnemyAI(
+        _ghostCharacter!,
+        _onAnimateEnemyMovement,
+      );
 
       // Animation Phase 3: Combat Animation
       await _animationManager.playCombatAnimation();
@@ -329,7 +332,11 @@ class GameLoopManager extends ChangeNotifier {
       await _animationManager.playAllyMovementAnimation();
 
       // Update ally AI (one turn)
-      await _allyManager.updateAllies(_tileMap!, hostileEnemies, onAnimateMovement: _onAnimateAllyMovement);
+      await _allyManager.updateAllies(
+        _tileMap!,
+        hostileEnemies,
+        onAnimateMovement: _onAnimateAllyMovement,
+      );
 
       // Process combat between allies and hostile enemies
       _processCombat(hostileEnemies);

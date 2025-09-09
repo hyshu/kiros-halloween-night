@@ -170,7 +170,8 @@ class GhostCharacter extends Character {
 
       // Check if previous animation is still running
       bool skipAnimation = false;
-      if (_animationSystem != null && _animationSystem!.isCharacterAnimating(id)) {
+      if (_animationSystem != null &&
+          _animationSystem!.isCharacterAnimating(id)) {
         // Cancel current animation and move immediately
         _animationSystem!.cancelCharacterAnimation(id);
         skipAnimation = true;
@@ -552,16 +553,12 @@ class GhostCharacter extends Character {
     }
 
     final fromPosition = position;
-    
+
     // Update position immediately for game logic
     position = newPosition;
-    
+
     // Start animation (fire and forget)
-    _animationSystem!.animateCharacterMovement(
-      id,
-      fromPosition,
-      newPosition,
-    );
+    _animationSystem!.animateCharacterMovement(id, fromPosition, newPosition);
   }
 
   @override

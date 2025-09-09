@@ -22,7 +22,7 @@ class AnimationPhaseManager extends ChangeNotifier {
     Future<void> Function()? onMovementAnimation,
   }) async {
     await _playAnimationPhase(
-      AnimationPhase.movement, 
+      AnimationPhase.movement,
       customAction: onMovementAnimation,
     );
   }
