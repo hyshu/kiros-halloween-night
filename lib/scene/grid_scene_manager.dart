@@ -13,6 +13,7 @@ import '../core/enemy_character.dart';
 import '../core/game_loop_manager.dart';
 import '../core/ally_character.dart';
 import '../core/camera_animation_system.dart';
+import '../core/character_movement_animation_system.dart';
 import '../core/dialogue_manager.dart';
 import '../core/candy_item.dart';
 
@@ -24,6 +25,9 @@ class GridObject {
   final int gridZ;
   final double rotationY; // Rotation around Y-axis in radians
 
+  /// Optional animated world position (overrides gridX/gridZ when present)
+  Vector3? _animatedWorldPosition;
+
   GridObject({
     required this.modelPath,
     required this.displayName,
@@ -33,8 +37,36 @@ class GridObject {
     this.rotationY = 0.0,
   });
 
-  Vector3 get worldPosition =>
-      Vector3(gridX * Position.tileSpacing, 0.0, gridZ * Position.tileSpacing);
+  /// Get the current world position (animated or static)
+  Vector3 get worldPosition {
+    return _animatedWorldPosition ?? 
+        Vector3(gridX * Position.tileSpacing, 0.0, gridZ * Position.tileSpacing);
+  }
+
+  /// Set the animated world position
+  void setAnimatedPosition(Vector3? position) {
+    _animatedWorldPosition = position;
+  }
+
+  /// Whether this object is currently using animated position
+  bool get isAnimated => _animatedWorldPosition != null;
+
+  /// Clear animated position and return to grid position
+  void clearAnimatedPosition() {
+    _animatedWorldPosition = null;
+  }
+
+  /// Create a copy with updated grid position
+  GridObject copyWithGridPosition(int newGridX, int newGridZ) {
+    return GridObject(
+      modelPath: modelPath,
+      displayName: displayName,
+      model: model,
+      gridX: newGridX,
+      gridZ: newGridZ,
+      rotationY: rotationY,
+    );
+  }
 
   Matrix4 get modelMatrix {
     final matrix = Matrix4.identity();
@@ -67,9 +99,16 @@ class GridSceneManager extends ChangeNotifier {
   // Camera animation system for smooth transitions
   final CameraAnimationSystem _cameraAnimationSystem = CameraAnimationSystem();
 
+  // Character movement animation system
+  final CharacterMovementAnimationSystem _characterAnimationSystem = 
+      CharacterMovementAnimationSystem();
+
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
   final double _viewportRadius = 50.0; // Only render objects within this radius
+
+  // Player position tracking for animations
+  Position? _lastPlayerPosition;
 
   // Constructor for large world
   GridSceneManager.withTileMap(this._tileMap) {
@@ -80,6 +119,12 @@ class GridSceneManager extends ChangeNotifier {
     // Listen to camera animation updates
     _cameraAnimationSystem.addListener(() {
       _cameraTarget = _cameraAnimationSystem.currentPosition;
+      notifyListeners();
+    });
+
+    // Listen to character animation updates
+    _characterAnimationSystem.addListener(() {
+      _updateCharacterAnimationPositions();
       notifyListeners();
     });
   }
@@ -149,6 +194,10 @@ class GridSceneManager extends ChangeNotifier {
   // Get camera animation system
   CameraAnimationSystem get cameraAnimationSystem => _cameraAnimationSystem;
 
+  // Get character movement animation system
+  CharacterMovementAnimationSystem get characterAnimationSystem => 
+      _characterAnimationSystem;
+
   // Get the ghost character
   GhostCharacter? get ghostCharacter => _ghostCharacter;
 
@@ -205,30 +254,35 @@ class GridSceneManager extends ChangeNotifier {
   }
 
   /// Updates the ghost character's position in the scene
-  Future<void> updateGhostCharacterPosition() async {
+  Future<void> updateGhostCharacterPosition({Position? fromPosition}) async {
     if (_ghostCharacter == null) return;
 
     final character = _ghostCharacter!;
+    final currentPosition = character.position;
+    
+    // Update position tracking for animations
+    if (fromPosition != null) {
+      _lastPlayerPosition = fromPosition;
+    }
+    
+    // Update or create the character object with new grid position
     final characterObject = GridObject(
       modelPath: character.modelPath,
       displayName: character.id,
-      gridX: character.position.x,
-      gridZ: character.position.z,
+      gridX: currentPosition.x,
+      gridZ: currentPosition.z,
       model: character.model,
       rotationY: character.facingDirection.rotationY,
     );
 
     _characterObjects[character.id] = characterObject;
 
-    // Update camera to follow the character (with animation for movement)
-    await _updateCameraToFollowCharacter(animate: true);
-
     // Reload objects around new position for large world
     if (_tileMap != null) {
       _loadObjectsAroundCamera();
     }
 
-    // Notify game loop manager of player movement
+    // Notify game loop manager of player movement (this will handle animations)
     if (_gameLoopManager != null) {
       await _gameLoopManager!.onPlayerMoved();
     }
@@ -240,6 +294,92 @@ class GridSceneManager extends ChangeNotifier {
     _checkCandyCollectionDialogue();
 
     notifyListeners();
+  }
+
+  /// Updates character animation positions for all animated characters
+  void _updateCharacterAnimationPositions() {
+    for (final entry in _characterObjects.entries) {
+      final characterId = entry.key;
+      final gridObject = entry.value;
+      
+      // Get current animated position from animation system
+      final animatedPosition = _characterAnimationSystem
+          .getCharacterWorldPosition(characterId);
+      
+      if (animatedPosition != null) {
+        // Character is animating, use animated position
+        gridObject.setAnimatedPosition(animatedPosition);
+      } else {
+        // Character is not animating, clear animated position
+        gridObject.clearAnimatedPosition();
+      }
+    }
+  }
+
+  /// Animate character movement from current position to new position
+  Future<void> animateCharacterMovement(
+    String characterId,
+    Position fromPosition,
+    Position toPosition, {
+    int? duration,
+    MovementEasing? easing,
+  }) async {
+    await _characterAnimationSystem.animateCharacterMovement(
+      characterId,
+      fromPosition,
+      toPosition,
+      duration: duration,
+      easing: easing,
+      onUpdate: (worldPosition) {
+        // Update the character's GridObject with animated position
+        final gridObject = _characterObjects[characterId];
+        if (gridObject != null) {
+          gridObject.setAnimatedPosition(worldPosition);
+          // Trigger re-render
+          notifyListeners();
+        }
+      },
+    );
+  }
+
+  /// Handle player movement animation (called during animation phase)
+  Future<void> _handlePlayerMovementAnimation() async {
+    if (_ghostCharacter == null) return;
+
+    // Get stored previous and current positions from main.dart tracking
+    final currentPosition = _ghostCharacter!.position;
+    
+    // We need to get the previous position from somewhere - let's store it
+    Position? previousPosition = _lastPlayerPosition;
+    
+    // If this is the first move or no previous position, don't animate
+    if (previousPosition == null || previousPosition == currentPosition) {
+      debugPrint('GridSceneManager: No movement to animate');
+      return;
+    }
+
+    debugPrint(
+      'GridSceneManager: Animating player movement from $previousPosition to $currentPosition',
+    );
+
+    // Start both character movement and camera animations in parallel
+    final characterAnimationFuture = animateCharacterMovement(
+      _ghostCharacter!.id,
+      previousPosition,
+      currentPosition,
+      duration: 250,
+      easing: MovementEasing.easeInOut,
+    );
+
+    final cameraAnimationFuture = _updateCameraToFollowCharacter(animate: true);
+
+    // Wait for both animations to complete
+    await Future.wait([
+      characterAnimationFuture,
+      cameraAnimationFuture,
+    ]);
+
+    debugPrint('GridSceneManager: Player movement animation completed');
   }
 
   /// Updates camera to follow the ghost character
@@ -471,10 +611,8 @@ class GridSceneManager extends ChangeNotifier {
           removeEnemyFromScene(enemyId);
         },
         onMovementAnimation: () async {
-          // Trigger camera animation to follow player movement
-          if (_ghostCharacter != null) {
-            await _updateCameraToFollowCharacter(animate: true);
-          }
+          // Trigger both character and camera animations
+          await _handlePlayerMovementAnimation();
         },
       );
 
@@ -995,6 +1133,7 @@ class GridSceneManager extends ChangeNotifier {
     _gameLoopManager?.removeListener(_onGameLoopUpdate);
     _gameLoopManager?.dispose();
     _cameraAnimationSystem.dispose();
+    _characterAnimationSystem.dispose();
     super.dispose();
   }
 }

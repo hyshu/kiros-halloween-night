@@ -50,6 +50,7 @@ class _GridSceneViewState extends State<GridSceneView> {
   bool _isLoading = true;
   String _loadingStatus = '';
   bool _showInventory = false;
+  Position? _previousPlayerPosition;
 
   @override
   void initState() {
@@ -118,6 +119,10 @@ class _GridSceneViewState extends State<GridSceneView> {
 
     // Add the ghost character to the scene
     await _sceneManager.addGhostCharacter(_ghostCharacter);
+    
+    // Initialize previous position for animation tracking
+    _previousPlayerPosition = spawnPosition;
+    
     ghostCharStopwatch.stop();
     debugPrint('Ghost character creation and adding: ${ghostCharStopwatch.elapsedMilliseconds}ms');
 
@@ -145,8 +150,16 @@ class _GridSceneViewState extends State<GridSceneView> {
       tileMap: _tileMap,
       sceneManager: _sceneManager,
       onCharacterMoved: () async {
+        // Track previous position for animation
+        final currentPosition = _ghostCharacter.position;
+        
         // Update the scene when character moves
-        await _sceneManager.updateGhostCharacterPosition();
+        await _sceneManager.updateGhostCharacterPosition(
+          fromPosition: _previousPlayerPosition,
+        );
+        
+        // Update previous position for next move
+        _previousPlayerPosition = currentPosition;
       },
       onInventoryToggle: () {
         setState(() {

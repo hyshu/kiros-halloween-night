@@ -39,8 +39,8 @@ class GameLoopManager extends ChangeNotifier {
   /// Reference to dialogue manager for combat messages
   DialogueManager? _dialogueManager;
 
-  /// Reference to scene manager for camera animations
-  Function()? _onMovementAnimation;
+  /// Reference to scene manager for movement animations
+  Future<void> Function()? _onMovementAnimation;
 
   /// Callback for when an enemy is defeated and should be removed from scene
   Function(String enemyId)? _onEnemyDefeated;
@@ -83,7 +83,7 @@ class GameLoopManager extends ChangeNotifier {
     required TileMap tileMap,
     DialogueManager? dialogueManager,
     Function(String enemyId)? onEnemyDefeated,
-    Function()? onMovementAnimation,
+    Future<void> Function()? onMovementAnimation,
   }) {
     _ghostCharacter = ghostCharacter;
     _enemyManager = enemyManager;

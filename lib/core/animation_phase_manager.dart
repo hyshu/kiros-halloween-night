@@ -19,7 +19,7 @@ class AnimationPhaseManager extends ChangeNotifier {
 
   /// Plays the movement animation phase
   Future<void> playMovementAnimation({
-    Function()? onMovementAnimation,
+    Future<void> Function()? onMovementAnimation,
   }) async {
     await _playAnimationPhase(
       AnimationPhase.movement, 
@@ -50,7 +50,7 @@ class AnimationPhaseManager extends ChangeNotifier {
   /// Generic method to play any animation phase
   Future<void> _playAnimationPhase(
     AnimationPhase phase, {
-    Function()? customAction,
+    Future<void> Function()? customAction,
   }) async {
     if (_isAnimating) return; // Prevent overlapping animations
 
