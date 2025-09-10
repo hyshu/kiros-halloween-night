@@ -137,11 +137,6 @@ class DialogueManager {
       _currentTurnEvents.clear();
       _dialogueWindow.clear();
     }
-
-    // Clear events from previous turn if there are no new events
-    if (_currentTurnEvents.isEmpty && _dialogueWindow.isActive) {
-      _dialogueWindow.clear();
-    }
   }
 
   /// Displays all events from the current turn as a single multi-line dialogue
