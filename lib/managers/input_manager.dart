@@ -44,7 +44,7 @@ class InputManager {
   /// Returns true if the key was handled
   Future<bool> handleKeyPress(LogicalKeyboardKey key) async {
     // Check if input should be blocked due to active animations
-    if (_shouldBlockInput()) {
+    if (_shouldBlockInput(key)) {
       debugPrint('InputManager: Blocking input due to active animations');
       return false; // Input blocked during animations
     }
@@ -98,7 +98,7 @@ class InputManager {
   }
 
   /// Checks if input should be blocked due to active animations
-  bool _shouldBlockInput() {
+  bool _shouldBlockInput(LogicalKeyboardKey key) {
     // Check AnimationPhaseManager for blocking animations
     final gameLoopManager = _sceneManager?.gameLoopManager;
     if (gameLoopManager != null) {
@@ -111,12 +111,18 @@ class InputManager {
       }
     }
 
-    // Check character-level movement animations
+    // Allow movement keys during character movement animations
+    if (_isMovementKey(key)) {
+      // Don't block movement keys - let them cancel current animations
+      return false;
+    }
+
+    // Check character-level movement animations for non-movement keys
     final characterAnimationSystem = _ghostCharacter.animationSystem;
     if (characterAnimationSystem != null &&
         characterAnimationSystem.hasActiveAnimations) {
-      debugPrint('InputManager: Blocking input due to character movement animations');
-      return true; // Block input during character movement animations
+      debugPrint('InputManager: Blocking non-movement input due to character movement animations');
+      return true; // Block non-movement input during character movement animations
     }
 
     // Check if character is already processing input
@@ -126,6 +132,18 @@ class InputManager {
     }
 
     return false; // Input is allowed
+  }
+
+  /// Checks if the given key is a movement key
+  bool _isMovementKey(LogicalKeyboardKey key) {
+    return key == LogicalKeyboardKey.arrowUp ||
+        key == LogicalKeyboardKey.arrowDown ||
+        key == LogicalKeyboardKey.arrowLeft ||
+        key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.keyW ||
+        key == LogicalKeyboardKey.keyS ||
+        key == LogicalKeyboardKey.keyA ||
+        key == LogicalKeyboardKey.keyD;
   }
 
   /// Initializes the collision detector with all current characters
