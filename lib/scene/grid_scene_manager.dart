@@ -1,3 +1,4 @@
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import '../core/camera_animation_system.dart';
 import '../core/character_movement_animation_system.dart';
 import '../core/dialogue_manager.dart';
 import '../core/candy_item.dart';
+import '../core/candy_collection_system.dart';
+import '../core/collection_feedback.dart';
 
 class GridObject {
   final String modelPath;
@@ -105,6 +108,12 @@ class GridSceneManager extends ChangeNotifier {
 
   // Character movement animation system
   final _characterAnimationSystem = CharacterMovementAnimationSystem();
+
+  // Candy collection system
+  final CandyCollectionSystem _candyCollectionSystem = CandyCollectionSystem();
+
+  // Collection feedback manager
+  final CollectionFeedbackManager _collectionFeedbackManager = CollectionFeedbackManager();
 
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
@@ -217,6 +226,12 @@ class GridSceneManager extends ChangeNotifier {
   /// Get the dialogue manager instance
   DialogueManager get dialogueManager => _dialogueManager;
 
+  /// Get the candy collection system
+  CandyCollectionSystem get candyCollectionSystem => _candyCollectionSystem;
+
+  /// Get the collection feedback manager
+  CollectionFeedbackManager get collectionFeedbackManager => _collectionFeedbackManager;
+
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
     _cameraTarget = newTarget;
@@ -305,9 +320,6 @@ class GridSceneManager extends ChangeNotifier {
 
     // Update dialogue system
     _dialogueManager.update();
-
-    // Check for candy collection at current position
-    _checkCandyCollectionDialogue();
 
     notifyListeners();
   }
@@ -715,9 +727,15 @@ class GridSceneManager extends ChangeNotifier {
         enemyManager: _enemyManager!,
         tileMap: _tileMap!,
         dialogueManager: _dialogueManager,
+        candyCollectionSystem: _candyCollectionSystem,
+        collectionFeedbackManager: _collectionFeedbackManager,
         onEnemyDefeated: (enemyId) {
           // Remove the defeated enemy's 3D model from the scene
           removeEnemyFromScene(enemyId);
+        },
+        onCandyCollected: (position) {
+          // Remove candy from tile map and 3D scene
+          _removeCandyFromScene(position);
         },
         onMovementAnimation: () async {
           // Trigger both character and camera animations
@@ -802,6 +820,11 @@ class GridSceneManager extends ChangeNotifier {
                 rotationY: modelData.rotation,
               ),
             );
+            
+            // Register candy items with the collection system
+            if (tileType == TileType.candy) {
+              _registerCandyWithCollectionSystem(position);
+            }
           }
         }
       }
@@ -1176,74 +1199,40 @@ class GridSceneManager extends ChangeNotifier {
     return ally.originalEnemy.modelPath;
   }
 
-  /// Checks for candy collection at current player position and shows dialogue
-  void _checkCandyCollectionDialogue() {
-    if (_ghostCharacter == null || _tileMap == null) return;
+  /// Registers a candy item with the collection system based on position
+  void _registerCandyWithCollectionSystem(Position position) {
+    // Create a candy item based on the position (deterministic based on coordinates)
+    final candyType = _getCandyTypeForPosition(position);
+    final candyId = 'candy_${position.x}_${position.z}';
+    final candy = CandyItem.create(candyType, candyId, position: position);
+    
+    // Add to collection system
+    _candyCollectionSystem.addSingleCandy(candy);
+  }
 
-    final pos = _ghostCharacter!.position;
+  /// Gets a deterministic candy type based on position
+  CandyType _getCandyTypeForPosition(Position position) {
+    final variant = (position.x * 5 + position.z * 13) % CandyType.values.length;
+    return CandyType.values[variant];
+  }
 
-    // Check if there's candy at current position
-    if (_tileMap!.isValidPosition(pos)) {
-      final tile = _tileMap!.getTileAt(pos);
-      if (tile == TileType.candy) {
-        // Create a random candy item
-        final candyType = _getRandomCandyType();
-        final candyId =
-            'candy_${pos.x}_${pos.z}_${DateTime.now().millisecondsSinceEpoch}';
-        final candy = CandyItem.create(candyType, candyId, position: pos);
-
-        // Try to add to player's inventory
-        final success = _ghostCharacter!.collectCandy(candy);
-
-        if (success) {
-          // Show candy collection dialogue with variety
-          _showCandyCollectionMessage(candy);
-
-          // Remove candy from tile map (mark as floor)
-          _tileMap!.setTileAt(pos, TileType.floor);
-
-          // Remove the 3D candy object from rendering
-          removeObject(pos.x, pos.z);
-
-          // Notify listeners to update rendering
-          notifyListeners();
-        } else {
-          // Show inventory full message
-          _showInventoryFullMessage();
-        }
-      }
+  /// Removes candy from the scene when collected
+  void _removeCandyFromScene(Position position) {
+    if (_tileMap != null) {
+      // Remove candy from tile map (mark as floor)
+      _tileMap!.setTileAt(position, TileType.floor);
+      
+      // Remove the 3D candy object from rendering
+      removeObject(position.x, position.z);
+      
+      // Notify listeners to update rendering
+      notifyListeners();
+      
+      debugPrint('GridSceneManager: Removed candy from scene at $position');
     }
   }
 
-  /// Gets a random candy type for collection
-  CandyType _getRandomCandyType() {
-    final random = Random();
-    final candyTypes = CandyType.values;
-    return candyTypes[random.nextInt(candyTypes.length)];
-  }
 
-  /// Shows a candy collection message with specific candy info
-  void _showCandyCollectionMessage(CandyItem candy) {
-    final messages = [
-      'Kiro finds a ${candy.name}! ${candy.description}',
-      'A glowing ${candy.name} catches Kiro\'s attention. Sweet supernatural treat!',
-      'Kiro discovers a magical ${candy.name} that sparkles with otherworldly flavor.',
-      'The ${candy.name} makes Kiro glow brighter with ghostly happiness.',
-      'Kiro gobbles up the ${candy.name}, feeling more spirited than ever!',
-    ];
-
-    final random = Random();
-    final message = messages[random.nextInt(messages.length)];
-
-    _dialogueManager.showItemCollection(message);
-  }
-
-  /// Shows a message when inventory is full
-  void _showInventoryFullMessage() {
-    _dialogueManager.showItemCollection(
-      'Kiro\'s inventory is full! Can\'t pick up more candy.',
-    );
-  }
 
   /// Dispose resources when scene manager is destroyed
   @override

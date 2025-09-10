@@ -12,6 +12,9 @@ import 'player_combat_result.dart';
 import 'position.dart';
 import 'tile_map.dart';
 import 'dialogue_manager.dart';
+import 'candy_collection_system.dart';
+import 'collection_feedback.dart';
+import 'candy_item.dart';
 import '../l10n/strings.g.dart';
 
 /// Manages the main game loop and coordinates all game systems
@@ -40,6 +43,12 @@ class GameLoopManager extends ChangeNotifier {
   /// Reference to dialogue manager for combat messages
   DialogueManager? _dialogueManager;
 
+  /// Reference to candy collection system
+  CandyCollectionSystem? _candyCollectionSystem;
+
+  /// Reference to collection feedback manager
+  CollectionFeedbackManager? _collectionFeedbackManager;
+
   /// Reference to scene manager for movement animations
   Future<void> Function()? _onMovementAnimation;
 
@@ -51,6 +60,9 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Callback for when an enemy is defeated and should be removed from scene
   Function(String enemyId)? _onEnemyDefeated;
+
+  /// Callback for when candy is collected and should be removed from scene
+  Function(Position position)? _onCandyCollected;
 
   /// Whether the turn-based system is running
   bool _isRunning = false;
@@ -89,7 +101,10 @@ class GameLoopManager extends ChangeNotifier {
     required EnemyManager enemyManager,
     required TileMap tileMap,
     DialogueManager? dialogueManager,
+    CandyCollectionSystem? candyCollectionSystem,
+    CollectionFeedbackManager? collectionFeedbackManager,
     Function(String enemyId)? onEnemyDefeated,
+    Function(Position position)? onCandyCollected,
     Future<void> Function()? onMovementAnimation,
     Future<void> Function(String, Position, Position)? onAnimateEnemyMovement,
     Future<void> Function(String, Position, Position)? onAnimateAllyMovement,
@@ -98,7 +113,10 @@ class GameLoopManager extends ChangeNotifier {
     _enemyManager = enemyManager;
     _tileMap = tileMap;
     _dialogueManager = dialogueManager;
+    _candyCollectionSystem = candyCollectionSystem;
+    _collectionFeedbackManager = collectionFeedbackManager;
     _onEnemyDefeated = onEnemyDefeated;
+    _onCandyCollected = onCandyCollected;
     _onMovementAnimation = onMovementAnimation;
     _onAnimateEnemyMovement = onAnimateEnemyMovement;
     _onAnimateAllyMovement = onAnimateAllyMovement;
@@ -307,6 +325,9 @@ class GameLoopManager extends ChangeNotifier {
         onMovementAnimation: _onMovementAnimation,
       );
 
+      // Process candy collection after movement animation
+      _processCandyCollection();
+
       // Update enemy activation based on new player position
       _enemyManager!.updateEnemyActivation(_ghostCharacter!.position);
 
@@ -502,6 +523,79 @@ class GameLoopManager extends ChangeNotifier {
     }
 
     _dialogueManager!.showCombatFeedback(formattedMessage);
+  }
+
+  /// Processes candy collection at the player's current position
+  void _processCandyCollection() {
+    if (_ghostCharacter == null || _candyCollectionSystem == null || _tileMap == null) {
+      return;
+    }
+
+    // Use the candy collection system to process movement
+    final collectionEvent = _candyCollectionSystem!.processMovement(
+      _ghostCharacter!,
+      _tileMap!,
+    );
+
+    if (collectionEvent != null) {
+      // Handle the collection event
+      _handleCandyCollectionEvent(collectionEvent);
+    }
+  }
+
+  /// Handles a candy collection event with proper feedback and scene updates
+  void _handleCandyCollectionEvent(CandyCollectionEvent event) {
+    if (event.successful) {
+      // Show candy collection message using dialogue manager
+      _showCandyCollectionMessage(event.candy);
+
+      // Process visual feedback
+      if (_collectionFeedbackManager != null) {
+        _collectionFeedbackManager!.processCollectionEvent(event);
+      }
+
+      // Remove candy from scene (tile map and 3D object)
+      if (_onCandyCollected != null) {
+        _onCandyCollected!(event.position);
+      }
+
+      debugPrint('GameLoopManager: Candy collected: ${event.candy.name} at ${event.position}');
+    } else {
+      // Show inventory full message
+      _showInventoryFullMessage();
+
+      // Process failure feedback
+      if (_collectionFeedbackManager != null) {
+        _collectionFeedbackManager!.processCollectionEvent(event);
+      }
+    }
+  }
+
+  /// Shows a candy collection message with variety
+  void _showCandyCollectionMessage(CandyItem candy) {
+    if (_dialogueManager == null) return;
+
+    final messages = [
+      'Kiro finds a ${candy.name}! ${candy.description}',
+      'A glowing ${candy.name} catches Kiro\'s attention. Sweet supernatural treat!',
+      'Kiro discovers a magical ${candy.name} that sparkles with otherworldly flavor.',
+      'The ${candy.name} makes Kiro glow brighter with ghostly happiness.',
+      'Kiro gobbles up the ${candy.name}, feeling more spirited than ever!',
+    ];
+
+    final random = (DateTime.now().millisecondsSinceEpoch % messages.length);
+    final message = messages[random];
+
+    _dialogueManager!.showItemCollection(message);
+  }
+
+  /// Shows a message when inventory is full
+  void _showInventoryFullMessage() {
+    if (_dialogueManager == null) return;
+
+    _dialogueManager!.showItemCollection(
+      'Kiro\'s inventory is full! Can\'t pick up more candy.',
+    );
   }
 
   @override
