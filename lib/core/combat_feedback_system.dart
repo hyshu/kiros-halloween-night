@@ -68,16 +68,6 @@ class CombatFeedbackSystem {
     return message;
   }
 
-  /// Generates feedback for combat engagement
-  CombatFeedbackMessage generateCombatEngagementFeedback(
-    AllyCharacter ally,
-    EnemyCharacter enemy,
-  ) {
-    final message = _createCombatEngagementMessage(ally, enemy);
-    _addMessage(message);
-    return message;
-  }
-
   /// Creates a combat result message
   CombatFeedbackMessage _createCombatMessage(CombatResult result) {
     final allyName = _getCharacterDisplayName(result.ally);
@@ -100,17 +90,9 @@ class CombatFeedbackSystem {
         result.enemyDamageDealt,
       );
       messageType = CombatFeedbackType.allyDefeat;
-    } else if (result.isMutualDefeat) {
+    } else {
       messageText = _getMutualDefeatMessage(allyName, enemyName);
       messageType = CombatFeedbackType.mutualDefeat;
-    } else {
-      messageText = _getOngoingCombatMessage(
-        allyName,
-        enemyName,
-        result.allyDamageDealt,
-        result.enemyDamageDealt,
-      );
-      messageType = CombatFeedbackType.ongoingCombat;
     }
 
     return CombatFeedbackMessage(
@@ -172,9 +154,9 @@ class CombatFeedbackSystem {
   CombatFeedbackMessage _createEnemyDefeatedMessage(EnemyCharacter enemy) {
     final enemyName = _getCharacterDisplayName(enemy);
     final messages = [
-      t.combat.messages.hasBeenDefeated.replaceAll(' ', enemyName),
-      t.combat.messages.fallsToGround.replaceAll(' ', enemyName),
-      t.combat.messages.noLongerThreat.replaceAll(' ', enemyName),
+      t.combat.messages.hasBeenDefeated.replaceAll('{enemy}', enemyName),
+      t.combat.messages.fallsToGround.replaceAll('{enemy}', enemyName),
+      t.combat.messages.noLongerThreat.replaceAll('{enemy}', enemyName),
     ];
 
     return CombatFeedbackMessage(
@@ -196,17 +178,17 @@ class CombatFeedbackSystem {
 
     if (satisfactionChange > 0) {
       final messages = [
-        t.combat.messages.looksContent.replaceAll(' ', allyName),
-        t.combat.messages.seemsPleased.replaceAll(' ', allyName),
-        t.combat.messages.appearsHappier.replaceAll(' ', allyName),
+        t.combat.messages.looksContent.replaceAll('{ally}', allyName),
+        t.combat.messages.seemsPleased.replaceAll('{ally}', allyName),
+        t.combat.messages.appearsHappier.replaceAll('{ally}', allyName),
       ];
       messageText = messages[_random.nextInt(messages.length)];
       messageType = CombatFeedbackType.satisfactionIncrease;
     } else {
       final messages = [
-        t.combat.messages.looksLessSatisfied.replaceAll(' ', allyName),
-        t.combat.messages.seemsTroubled.replaceAll(' ', allyName),
-        t.combat.messages.appearsUnhappy.replaceAll(' ', allyName),
+        t.combat.messages.looksLessSatisfied.replaceAll('{ally}', allyName),
+        t.combat.messages.seemsTroubled.replaceAll('{ally}', allyName),
+        t.combat.messages.appearsUnhappy.replaceAll('{ally}', allyName),
       ];
       messageText = messages[_random.nextInt(messages.length)];
       messageType = CombatFeedbackType.satisfactionDecrease;
@@ -220,47 +202,18 @@ class CombatFeedbackSystem {
     );
   }
 
-  /// Creates a combat engagement message
-  CombatFeedbackMessage _createCombatEngagementMessage(
-    AllyCharacter ally,
-    EnemyCharacter enemy,
-  ) {
-    final allyName = _getCharacterDisplayName(ally);
-    final enemyName = _getCharacterDisplayName(enemy);
-
-    final messages = [
-      t.combat.messages.engagesInCombat
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
-      t.combat.messages.movesToAttack
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
-      t.combat.messages.confronts
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
-    ];
-
-    return CombatFeedbackMessage(
-      text: messages[_random.nextInt(messages.length)],
-      type: CombatFeedbackType.combatEngagement,
-      timestamp: DateTime.now(),
-      ally: ally,
-      enemy: enemy,
-    );
-  }
-
   /// Gets victory message variations
   String _getVictoryMessage(String allyName, String enemyName, int damage) {
     final messages = [
       t.combat.messages.allyDefeatsEnemyStrike
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
       t.combat.messages.allyEmergesVictorious
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
       t.combat.messages.allyOvercomes
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
     ];
     return messages[_random.nextInt(messages.length)];
   }
@@ -269,14 +222,14 @@ class CombatFeedbackSystem {
   String _getDefeatMessage(String allyName, String enemyName, int damage) {
     final messages = [
       t.combat.messages.allyDefeatedBy
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
       t.combat.messages.enemyOvercomes
-          .replaceAll(' ', enemyName)
-          .replaceAll(' ', allyName),
+          .replaceAll('{enemy}', enemyName)
+          .replaceAll('{ally}', allyName),
       t.combat.messages.allyFalls
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
     ];
     return messages[_random.nextInt(messages.length)];
   }
@@ -285,35 +238,14 @@ class CombatFeedbackSystem {
   String _getMutualDefeatMessage(String allyName, String enemyName) {
     final messages = [
       t.combat.messages.bothDefeatEachOther
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
       t.combat.messages.bothFallInCombat
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
       t.combat.messages.bothDefeated
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
-    ];
-    return messages[_random.nextInt(messages.length)];
-  }
-
-  /// Gets ongoing combat message variations
-  String _getOngoingCombatMessage(
-    String allyName,
-    String enemyName,
-    int allyDamage,
-    int enemyDamage,
-  ) {
-    final messages = [
-      t.combat.messages.exchangeBlows
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
-      t.combat.messages.battleContinues
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
-      t.combat.messages.fightFiercely
-          .replaceAll(' ', allyName)
-          .replaceAll(' ', enemyName),
+          .replaceAll('{ally}', allyName)
+          .replaceAll('{enemy}', enemyName),
     ];
     return messages[_random.nextInt(messages.length)];
   }
@@ -422,8 +354,6 @@ class CombatFeedbackMessage {
     CombatFeedbackType.allyVictory,
     CombatFeedbackType.allyDefeat,
     CombatFeedbackType.mutualDefeat,
-    CombatFeedbackType.ongoingCombat,
-    CombatFeedbackType.combatEngagement,
   ].contains(type);
 
   /// Returns true if this message is about ally state changes
@@ -443,8 +373,6 @@ enum CombatFeedbackType {
   allyVictory,
   allyDefeat,
   mutualDefeat,
-  ongoingCombat,
-  combatEngagement,
   stateChange,
   allySatisfied,
   satisfactionIncrease,
@@ -459,10 +387,6 @@ enum CombatFeedbackType {
         return 'Ally Defeat';
       case CombatFeedbackType.mutualDefeat:
         return 'Mutual Defeat';
-      case CombatFeedbackType.ongoingCombat:
-        return 'Ongoing Combat';
-      case CombatFeedbackType.combatEngagement:
-        return 'Combat Engagement';
       case CombatFeedbackType.stateChange:
         return 'State Change';
       case CombatFeedbackType.allySatisfied:

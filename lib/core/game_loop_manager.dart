@@ -15,6 +15,7 @@ import 'dialogue_manager.dart';
 import 'candy_collection_system.dart';
 import 'collection_feedback.dart';
 import 'candy_item.dart';
+import 'combat_feedback_system.dart';
 import '../l10n/strings.g.dart';
 
 /// Manages the main game loop and coordinates all game systems
@@ -30,6 +31,9 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Combat manager
   final CombatManager _combatManager = CombatManager();
+
+  /// Combat feedback system
+  final CombatFeedbackSystem _combatFeedbackSystem = CombatFeedbackSystem();
 
   /// Gift system manager
   final GiftSystem _giftSystem = GiftSystem();
@@ -80,6 +84,7 @@ class GameLoopManager extends ChangeNotifier {
   /// Getters for accessing managers
   AllyManager get allyManager => _allyManager;
   CombatManager get combatManager => _combatManager;
+  CombatFeedbackSystem get combatFeedbackSystem => _combatFeedbackSystem;
   GiftSystem get giftSystem => _giftSystem;
   AnimationPhaseManager get animationManager => _animationManager;
   EnemyManager? get enemyManager => _enemyManager;
@@ -182,9 +187,25 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Processes the result of a single combat encounter
   void _processCombatResult(CombatResult result) {
+    // Generate combat feedback messages
+    final feedbackMessages = _combatFeedbackSystem.generateCombatFeedback([result]);
+    
+    // Display each combat feedback message through dialogue manager
+    for (final feedbackMessage in feedbackMessages) {
+      if (_dialogueManager != null) {
+        _dialogueManager!.showCombatFeedback(feedbackMessage.text);
+      }
+    }
+
     if (result.enemyDefeated) {
       _enemiesDefeated++;
       _handleEnemyDefeated(result.enemy);
+      
+      // Generate additional feedback for enemy defeated
+      final enemyDefeatedFeedback = _combatFeedbackSystem.generateEnemyDefeatedFeedback(result.enemy);
+      if (_dialogueManager != null) {
+        _dialogueManager!.showCombatFeedback(enemyDefeatedFeedback.text);
+      }
     }
 
     if (result.allyDefeated) {
@@ -217,6 +238,22 @@ class GameLoopManager extends ChangeNotifier {
   void _handleAllyDefeated(AllyCharacter ally) {
     // Ally will be automatically removed by AllyManager
     debugPrint('GameLoopManager: Ally ${ally.id} defeated');
+  }
+
+  /// Handles ally state changes and generates appropriate feedback
+  void _handleAllyStateChange(AllyCharacter ally, AllyState previousState, AllyState newState) {
+    // Generate feedback for ally state change
+    final stateChangeFeedback = _combatFeedbackSystem.generateAllyStateChangeFeedback(
+      ally, 
+      previousState, 
+      newState,
+    );
+    
+    if (stateChangeFeedback != null && _dialogueManager != null) {
+      _dialogueManager!.showCombatFeedback(stateChangeFeedback.text);
+    }
+
+    debugPrint('GameLoopManager: Ally ${ally.id} state changed from ${previousState.name} to ${newState.name}');
   }
 
   /// Cleans up satisfied enemies from the game
@@ -357,6 +394,7 @@ class GameLoopManager extends ChangeNotifier {
         _tileMap!,
         hostileEnemies,
         onAnimateMovement: _onAnimateAllyMovement,
+        onStateChange: _handleAllyStateChange,
       );
 
       // Process combat between allies and hostile enemies

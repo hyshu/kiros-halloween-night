@@ -100,16 +100,25 @@ class AllyManager extends ChangeNotifier {
     TileMap tileMap,
     List<EnemyCharacter> hostileEnemies, {
     Function(String, Position, Position)? onAnimateMovement,
+    Function(AllyCharacter, AllyState, AllyState)? onStateChange,
   }) async {
     final satisfiedAllies = <AllyCharacter>[];
 
     // Update each ally
     for (final ally in _allies) {
+      // Store previous state to detect changes
+      final previousState = ally.state;
+      
       await ally.updateAI(
         tileMap,
         hostileEnemies,
         onAnimateMovement: onAnimateMovement,
       );
+
+      // Check for state changes and notify if callback provided
+      if (onStateChange != null && previousState != ally.state) {
+        onStateChange(ally, previousState, ally.state);
+      }
 
       // Check if ally is satisfied and should be removed
       if (ally.isSatisfied) {
