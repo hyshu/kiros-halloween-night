@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -105,8 +104,10 @@ class InputManager {
       final animationManager = gameLoopManager.animationManager;
       if (animationManager.isAnimating &&
           animationManager.currentPhase.blocksInput) {
-        debugPrint('InputManager: Blocking input due to AnimationPhaseManager '
-            '(phase: ${animationManager.currentPhase})');
+        debugPrint(
+          'InputManager: Blocking input due to AnimationPhaseManager '
+          '(phase: ${animationManager.currentPhase})',
+        );
         return true; // Block input during animation phases
       }
     }
@@ -121,13 +122,17 @@ class InputManager {
     final characterAnimationSystem = _ghostCharacter.animationSystem;
     if (characterAnimationSystem != null &&
         characterAnimationSystem.hasActiveAnimations) {
-      debugPrint('InputManager: Blocking non-movement input due to character movement animations');
+      debugPrint(
+        'InputManager: Blocking non-movement input due to character movement animations',
+      );
       return true; // Block non-movement input during character movement animations
     }
 
     // Check if character is already processing input
     if (_ghostCharacter.isProcessingInput) {
-      debugPrint('InputManager: Blocking input due to character processing input');
+      debugPrint(
+        'InputManager: Blocking input due to character processing input',
+      );
       return true; // Block input if character is already processing input
     }
 
@@ -149,26 +154,26 @@ class InputManager {
   /// Initializes the collision detector with all current characters
   void _initializeCollisionDetector() {
     if (_tileMap == null || _sceneManager == null) return;
-    
+
     final allCharacters = <Character>[];
-    
+
     // Add the player character
     allCharacters.add(_ghostCharacter);
-    
+
     // Add enemies from enemy manager
-    final enemyManager = _sceneManager!.enemyManager;
+    final enemyManager = _sceneManager.enemyManager;
     if (enemyManager != null) {
       allCharacters.addAll(enemyManager.activeEnemies);
     }
-    
+
     // Note: Add allies when ally manager is available
     // final allyManager = _sceneManager!.allyManager;
     // if (allyManager != null) {
     //   allCharacters.addAll(allyManager.allies);
     // }
-    
+
     _collisionDetector = CollisionDetector(
-      tileMap: _tileMap!,
+      tileMap: _tileMap,
       characters: allCharacters,
     );
   }

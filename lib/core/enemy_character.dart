@@ -441,7 +441,7 @@ class EnemyCharacter extends Character {
       }
     } else {
       // Legacy collision detection (keep for backward compatibility)
-      
+
       // Check if the new position would overlap with player
       if (player != null && newPosition == player.position) {
         debugPrint(

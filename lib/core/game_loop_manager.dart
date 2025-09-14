@@ -527,7 +527,9 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Processes candy collection at the player's current position
   void _processCandyCollection() {
-    if (_ghostCharacter == null || _candyCollectionSystem == null || _tileMap == null) {
+    if (_ghostCharacter == null ||
+        _candyCollectionSystem == null ||
+        _tileMap == null) {
       return;
     }
 
@@ -559,7 +561,9 @@ class GameLoopManager extends ChangeNotifier {
         _onCandyCollected!(event.position);
       }
 
-      debugPrint('GameLoopManager: Candy collected: ${event.candy.name} at ${event.position}');
+      debugPrint(
+        'GameLoopManager: Candy collected: ${event.candy.name} at ${event.position}',
+      );
     } else {
       // Show inventory full message
       _showInventoryFullMessage();

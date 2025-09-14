@@ -64,7 +64,7 @@ abstract class Character {
   /// Returns true if the move was successful and no collision occurred
   bool moveTo(Position newPosition, [CollisionDetector? collisionDetector]) {
     if (!canMove) return false;
-    
+
     // If collision detector provided, check for collisions
     if (collisionDetector != null) {
       if (!collisionDetector.canMoveTo(this, newPosition)) {
@@ -87,7 +87,7 @@ abstract class Character {
     MovementEasing? easing,
   }) async {
     if (!canMove) return false;
-    
+
     // If collision detector provided, check for collisions
     if (collisionDetector != null) {
       if (!collisionDetector.canMoveTo(this, newPosition)) {

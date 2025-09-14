@@ -135,7 +135,12 @@ class GhostCharacter extends Character {
     }
 
     // No enemy at target, attempt normal movement
-    attemptMove(direction, tileMap, enemyManager: enemyManager, collisionDetector: collisionDetector);
+    attemptMove(
+      direction,
+      tileMap,
+      enemyManager: enemyManager,
+      collisionDetector: collisionDetector,
+    );
     return true; // Key was handled, regardless of movement success
   }
 
@@ -162,7 +167,7 @@ class GhostCharacter extends Character {
         }
       } else {
         // Legacy collision detection (keep for backward compatibility)
-        
+
         // Check for enemies at target position (prevent overlap)
         if (enemyManager != null) {
           final enemiesAtTarget = enemyManager.getEnemiesAt(newPosition);

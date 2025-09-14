@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -113,7 +112,8 @@ class GridSceneManager extends ChangeNotifier {
   final CandyCollectionSystem _candyCollectionSystem = CandyCollectionSystem();
 
   // Collection feedback manager
-  final CollectionFeedbackManager _collectionFeedbackManager = CollectionFeedbackManager();
+  final CollectionFeedbackManager _collectionFeedbackManager =
+      CollectionFeedbackManager();
 
   // Camera and viewport management for large world
   Vector3 _cameraTarget = Vector3(10, 0, 10);
@@ -230,7 +230,8 @@ class GridSceneManager extends ChangeNotifier {
   CandyCollectionSystem get candyCollectionSystem => _candyCollectionSystem;
 
   /// Get the collection feedback manager
-  CollectionFeedbackManager get collectionFeedbackManager => _collectionFeedbackManager;
+  CollectionFeedbackManager get collectionFeedbackManager =>
+      _collectionFeedbackManager;
 
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
@@ -820,7 +821,7 @@ class GridSceneManager extends ChangeNotifier {
                 rotationY: modelData.rotation,
               ),
             );
-            
+
             // Register candy items with the collection system
             if (tileType == TileType.candy) {
               _registerCandyWithCollectionSystem(position);
@@ -1205,14 +1206,15 @@ class GridSceneManager extends ChangeNotifier {
     final candyType = _getCandyTypeForPosition(position);
     final candyId = 'candy_${position.x}_${position.z}';
     final candy = CandyItem.create(candyType, candyId, position: position);
-    
+
     // Add to collection system
     _candyCollectionSystem.addSingleCandy(candy);
   }
 
   /// Gets a deterministic candy type based on position
   CandyType _getCandyTypeForPosition(Position position) {
-    final variant = (position.x * 5 + position.z * 13) % CandyType.values.length;
+    final variant =
+        (position.x * 5 + position.z * 13) % CandyType.values.length;
     return CandyType.values[variant];
   }
 
@@ -1221,18 +1223,16 @@ class GridSceneManager extends ChangeNotifier {
     if (_tileMap != null) {
       // Remove candy from tile map (mark as floor)
       _tileMap!.setTileAt(position, TileType.floor);
-      
+
       // Remove the 3D candy object from rendering
       removeObject(position.x, position.z);
-      
+
       // Notify listeners to update rendering
       notifyListeners();
-      
+
       debugPrint('GridSceneManager: Removed candy from scene at $position');
     }
   }
-
-
 
   /// Dispose resources when scene manager is destroyed
   @override
