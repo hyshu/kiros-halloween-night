@@ -11,7 +11,7 @@ void main() {
     test('should create scene manager with tile map', () {
       final tileMap = TileMap();
       tileMap.setPlayerSpawn(Position(10, 10));
-      tileMap.setBossLocation(Position(100, 100));
+      tileMap.setBossLocation(Position(90, 100));
 
       final sceneManager = GridSceneManager.withTileMap(tileMap);
 
@@ -34,20 +34,20 @@ void main() {
 
     test('should handle viewport-based object rendering', () {
       final tileMap = TileMap();
-      tileMap.setPlayerSpawn(Position(100, 200)); // Center of world
+      tileMap.setPlayerSpawn(Position(50, 100)); // Center of world
 
       final sceneManager = GridSceneManager.withTileMap(tileMap);
 
       // Camera should be positioned at spawn
-      expect(sceneManager.cameraTarget.x, equals(100.0 * Position.tileSpacing));
-      expect(sceneManager.cameraTarget.z, equals(200.0 * Position.tileSpacing));
+      expect(sceneManager.cameraTarget.x, equals(50.0 * Position.tileSpacing));
+      expect(sceneManager.cameraTarget.z, equals(100.0 * Position.tileSpacing));
     });
 
     test('should update camera target', () {
       final tileMap = TileMap();
       final sceneManager = GridSceneManager.withTileMap(tileMap);
 
-      final newTarget = Vector3(100, 0, 200);
+      final newTarget = Vector3(50, 0, 100);
       sceneManager.updateCameraTarget(newTarget);
 
       expect(sceneManager.cameraTarget, equals(newTarget));
@@ -58,7 +58,7 @@ void main() {
       final sceneManager = GridSceneManager.withTileMap(tileMap);
 
       // Should accept valid positions within tile map bounds
-      expect(() => sceneManager.getObjectAt(100, 200), returnsNormally);
+      expect(() => sceneManager.getObjectAt(50, 100), returnsNormally);
       expect(
         () => sceneManager.getObjectAt(
           TileMap.worldWidth - 1,

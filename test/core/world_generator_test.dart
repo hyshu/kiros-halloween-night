@@ -62,19 +62,19 @@ void main() {
         // Check for room-based structure with current room locations
         final samplePositions = <Position>[
           // Test the fixed spawn and boss locations and their rooms
-          Position(10, 390), // Spawn location - should be floor
-          Position(190, 10), // Boss location - should be floor
+          Position(10, 190), // Spawn location - should be floor
+          Position(90, 10), // Boss location - should be floor
           Position(8, 385), // Inside spawn room
           Position(12, 392), // Inside spawn room
           Position(185, 8), // Inside boss room
-          Position(192, 12), // Inside boss room
+          Position(92, 12), // Inside boss room
           // Path areas - should have floor from path creation
-          Position(50, 390), // Along horizontal path
-          Position(100, 390), // Along horizontal path
-          Position(190, 200), // Along vertical path
+          Position(25, 190), // Along horizontal path
+          Position(50, 190), // Along horizontal path
+          Position(90, 100), // Along vertical path
           // Wall areas
           Position(1, 1), // Wall area
-          Position(199, 399), // Wall area
+          Position(99, 199), // Wall area
         ];
 
         final tileTypes = <TileType>{};
@@ -177,14 +177,14 @@ void main() {
 
         // Check that world has room-based structure (rooms connected by corridors)
         final samplePositions = [
-          Position(10, 390), // Spawn location - should be floor
-          Position(190, 10), // Boss location - should be floor
+          Position(10, 190), // Spawn location - should be floor
+          Position(90, 10), // Boss location - should be floor
           Position(8, 385), // Inside spawn room
           Position(12, 392), // Inside spawn room
           Position(185, 8), // Inside boss room
-          Position(192, 12), // Inside boss room
-          Position(50, 390), // Along horizontal path
-          Position(100, 390), // Along horizontal path
+          Position(92, 12), // Inside boss room
+          Position(25, 190), // Along horizontal path
+          Position(50, 190), // Along horizontal path
         ];
 
         final tileTypes = <TileType>{};
@@ -292,7 +292,7 @@ void main() {
 
       test('should ensure path when ensurePath is true', () {
         final spawn = Position(10, 10);
-        final boss = Position(100, 100);
+        final boss = Position(90, 100);
 
         final world = generator.generateTestWorld(
           spawnLocation: spawn,
@@ -333,7 +333,7 @@ void main() {
           Position(50, 50),
           Position(100, 100),
           Position(250, 500),
-          Position(400, 800),
+          Position(200, 400),
         ];
 
         for (final pos in samplePositions) {
@@ -355,10 +355,10 @@ void main() {
         final world2 = generator2.generateWorld();
 
         // For test mode, candy positions might be fixed too, so check if at least spawn and boss are fixed as expected
-        expect(world1.playerSpawn, equals(const Position(10, 390)));
-        expect(world1.bossLocation, equals(const Position(190, 10)));
-        expect(world2.playerSpawn, equals(const Position(10, 390)));
-        expect(world2.bossLocation, equals(const Position(190, 10)));
+        expect(world1.playerSpawn, equals(const Position(10, 190)));
+        expect(world1.bossLocation, equals(const Position(90, 10)));
+        expect(world2.playerSpawn, equals(const Position(10, 190)));
+        expect(world2.bossLocation, equals(const Position(90, 10)));
 
         // Test passes if both worlds have the expected fixed positions
         expect(true, isTrue, reason: 'Fixed positions work correctly');

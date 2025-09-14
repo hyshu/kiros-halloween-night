@@ -8,9 +8,9 @@ void main() {
     test('should work with existing Position class methods', () {
       final tileMap = TileMap();
 
-      // Test Position methods work with TileMap (using valid positions for 200x400 world)
-      const center = Position(100, 200);
-      const adjacent = Position(101, 200);
+      // Test Position methods work with TileMap (using valid positions for 100x200 world)
+      const center = Position(50, 100);
+      const adjacent = Position(51, 100);
 
       expect(center.isAdjacentTo(adjacent), isTrue);
       expect(center.distanceTo(adjacent), equals(1));
@@ -19,14 +19,14 @@ void main() {
 
       // Test world coordinates conversion
       final (worldX, worldY, worldZ) = center.toWorldCoordinates();
-      expect(worldX, equals(100.0 * Position.tileSpacing));
+      expect(worldX, equals(50.0 * Position.tileSpacing));
       expect(worldY, equals(0.0));
-      expect(worldZ, equals(200.0 * Position.tileSpacing));
+      expect(worldZ, equals(100.0 * Position.tileSpacing));
     });
 
     test('should work with existing TileType enum methods', () {
       final tileMap = TileMap();
-      const position = Position(100, 200);
+      const position = Position(50, 100);
 
       // Test TileType methods work with TileMap
       tileMap.setTileAt(position, TileType.floor);
@@ -57,13 +57,13 @@ void main() {
     test('should handle large world dimensions correctly', () {
       final tileMap = TileMap();
 
-      // Test corners of the world (200x400)
+      // Test corners of the world (100x200)
       expect(tileMap.isValidPosition(const Position(0, 0)), isTrue);
-      expect(tileMap.isValidPosition(const Position(199, 399)), isTrue);
-      expect(tileMap.isValidPosition(const Position(200, 400)), isFalse);
+      expect(tileMap.isValidPosition(const Position(99, 199)), isTrue);
+      expect(tileMap.isValidPosition(const Position(100, 200)), isFalse);
 
       // Test that we can set tiles across the world
-      const farPosition = Position(180, 380);
+      const farPosition = Position(90, 180);
       tileMap.setTileAt(farPosition, TileType.candy);
       expect(tileMap.getTileAt(farPosition), equals(TileType.candy));
 
@@ -87,10 +87,10 @@ void main() {
       }
 
       // Verify we cannot break the perimeter
-      const topEdge = Position(100, 0);
-      const bottomEdge = Position(100, 399);
-      const leftEdge = Position(0, 200);
-      const rightEdge = Position(199, 200);
+      const topEdge = Position(50, 0);
+      const bottomEdge = Position(50, 199);
+      const leftEdge = Position(0, 100);
+      const rightEdge = Position(99, 100);
 
       expect(
         () => tileMap.setTileAt(topEdge, TileType.floor),
@@ -116,8 +116,8 @@ void main() {
     test('should support boss and spawn location management', () {
       final tileMap = TileMap();
 
-      // Test setting boss location (within 200x400 bounds)
-      const bossLocation = Position(150, 350);
+      // Test setting boss location (within 100x200 bounds)
+      const bossLocation = Position(75, 175);
       tileMap.setBossLocation(bossLocation);
       expect(tileMap.bossLocation, equals(bossLocation));
 

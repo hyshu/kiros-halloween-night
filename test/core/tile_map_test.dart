@@ -12,24 +12,24 @@ void main() {
     });
 
     group('Initialization', () {
-      test('should create a 200x400 grid', () {
+      test('should create a 100x200 grid', () {
         final (width, height) = tileMap.dimensions;
-        expect(width, equals(200));
-        expect(height, equals(400));
+        expect(width, equals(100));
+        expect(height, equals(200));
       });
 
       test('should initialize all interior tiles as floor', () {
         // Check a few interior positions
         expect(
-          tileMap.getTileAt(const Position(100, 200)),
+          tileMap.getTileAt(const Position(25, 50)),
           equals(TileType.floor),
         );
         expect(
-          tileMap.getTileAt(const Position(100, 200)),
+          tileMap.getTileAt(const Position(25, 50)),
           equals(TileType.floor),
         );
         expect(
-          tileMap.getTileAt(const Position(150, 300)),
+          tileMap.getTileAt(const Position(75, 150)),
           equals(TileType.floor),
         );
       });
@@ -55,8 +55,8 @@ void main() {
     group('Position Validation', () {
       test('should validate positions within bounds', () {
         expect(tileMap.isValidPosition(const Position(0, 0)), isTrue);
-        expect(tileMap.isValidPosition(const Position(199, 399)), isTrue);
-        expect(tileMap.isValidPosition(const Position(100, 200)), isTrue);
+        expect(tileMap.isValidPosition(const Position(99, 199)), isTrue);
+        expect(tileMap.isValidPosition(const Position(25, 50)), isTrue);
       });
 
       test('should reject positions outside bounds', () {
@@ -64,7 +64,7 @@ void main() {
         expect(tileMap.isValidPosition(const Position(0, -1)), isFalse);
         expect(tileMap.isValidPosition(const Position(500, 0)), isFalse);
         expect(tileMap.isValidPosition(const Position(0, 1000)), isFalse);
-        expect(tileMap.isValidPosition(const Position(200, 400)), isFalse);
+        expect(tileMap.isValidPosition(const Position(25, 50)), isTrue);
       });
 
       test('should identify perimeter positions correctly', () {
@@ -72,24 +72,24 @@ void main() {
         expect(tileMap.isPerimeterPosition(const Position(0, 0)), isTrue);
         expect(tileMap.isPerimeterPosition(const Position(499, 0)), isTrue);
         expect(tileMap.isPerimeterPosition(const Position(0, 999)), isTrue);
-        expect(tileMap.isPerimeterPosition(const Position(199, 399)), isTrue);
+        expect(tileMap.isPerimeterPosition(const Position(99, 199)), isTrue);
 
         // Edge positions
         expect(tileMap.isPerimeterPosition(const Position(250, 0)), isTrue);
-        expect(tileMap.isPerimeterPosition(const Position(100, 399)), isTrue);
+        expect(tileMap.isPerimeterPosition(const Position(50, 199)), isTrue);
         expect(tileMap.isPerimeterPosition(const Position(0, 500)), isTrue);
-        expect(tileMap.isPerimeterPosition(const Position(199, 200)), isTrue);
+        expect(tileMap.isPerimeterPosition(const Position(99, 100)), isTrue);
 
         // Interior positions
         expect(tileMap.isPerimeterPosition(const Position(1, 1)), isFalse);
-        expect(tileMap.isPerimeterPosition(const Position(100, 200)), isFalse);
-        expect(tileMap.isPerimeterPosition(const Position(198, 398)), isFalse);
+        expect(tileMap.isPerimeterPosition(const Position(25, 50)), isFalse);
+        expect(tileMap.isPerimeterPosition(const Position(98, 198)), isFalse);
       });
     });
 
     group('Tile Management', () {
       test('should get and set tile types correctly', () {
-        const position = Position(100, 200);
+        const position = Position(50, 100);
 
         // Initially should be floor
         expect(tileMap.getTileAt(position), equals(TileType.floor));
@@ -160,7 +160,7 @@ void main() {
 
     group('Movement and Walkability', () {
       test('should identify walkable positions correctly', () {
-        const floorPosition = Position(100, 200);
+        const floorPosition = Position(50, 100);
         const wallPosition = Position(0, 0); // Perimeter wall
 
         tileMap.setTileAt(floorPosition, TileType.floor);
@@ -172,7 +172,7 @@ void main() {
       });
 
       test('should identify candy as walkable', () {
-        const candyPosition = Position(100, 200);
+        const candyPosition = Position(50, 100);
         tileMap.setTileAt(candyPosition, TileType.candy);
 
         expect(tileMap.isWalkable(candyPosition), isTrue);
@@ -180,7 +180,7 @@ void main() {
       });
 
       test('should identify obstacles as non-walkable', () {
-        const obstaclePosition = Position(100, 200);
+        const obstaclePosition = Position(50, 100);
         tileMap.setTileAt(obstaclePosition, TileType.obstacle);
 
         expect(tileMap.isWalkable(obstaclePosition), isFalse);
@@ -188,29 +188,29 @@ void main() {
       });
 
       test('should get walkable adjacent positions', () {
-        const centerPosition = Position(100, 200);
+        const centerPosition = Position(50, 100);
 
         // Set up a cross pattern with walls
-        tileMap.setTileAt(const Position(100, 199), TileType.wall); // North
-        tileMap.setTileAt(const Position(101, 200), TileType.floor); // East
-        tileMap.setTileAt(const Position(100, 201), TileType.floor); // South
-        tileMap.setTileAt(const Position(99, 200), TileType.obstacle); // West
+        tileMap.setTileAt(const Position(50, 99), TileType.wall); // North
+        tileMap.setTileAt(const Position(51, 100), TileType.floor); // East
+        tileMap.setTileAt(const Position(50, 101), TileType.floor); // South
+        tileMap.setTileAt(const Position(49, 100), TileType.obstacle); // West
 
         final walkableAdjacent = tileMap.getWalkableAdjacentPositions(
           centerPosition,
         );
 
         expect(walkableAdjacent.length, equals(2));
-        expect(walkableAdjacent, contains(const Position(101, 200))); // East
-        expect(walkableAdjacent, contains(const Position(100, 201))); // South
+        expect(walkableAdjacent, contains(const Position(51, 100))); // East
+        expect(walkableAdjacent, contains(const Position(50, 101))); // South
       });
     });
 
     group('Position Queries', () {
       test('should find positions of specific tile types', () {
         // Set some candy positions
-        const candy1 = Position(100, 200);
-        const candy2 = Position(150, 250);
+        const candy1 = Position(25, 50);
+        const candy2 = Position(75, 125);
         tileMap.setTileAt(candy1, TileType.candy);
         tileMap.setTileAt(candy2, TileType.candy);
 
@@ -224,27 +224,27 @@ void main() {
         final perimeterPositions = tileMap.getPerimeterPositions();
 
         // Should have correct count: 2*width + 2*(height-2)
-        final expectedCount = 2 * 200 + 2 * (400 - 2);
+        final expectedCount = 2 * 100 + 2 * (200 - 2);
         expect(perimeterPositions.length, equals(expectedCount));
 
         // Check corners are included
         expect(perimeterPositions, contains(const Position(0, 0)));
-        expect(perimeterPositions, contains(const Position(199, 0)));
-        expect(perimeterPositions, contains(const Position(0, 399)));
-        expect(perimeterPositions, contains(const Position(199, 399)));
+        expect(perimeterPositions, contains(const Position(99, 0)));
+        expect(perimeterPositions, contains(const Position(0, 199)));
+        expect(perimeterPositions, contains(const Position(99, 199)));
       });
     });
 
     group('Boss and Spawn Locations', () {
       test('should set and get boss location', () {
-        const bossPos = Position(150, 300);
+        const bossPos = Position(75, 150);
         tileMap.setBossLocation(bossPos);
 
         expect(tileMap.bossLocation, equals(bossPos));
       });
 
       test('should set and get player spawn location', () {
-        const spawnPos = Position(50, 100);
+        const spawnPos = Position(25, 50);
         tileMap.setPlayerSpawn(spawnPos);
 
         expect(tileMap.playerSpawn, equals(spawnPos));
@@ -283,22 +283,22 @@ void main() {
       test('should detect broken perimeter walls', () {
         // Create a tile map with a gap in the perimeter
         final tilesWithGap = List.generate(
-          400,
-          (z) => List.generate(200, (x) => TileType.floor),
+          200,
+          (z) => List.generate(100, (x) => TileType.floor),
         );
 
         // Set perimeter walls but leave a gap
-        for (int x = 0; x < 200; x++) {
+        for (int x = 0; x < 100; x++) {
           tilesWithGap[0][x] = TileType.wall; // Top
-          tilesWithGap[399][x] = TileType.wall; // Bottom
+          tilesWithGap[199][x] = TileType.wall; // Bottom
         }
-        for (int z = 0; z < 400; z++) {
+        for (int z = 0; z < 200; z++) {
           tilesWithGap[z][0] = TileType.wall; // Left
-          tilesWithGap[z][199] = TileType.wall; // Right
+          tilesWithGap[z][99] = TileType.wall; // Right
         }
 
         // Create a gap
-        tilesWithGap[0][100] = TileType.floor;
+        tilesWithGap[0][50] = TileType.floor;
 
         expect(() => TileMap.fromTiles(tilesWithGap), throwsStateError);
       });
@@ -307,18 +307,18 @@ void main() {
     group('fromTiles Constructor', () {
       test('should create TileMap from valid tile data', () {
         final tiles = List.generate(
-          400,
-          (z) => List.generate(200, (x) => TileType.floor),
+          200,
+          (z) => List.generate(100, (x) => TileType.floor),
         );
 
         // Set perimeter walls
-        for (int x = 0; x < 200; x++) {
+        for (int x = 0; x < 100; x++) {
           tiles[0][x] = TileType.wall;
-          tiles[399][x] = TileType.wall;
+          tiles[199][x] = TileType.wall;
         }
-        for (int z = 0; z < 400; z++) {
+        for (int z = 0; z < 200; z++) {
           tiles[z][0] = TileType.wall;
-          tiles[z][199] = TileType.wall;
+          tiles[z][99] = TileType.wall;
         }
 
         final tileMapFromData = TileMap.fromTiles(tiles);
@@ -327,15 +327,15 @@ void main() {
 
       test('should reject invalid dimensions', () {
         final wrongHeight = List.generate(
-          399, // Wrong height
-          (z) => List.generate(200, (x) => TileType.floor),
+          199, // Wrong height
+          (z) => List.generate(100, (x) => TileType.floor),
         );
 
         expect(() => TileMap.fromTiles(wrongHeight), throwsArgumentError);
 
         final wrongWidth = List.generate(
-          400,
-          (z) => List.generate(199, (x) => TileType.floor), // Wrong width
+          200,
+          (z) => List.generate(99, (x) => TileType.floor), // Wrong width
         );
 
         expect(() => TileMap.fromTiles(wrongWidth), throwsArgumentError);

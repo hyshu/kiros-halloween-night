@@ -73,7 +73,7 @@ class _GridSceneViewState extends State<GridSceneView> {
     debugPrint('Model preloading: ${preloadStopwatch.elapsedMilliseconds}ms');
 
     setState(() {
-      _loadingStatus = 'Generating 200x400 world map...';
+      _loadingStatus = 'Generating 100x200 world map...';
     });
 
     // Generate the large world map

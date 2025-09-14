@@ -45,8 +45,8 @@ class WorldGenerator {
     final tileMap = TileMap();
 
     // Use fixed spawn and boss locations
-    final spawnLocation = const Position(10, 390);
-    final bossLocation = const Position(190, 10);
+    final spawnLocation = const Position(10, 190);
+    final bossLocation = const Position(90, 10);
 
     // Generate roguelike room and corridor structure
     final rooms = _generateRoomsAndCorridors(tileMap);
@@ -73,7 +73,7 @@ class WorldGenerator {
     return tileMap;
   }
 
-  /// Generates roguelike rooms and corridors utilizing the full 200x400 world space
+  /// Generates roguelike rooms and corridors utilizing the full 100x200 world space
   List<Room> _generateRoomsAndCorridors(TileMap tileMap) {
     // In test mode, create a simpler world with fewer rooms
     if (_isTestMode) {
@@ -93,8 +93,8 @@ class WorldGenerator {
     final maxRoomSize = 20;
     final roomPadding = 2;
 
-    final spawnRoom = Room(5, 385, 15, 15); // Room around spawn
-    final bossRoom = Room(185, 5, 15, 15); // Room around boss
+    final spawnRoom = Room(5, 185, 15, 15); // Room around spawn
+    final bossRoom = Room(85, 5, 15, 15); // Room around boss
     rooms.addAll([spawnRoom, bossRoom]);
 
     // Carve rooms - ensure they have floor tiles inside
@@ -111,7 +111,7 @@ class WorldGenerator {
       final width = minRoomSize + _random.nextInt(maxRoomSize - minRoomSize);
       final height = minRoomSize + _random.nextInt(maxRoomSize - minRoomSize);
 
-      // Use the full 200x400 space for room placement
+      // Use the full 100x200 space for room placement
       final x =
           roomPadding +
           _random.nextInt(TileMap.worldWidth - width - roomPadding * 2);
@@ -157,8 +157,8 @@ class WorldGenerator {
     }
 
     // Ensure spawn and boss locations are definitely floor tiles
-    const spawnLocation = Position(10, 390);
-    const bossLocation = Position(190, 10);
+    const spawnLocation = Position(10, 190);
+    const bossLocation = Position(90, 10);
     if (tileMap.isValidPosition(spawnLocation) &&
         !tileMap.isPerimeterPosition(spawnLocation)) {
       tileMap.setTileAt(spawnLocation, TileType.floor);
@@ -295,16 +295,16 @@ class WorldGenerator {
     // Create rooms around the fixed spawn and boss locations (well within boundaries)
     final room1 = Room(
       5,
-      380,
+      180,
       15,
       18,
-    ); // Room around spawn (10, 390) - z from 380-397
+    ); // Room around spawn (10, 190) - z from 180-197
     final room2 = Room(
-      180,
+      80,
       5,
       18,
       15,
-    ); // Room around boss (190, 10) - x from 180-197
+    ); // Room around boss (90, 10) - x from 80-97
 
     // Start with all walls
     for (int z = 1; z < TileMap.worldHeight - 1; z++) {
@@ -321,8 +321,8 @@ class WorldGenerator {
     }
 
     // For test mode, create a simple direct floor path between fixed positions
-    const start = Position(10, 390);
-    const end = Position(190, 10);
+    const start = Position(10, 190);
+    const end = Position(90, 10);
 
     // Create horizontal path
     final minX = math.min(start.x, end.x);
@@ -647,14 +647,14 @@ class WorldGenerator {
     if (_isTestMode) {
       // Place candy in known floor positions for tests
       final candyPositions = [
-        Position(9, 389), // Near spawn
-        Position(11, 391), // Near spawn
-        Position(189, 9), // Near boss
-        Position(191, 11), // Near boss
-        Position(50, 390), // On path
-        Position(100, 390), // On path
-        Position(150, 390), // On path
-        Position(190, 100), // On vertical path
+        Position(9, 189), // Near spawn
+        Position(11, 191), // Near spawn
+        Position(89, 9), // Near boss
+        Position(91, 11), // Near boss
+        Position(25, 190), // On path
+        Position(50, 190), // On path
+        Position(75, 190), // On path
+        Position(90, 100), // On vertical path
       ];
 
       for (final position in candyPositions) {
