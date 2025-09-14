@@ -12,7 +12,6 @@ void main() {
       expect(event.message, equals('Hello, world!'));
       expect(event.type, equals(DialogueType.interaction));
       expect(event.canAdvance, isTrue);
-      expect(event.canDismiss, isTrue);
       expect(event.speakerName, isNull);
       expect(event.displayDuration, isNull);
     });
@@ -27,7 +26,6 @@ void main() {
       expect(event.type, equals(DialogueType.interaction));
       expect(event.speakerName, equals('Ghost'));
       expect(event.canAdvance, isTrue);
-      expect(event.canDismiss, isTrue);
     });
 
     test('should create item collection dialogue event', () {
@@ -37,7 +35,6 @@ void main() {
       expect(event.type, equals(DialogueType.itemCollection));
       expect(event.displayDuration, equals(const Duration(seconds: 2)));
       expect(event.canAdvance, isTrue);
-      expect(event.canDismiss, isTrue);
     });
 
     test('should create combat dialogue event', () {

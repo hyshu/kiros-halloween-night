@@ -14,7 +14,6 @@ void main() {
       expect(dialogueWindow.isActive, isFalse);
       expect(dialogueWindow.currentEvent, isNull);
       expect(dialogueWindow.canAdvance, isFalse);
-      expect(dialogueWindow.canDismiss, isFalse);
     });
 
     test('should display dialogue event', () {
@@ -31,7 +30,6 @@ void main() {
       expect(dialogueWindow.isActive, isTrue);
       expect(dialogueWindow.currentEvent, equals(event));
       expect(dialogueWindow.canAdvance, isTrue);
-      expect(dialogueWindow.canDismiss, isTrue);
       expect(showCalled, isTrue);
     });
 
@@ -97,7 +95,6 @@ void main() {
       const event = DialogueEvent(
         message: 'Test message',
         type: DialogueType.interaction,
-        canDismiss: false,
       );
 
       dialogueWindow.displayDialogue(event);

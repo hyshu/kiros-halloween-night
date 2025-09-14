@@ -129,7 +129,6 @@ void main() {
 
     test('should dismiss dialogue', () {
       dialogueManager.showInteraction('Test message');
-      expect(dialogueManager.canDismissDialogue(), isFalse);
 
       // In new system, dialogue auto-hides after 3 turns or new events
       expect(dialogueManager.isDialogueActive, isTrue);

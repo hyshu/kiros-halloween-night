@@ -99,12 +99,18 @@ class _DialogueUIState extends State<DialogueUI> with TickerProviderStateMixin {
         _currentType = widget.dialogueManager.getCurrentDialogueType();
 
         // Show dialogue if it's active but not currently visible
-        if (widget.dialogueManager.isDialogueActive && !_isVisible) {
+        // Skip if animation is already running to prevent conflicts
+        if (widget.dialogueManager.isDialogueActive &&
+            !_isVisible &&
+            !_animationController.isAnimating) {
           _isVisible = true;
           _animationController.forward();
         }
         // Hide dialogue if it's not active but currently visible
-        else if (!widget.dialogueManager.isDialogueActive && _isVisible) {
+        // Skip if animation is already running to prevent conflicts
+        else if (!widget.dialogueManager.isDialogueActive &&
+            _isVisible &&
+            !_animationController.isAnimating) {
           _onHideDialogue();
         }
       });
@@ -189,17 +195,6 @@ class _DialogueUIState extends State<DialogueUI> with TickerProviderStateMixin {
                                 },
                                 child: Text(
                                   t.dialogue.continueButton,
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                              ),
-                            if (widget.dialogueManager.canDismissDialogue())
-                              TextButton(
-                                onPressed: () {
-                                  widget.dialogueManager.dismissDialogue();
-                                  _updateDialogueState();
-                                },
-                                child: Text(
-                                  t.dialogue.close,
                                   style: const TextStyle(color: Colors.white70),
                                 ),
                               ),

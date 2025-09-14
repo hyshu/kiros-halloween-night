@@ -135,7 +135,7 @@ class DialogueManager {
     // Hide dialogue after 3 turns with no new events
     if (_turnsSinceLastEvent >= 3 && _dialogueWindow.isActive) {
       _currentTurnEvents.clear();
-      _dialogueWindow.clear();
+      _dialogueWindow.dismissDialogue();
     }
   }
 
@@ -148,7 +148,6 @@ class DialogueManager {
       message: combinedMessage,
       type: DialogueType.combat, // Use combat as default type
       canAdvance: false,
-      canDismiss: false,
     );
 
     _dialogueWindow.displayDialogue(turnEvent);
@@ -191,10 +190,5 @@ class DialogueManager {
   /// Checks if user can interact with current dialogue
   bool canAdvanceDialogue() {
     return _dialogueWindow.canAdvance;
-  }
-
-  /// Checks if user can dismiss current dialogue
-  bool canDismissDialogue() {
-    return _dialogueWindow.canDismiss;
   }
 }

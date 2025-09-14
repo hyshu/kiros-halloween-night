@@ -24,9 +24,6 @@ class DialogueWindow {
   /// Whether the current dialogue can be advanced
   bool get canAdvance => _currentEvent?.canAdvance ?? false;
 
-  /// Whether the current dialogue can be dismissed
-  bool get canDismiss => _currentEvent?.canDismiss ?? false;
-
   /// Whether the dialogue should auto-dismiss based on duration
   bool get shouldAutoDismiss {
     if (_currentEvent?.displayDuration == null || _displayStartTime == null) {
@@ -71,8 +68,6 @@ class DialogueWindow {
 
   /// Dismisses the current dialogue window
   void dismissDialogue() {
-    if (!canDismiss) return;
-
     _currentEvent = null;
     _displayStartTime = null;
 
