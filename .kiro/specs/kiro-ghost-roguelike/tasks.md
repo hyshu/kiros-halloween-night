@@ -148,20 +148,13 @@
     - Add boss battle feedback and victory state management with comprehensive phase tracking
     - _Requirements: 9.3, 9.4, 9.5_
 
-- [ ] 10. Create start screen and main menu system
-  - [ ] 10.1 Implement StartScreen widget and navigation
+- [x] 10. Create start screen and main menu system
+  - [x] 10.1 Implement StartScreen widget and navigation
     - Create StartScreen widget with game title display and Halloween theme styling
     - Add main menu buttons (Start Game, Settings, Exit) with proper touch handling
     - Implement navigation system to transition from start screen to game world
     - Create game state initialization when starting new game
     - _Requirements: UI design, game flow management_
-
-  - [ ] 10.2 Add game settings and configuration options
-    - Create SettingsScreen for audio, graphics, and control preferences
-    - Implement settings persistence using SharedPreferences or similar storage
-    - Add audio volume controls and sound effect toggles
-    - Create graphics quality options for performance optimization
-    - _Requirements: settings management, user preferences_
 
 - [ ] 11. Create game over screen and state management
   - [ ] 11.1 Implement GameOverScreen with statistics display

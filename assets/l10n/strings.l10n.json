@@ -9,6 +9,12 @@
     "gameOver": "Game Over",
     "victory": "Victory!"
   },
+  "story": {
+    "title": "Kiro's Story",
+    "text": "Kiro, a ghost troubled by not being scary enough, had set his goal to frighten the Vampire Master.\n\nHowever, tonight is Halloween night. Children are coming to seek candy...\n\nCan Kiro collect candy, make friends, and ultimately achieve victory over the Vampire Master?",
+    "startAdventure": "🚀 Start Adventure",
+    "tapToSkip": "Tap to skip"
+  },
   "ui": {
     "health": "Health",
     "score": "Score",

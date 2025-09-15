@@ -4,9 +4,9 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 2
-/// Strings: 310 (155 per locale)
+/// Strings: 318 (159 per locale)
 ///
-/// Built on 2025-09-15 at 10:13 UTC
+/// Built on 2025-09-15 at 11:54 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -149,6 +149,7 @@ class Strings implements BaseTranslations<AppLocale, Strings> {
 
 	// Translations
 	late final _StringsGameEn game = _StringsGameEn._(_root);
+	late final _StringsStoryEn story = _StringsStoryEn._(_root);
 	late final _StringsUiEn ui = _StringsUiEn._(_root);
 	late final _StringsCombatEn combat = _StringsCombatEn._(_root);
 	late final _StringsDialogueEn dialogue = _StringsDialogueEn._(_root);
@@ -175,6 +176,19 @@ class _StringsGameEn {
 	String get quit => 'Quit';
 	String get gameOver => 'Game Over';
 	String get victory => 'Victory!';
+}
+
+// Path: story
+class _StringsStoryEn {
+	_StringsStoryEn._(this._root);
+
+	final Strings _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Kiro\'s Story';
+	String get text => 'Kiro, a ghost troubled by not being scary enough, had set his goal to frighten the Vampire Master.\n\nHowever, tonight is Halloween night. Children are coming to seek candy...\n\nCan Kiro collect candy, make friends, and ultimately achieve victory over the Vampire Master?';
+	String get startAdventure => '🚀 Start Adventure';
+	String get tapToSkip => 'Tap to skip';
 }
 
 // Path: ui
@@ -592,6 +606,7 @@ class _StringsJa extends Strings {
 
 	// Translations
 	@override late final _StringsGameJa game = _StringsGameJa._(_root);
+	@override late final _StringsStoryJa story = _StringsStoryJa._(_root);
 	@override late final _StringsUiJa ui = _StringsUiJa._(_root);
 	@override late final _StringsCombatJa combat = _StringsCombatJa._(_root);
 	@override late final _StringsDialogueJa dialogue = _StringsDialogueJa._(_root);
@@ -618,6 +633,19 @@ class _StringsGameJa extends _StringsGameEn {
 	@override String get quit => '終了';
 	@override String get gameOver => 'ゲームオーバー';
 	@override String get victory => '勝利！';
+}
+
+// Path: story
+class _StringsStoryJa extends _StringsStoryEn {
+	_StringsStoryJa._(_StringsJa root) : this._root = root, super._(root);
+
+	@override final _StringsJa _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Kiro\'s Story';
+	@override String get text => '自分が怖くないことに悩んでいたおばけのKiroは、ヴァンパイアマスターを怖がらせることを目標にしていた。\n\nしかし、今日はハロウィンの夜。子供達がお菓子を求めてやってくる…\n\n果たしてKiroは、お菓子を集め、仲間を作り、最終的にヴァンパイアマスターに勝利できるのか？';
+	@override String get startAdventure => '🚀 冒険を始める';
+	@override String get tapToSkip => 'タップでスキップ';
 }
 
 // Path: ui
@@ -1021,6 +1049,10 @@ extension on Strings {
 			case 'game.quit': return 'Quit';
 			case 'game.gameOver': return 'Game Over';
 			case 'game.victory': return 'Victory!';
+			case 'story.title': return 'Kiro\'s Story';
+			case 'story.text': return 'Kiro, a ghost troubled by not being scary enough, had set his goal to frighten the Vampire Master.\n\nHowever, tonight is Halloween night. Children are coming to seek candy...\n\nCan Kiro collect candy, make friends, and ultimately achieve victory over the Vampire Master?';
+			case 'story.startAdventure': return '🚀 Start Adventure';
+			case 'story.tapToSkip': return 'Tap to skip';
 			case 'ui.health': return 'Health';
 			case 'ui.score': return 'Score';
 			case 'ui.level': return 'Level';
@@ -1184,6 +1216,10 @@ extension on _StringsJa {
 			case 'game.quit': return '終了';
 			case 'game.gameOver': return 'ゲームオーバー';
 			case 'game.victory': return '勝利！';
+			case 'story.title': return 'Kiro\'s Story';
+			case 'story.text': return '自分が怖くないことに悩んでいたおばけのKiroは、ヴァンパイアマスターを怖がらせることを目標にしていた。\n\nしかし、今日はハロウィンの夜。子供達がお菓子を求めてやってくる…\n\n果たしてKiroは、お菓子を集め、仲間を作り、最終的にヴァンパイアマスターに勝利できるのか？';
+			case 'story.startAdventure': return '🚀 冒険を始める';
+			case 'story.tapToSkip': return 'タップでスキップ';
 			case 'ui.health': return '体力';
 			case 'ui.score': return 'スコア';
 			case 'ui.level': return 'レベル';

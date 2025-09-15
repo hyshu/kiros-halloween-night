@@ -17,6 +17,7 @@ dependencies:
   vector_math: ^2.1.4
   slang: ^3.31.0
   slang_flutter: ^3.31.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

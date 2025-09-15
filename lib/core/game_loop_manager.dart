@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import 'ally_character.dart';
 import 'ally_manager.dart';
@@ -77,6 +78,12 @@ class GameLoopManager extends ChangeNotifier {
   /// Callback for when candy is collected and should be removed from scene
   Function(Position position)? _onCandyCollected;
 
+  /// Callback for when the game is won (boss defeated)
+  VoidCallback? onVictory;
+
+  /// Callback for when the game is lost (player defeated)
+  VoidCallback? onDefeat;
+
   /// Whether the turn-based system is running
   bool _isRunning = false;
 
@@ -111,6 +118,9 @@ class GameLoopManager extends ChangeNotifier {
   List<PlayerCombatResult> get recentPlayerCombats =>
       List.unmodifiable(_recentPlayerCombats);
 
+  /// Get the number of enemies defeated (public method for external access)
+  int getEnemiesDefeatedCount() => _enemiesDefeated;
+
   /// Initializes the game loop with required components
   void initialize({
     required GhostCharacter ghostCharacter,
@@ -144,7 +154,10 @@ class GameLoopManager extends ChangeNotifier {
     _victoryManager.initialize(
       dialogueManager: dialogueManager,
       bossManager: _bossManager,
-      onVictory: () => debugPrint('GameLoopManager: Victory achieved!'),
+      onVictory: () {
+        debugPrint('GameLoopManager: Victory achieved!');
+        onVictory?.call();
+      },
       onGameComplete: () => debugPrint('GameLoopManager: Game completed!'),
     );
 
