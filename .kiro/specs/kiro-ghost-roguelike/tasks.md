@@ -147,3 +147,33 @@
     - Create boss-specific dialogue and narrative elements with dramatic sequences
     - Add boss battle feedback and victory state management with comprehensive phase tracking
     - _Requirements: 9.3, 9.4, 9.5_
+
+- [ ] 10. Create start screen and main menu system
+  - [ ] 10.1 Implement StartScreen widget and navigation
+    - Create StartScreen widget with game title display and Halloween theme styling
+    - Add main menu buttons (Start Game, Settings, Exit) with proper touch handling
+    - Implement navigation system to transition from start screen to game world
+    - Create game state initialization when starting new game
+    - _Requirements: UI design, game flow management_
+
+  - [ ] 10.2 Add game settings and configuration options
+    - Create SettingsScreen for audio, graphics, and control preferences
+    - Implement settings persistence using SharedPreferences or similar storage
+    - Add audio volume controls and sound effect toggles
+    - Create graphics quality options for performance optimization
+    - _Requirements: settings management, user preferences_
+
+- [ ] 11. Create game over screen and state management
+  - [ ] 11.1 Implement GameOverScreen with statistics display
+    - Create GameOverScreen widget showing final game statistics
+    - Display collected candy count, enemies defeated, and survival time
+    - Add visual feedback for victory vs defeat scenarios with different styling
+    - Implement smooth transition animations from game world to game over screen
+    - _Requirements: game statistics tracking, UI design_
+
+  - [ ] 11.2 Add restart and navigation functionality
+    - Create restart game functionality that resets all game state
+    - Add return to main menu option with proper state cleanup
+    - Implement game state reset for new game initialization
+    - Create save/load system for game progress persistence (optional)
+    - _Requirements: state management, game flow control_
