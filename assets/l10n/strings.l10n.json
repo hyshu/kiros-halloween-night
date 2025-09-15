@@ -1,13 +1,7 @@
 {
   "@@locale": "en",
   "game": {
-    "title": "Kiro Halloween Game",
-    "start": "Start Game",
-    "pause": "Pause",
-    "resume": "Resume",
-    "quit": "Quit",
-    "gameOver": "Game Over",
-    "victory": "Victory!"
+    "title": "Kiro Halloween Game"
   },
   "story": {
     "title": "Kiro's Story",
@@ -16,23 +10,9 @@
     "tapToSkip": "Tap to skip"
   },
   "ui": {
-    "health": "Health",
-    "score": "Score",
-    "level": "Level",
-    "inventory": "Inventory",
-    "back": "Back",
-    "confirm": "Confirm",
-    "cancel": "Cancel"
+    "inventory": "Inventory"
   },
   "combat": {
-    "attack": "Attack",
-    "defend": "Defend",
-    "run": "Run",
-    "victory": "You won!",
-    "defeat": "You were defeated!",
-    "enemyDefeated": "Enemy defeated!",
-    "takeDamage": "You took {damage} damage",
-    "dealDamage": "You dealt {damage} damage",
     "bossAbilities": {
       "charge": "💀 The Boss unleashes a devastating charge! The ground trembles!",
       "areaAttack": "⚡ The Boss casts a destructive area attack! Devastation spreads!",
@@ -111,15 +91,9 @@
     }
   },
   "dialogue": {
-    "continueButton": "Continue",
-    "skip": "Skip",
-    "close": "Close"
+    "continueButton": "Continue"
   },
   "items": {
-    "candy": "Candy",
-    "collected": "Collected {item}!",
-    "useItem": "Use Item",
-    "noItems": "No items available",
     "eat": "Eat",
     "give": "Give",
     "noCandies": "No candies in inventory",
@@ -192,33 +166,5 @@
     "cancel": "Cancel",
     "giveGift": "Give Gift",
     "health": "Health"
-  },
-  "enemies": {
-    "ghost": "Ghost",
-    "skeleton": "Skeleton",
-    "zombie": "Zombie"
-  },
-  "messages": {
-    "welcome": "Welcome to Kiro Halloween Game!",
-    "gameStarted": "Game started!",
-    "levelComplete": "Level completed!",
-    "newLevel": "Level {level}"
-  },
-  "debug": {
-    "gameLoopInitialized": "GameLoopManager: Initialized with player at {}",
-    "turnBasedSystemInitialized": "GameLoopManager: Turn-based system initialized", 
-    "turnBasedSystemStopped": "GameLoopManager: Turn-based system stopped",
-    "combatEncountersProcessed": "GameLoopManager: Processed {} combat encounters",
-    "combatResult": "GameLoopManager: Combat result - {}",
-    "enemyDefeatedRemoved": "GameLoopManager: Enemy {} defeated and removed",
-    "allyDefeated": "GameLoopManager: Ally {} defeated",
-    "playerDefeatedEnemy": "GameLoopManager: Player defeated enemy with directional attack",
-    "processingAdjacentCombat": "GameLoopManager: Processing adjacent combat with {} enemies",
-    "enemyAttacksPlayer": "GameLoopManager: {} attacks player for {} damage",
-    "playerDefeated": "GameLoopManager: Player was defeated!",
-    "processingTurn": "GameLoopManager: Processing turn after player move",
-    "turnCompleted": "GameLoopManager: Turn completed",
-    "errorInTurnProcessing": "GameLoopManager: Error in turn processing: {}",
-    "convertedEnemyToAlly": "GameLoopManager: Converted enemy {} to ally"
   }
 }

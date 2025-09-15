@@ -1,13 +1,7 @@
 {
   "@@locale": "ja",
   "game": {
-    "title": "キロ ハロウィン ゲーム",
-    "start": "ゲーム開始",
-    "pause": "一時停止",
-    "resume": "再開",
-    "quit": "終了",
-    "gameOver": "ゲームオーバー",
-    "victory": "勝利！"
+    "title": "キロ ハロウィン ゲーム"
   },
   "story": {
     "title": "Kiro's Story",
@@ -16,23 +10,9 @@
     "tapToSkip": "タップでスキップ"
   },
   "ui": {
-    "health": "体力",
-    "score": "スコア",
-    "level": "レベル",
-    "inventory": "アイテム",
-    "back": "戻る",
-    "confirm": "確認",
-    "cancel": "キャンセル"
+    "inventory": "アイテム"
   },
   "combat": {
-    "attack": "攻撃",
-    "defend": "防御",
-    "run": "逃げる",
-    "victory": "勝利しました！",
-    "defeat": "敗北しました！",
-    "enemyDefeated": "敵を倒しました！",
-    "takeDamage": "{damage}のダメージを受けました",
-    "dealDamage": "{damage}のダメージを与えました",
     "bossAbilities": {
       "charge": "💀 ボスが突進攻撃を繰り出した！ 大地が震える！",
       "areaAttack": "⚡ ボスが範囲攻撃を放った！ 周囲一帯に破壊の嵐！",
@@ -111,15 +91,9 @@
     }
   },
   "dialogue": {
-    "continueButton": "続ける",
-    "skip": "スキップ",
-    "close": "閉じる"
+    "continueButton": "続ける"
   },
   "items": {
-    "candy": "キャンディ",
-    "collected": "{item}を入手しました！",
-    "useItem": "アイテム使用",
-    "noItems": "アイテムがありません",
     "eat": "食べる",
     "give": "あげる",
     "noCandies": "インベントリにキャンディがありません",
@@ -192,33 +166,5 @@
     "cancel": "キャンセル",
     "giveGift": "プレゼントする",
     "health": "体力"
-  },
-  "enemies": {
-    "ghost": "ゴースト",
-    "skeleton": "スケルトン",
-    "zombie": "ゾンビ"
-  },
-  "messages": {
-    "welcome": "キロ ハロウィン ゲームへようこそ！",
-    "gameStarted": "ゲームが開始されました！",
-    "levelComplete": "レベルクリア！",
-    "newLevel": "レベル {level}"
-  },
-  "debug": {
-    "gameLoopInitialized": "GameLoopManager: プレイヤーを{}で初期化しました",
-    "turnBasedSystemInitialized": "GameLoopManager: ターンベースシステムが初期化されました",
-    "turnBasedSystemStopped": "GameLoopManager: ターンベースシステムが停止されました",
-    "combatEncountersProcessed": "GameLoopManager: {}の戦闘遭遇を処理しました",
-    "combatResult": "GameLoopManager: 戦闘結果 - {}",
-    "enemyDefeatedRemoved": "GameLoopManager: エネミー{}が倒され削除されました",
-    "allyDefeated": "GameLoopManager: アライ{}が倒されました",
-    "playerDefeatedEnemy": "GameLoopManager: プレイヤーが方向攻撃でエネミーを倒しました",
-    "processingAdjacentCombat": "GameLoopManager: {}体のエネミーとの隣接戦闘を処理中",
-    "enemyAttacksPlayer": "GameLoopManager: {}がプレイヤーに{}ダメージを与えました",
-    "playerDefeated": "GameLoopManager: プレイヤーが倒されました！",
-    "processingTurn": "GameLoopManager: プレイヤー移動後のターンを処理中",
-    "turnCompleted": "GameLoopManager: ターン完了",
-    "errorInTurnProcessing": "GameLoopManager: ターン処理でエラー: {}",
-    "convertedEnemyToAlly": "GameLoopManager: エネミー{}をアライに変換しました"
   }
 }

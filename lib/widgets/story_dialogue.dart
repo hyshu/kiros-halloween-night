@@ -4,10 +4,7 @@ import '../l10n/strings.g.dart';
 class StoryDialogue extends StatefulWidget {
   final VoidCallback onContinue;
 
-  const StoryDialogue({
-    super.key,
-    required this.onContinue,
-  });
+  const StoryDialogue({super.key, required this.onContinue});
 
   @override
   State<StoryDialogue> createState() => _StoryDialogueState();
@@ -42,21 +39,13 @@ class _StoryDialogueState extends State<StoryDialogue>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
 
-    _typewriterAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _typewriterController,
-      curve: Curves.easeOut,
-    ));
+    _typewriterAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _typewriterController, curve: Curves.easeOut),
+    );
 
     _startAnimations();
   }
@@ -69,7 +58,8 @@ class _StoryDialogueState extends State<StoryDialogue>
       final progress = _typewriterAnimation.value;
       final targetIndex = (progress * _storyText.length).round();
 
-      if (targetIndex != _currentCharIndex && targetIndex <= _storyText.length) {
+      if (targetIndex != _currentCharIndex &&
+          targetIndex <= _storyText.length) {
         setState(() {
           _currentCharIndex = targetIndex;
         });
@@ -115,11 +105,7 @@ class _StoryDialogueState extends State<StoryDialogue>
           gradient: RadialGradient(
             center: Alignment.center,
             radius: 1.0,
-            colors: [
-              Color(0xFF1A0D2E),
-              Color(0xFF0F0515),
-              Color(0xFF000000),
-            ],
+            colors: [Color(0xFF1A0D2E), Color(0xFF0F0515), Color(0xFF000000)],
           ),
         ),
         child: Scaffold(
@@ -131,15 +117,15 @@ class _StoryDialogueState extends State<StoryDialogue>
                 margin: const EdgeInsets.all(40),
                 padding: const EdgeInsets.all(30),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.deepPurple.withOpacity(0.5),
+                    color: Colors.deepPurple.withValues(alpha: 0.5),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.deepPurple.withOpacity(0.3),
+                      color: Colors.deepPurple.withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -154,10 +140,7 @@ class _StoryDialogueState extends State<StoryDialogue>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            "👻",
-                            style: const TextStyle(fontSize: 28),
-                          ),
+                          Text("👻", style: const TextStyle(fontSize: 28)),
                           const SizedBox(width: 10),
                           Text(
                             t.story.title,
@@ -167,7 +150,9 @@ class _StoryDialogueState extends State<StoryDialogue>
                               color: Colors.white,
                               shadows: [
                                 Shadow(
-                                  color: Colors.deepPurple.withOpacity(0.8),
+                                  color: Colors.deepPurple.withValues(
+                                    alpha: 0.8,
+                                  ),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -175,10 +160,7 @@ class _StoryDialogueState extends State<StoryDialogue>
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Text(
-                            "🎃",
-                            style: const TextStyle(fontSize: 28),
-                          ),
+                          Text("🎃", style: const TextStyle(fontSize: 28)),
                         ],
                       ),
                     ),
@@ -216,7 +198,7 @@ class _StoryDialogueState extends State<StoryDialogue>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.deepPurple.withOpacity(0.4),
+                              color: Colors.deepPurple.withValues(alpha: 0.4),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),

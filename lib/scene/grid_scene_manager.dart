@@ -76,7 +76,11 @@ class GridObject {
 
   vm64.Matrix4 get modelMatrix {
     final matrix = vm64.Matrix4.identity();
-    final worldPos64 = vm64.Vector3(worldPosition.x, worldPosition.y, worldPosition.z);
+    final worldPos64 = vm64.Vector3(
+      worldPosition.x,
+      worldPosition.y,
+      worldPosition.z,
+    );
     matrix.translateByVector3(worldPos64);
     if (rotationY != 0.0) {
       matrix.rotateY(rotationY);
@@ -84,7 +88,6 @@ class GridObject {
     return matrix;
   }
 }
-
 
 class GridSceneManager extends ChangeNotifier {
   static const int gridSize = 10; // Keep for backward compatibility
@@ -294,12 +297,6 @@ class GridSceneManager extends ChangeNotifier {
     // This ensures we have the correct starting position for animations
     if (fromPosition != null) {
       _lastPlayerPosition = fromPosition;
-    } else {
-      // If no fromPosition provided, use the last known position
-      // This prevents animation desync during rapid inputs
-      if (_lastPlayerPosition == null) {
-        _lastPlayerPosition = currentPosition;
-      }
     }
 
     // Update or create the character object with new grid position
@@ -399,7 +396,9 @@ class GridSceneManager extends ChangeNotifier {
     } finally {
       // Ensure GridObject position is updated to final position regardless of how animation ended
       _updateCharacterGridPosition(characterId, toPosition);
-      debugPrint('GridSceneManager: Character $characterId animation ended, final position: $toPosition');
+      debugPrint(
+        'GridSceneManager: Character $characterId animation ended, final position: $toPosition',
+      );
     }
   }
 
@@ -428,7 +427,9 @@ class GridSceneManager extends ChangeNotifier {
     } finally {
       // Ensure GridObject position is updated to final position regardless of how animation ended
       _updateCharacterGridPosition(enemyId, toPosition);
-      debugPrint('GridSceneManager: Enemy $enemyId animation ended, final position: $toPosition');
+      debugPrint(
+        'GridSceneManager: Enemy $enemyId animation ended, final position: $toPosition',
+      );
     }
   }
 
@@ -457,7 +458,9 @@ class GridSceneManager extends ChangeNotifier {
     } finally {
       // Ensure GridObject position is updated to final position regardless of how animation ended
       _updateCharacterGridPosition(allyId, toPosition);
-      debugPrint('GridSceneManager: Ally $allyId animation ended, final position: $toPosition');
+      debugPrint(
+        'GridSceneManager: Ally $allyId animation ended, final position: $toPosition',
+      );
     }
   }
 
@@ -626,7 +629,9 @@ class GridSceneManager extends ChangeNotifier {
       );
 
       _characterObjects[boss.id] = bossObject;
-      debugPrint('GridSceneManager: Added boss ${boss.id} to scene at ${boss.position}');
+      debugPrint(
+        'GridSceneManager: Added boss ${boss.id} to scene at ${boss.position}',
+      );
     }
   }
 
@@ -814,7 +819,9 @@ class GridSceneManager extends ChangeNotifier {
 
       // Spawn the boss at the designated location
       if (_tileMap!.bossLocation != null) {
-        debugPrint('GridSceneManager: Spawning boss at ${_tileMap!.bossLocation}');
+        debugPrint(
+          'GridSceneManager: Spawning boss at ${_tileMap!.bossLocation}',
+        );
         await _gameLoopManager!.spawnBoss(_tileMap!.bossLocation!);
         await _addBossToScene();
       }
@@ -1216,10 +1223,19 @@ class GridSceneManager extends ChangeNotifier {
     'candy_cookie': {'path': 'assets/foods/cookie.obj', 'name': 'Cookie'},
     'candy_donut': {'path': 'assets/foods/donut.obj', 'name': 'Donut'},
     'candy_cupcake': {'path': 'assets/foods/cupcake.obj', 'name': 'Cupcake'},
-    'candy_candyBar': {'path': 'assets/foods/candy-bar.obj', 'name': 'Candy Bar'},
-    'candy_iceCream': {'path': 'assets/foods/ice-cream.obj', 'name': 'Ice Cream'},
+    'candy_candyBar': {
+      'path': 'assets/foods/candy-bar.obj',
+      'name': 'Candy Bar',
+    },
+    'candy_iceCream': {
+      'path': 'assets/foods/ice-cream.obj',
+      'name': 'Ice Cream',
+    },
     'candy_popsicle': {'path': 'assets/foods/popsicle.obj', 'name': 'Popsicle'},
-    'candy_gingerbread': {'path': 'assets/foods/ginger-bread.obj', 'name': 'Gingerbread'},
+    'candy_gingerbread': {
+      'path': 'assets/foods/ginger-bread.obj',
+      'name': 'Gingerbread',
+    },
     'candy_muffin': {'path': 'assets/foods/muffin.obj', 'name': 'Muffin'},
     'candy_pumpkin': {
       'path': 'assets/graveyard/pumpkin-carved.obj',

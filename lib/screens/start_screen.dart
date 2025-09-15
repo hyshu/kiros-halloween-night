@@ -94,12 +94,14 @@ class _StartScreenState extends State<StartScreen>
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.deepPurple.withOpacity(0.3),
+                                  color: Colors.deepPurple.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
                                 BoxShadow(
-                                  color: Colors.orange.withOpacity(0.2),
+                                  color: Colors.orange.withValues(alpha: 0.2),
                                   blurRadius: 20,
                                   spreadRadius: 2,
                                 ),
@@ -115,8 +117,8 @@ class _StartScreenState extends State<StartScreen>
                                     color: Colors.white,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.deepPurple.withOpacity(
-                                          0.8,
+                                        color: Colors.deepPurple.withValues(
+                                          alpha: 0.8,
                                         ),
                                         blurRadius: 10,
                                         offset: const Offset(0, 2),
@@ -133,7 +135,9 @@ class _StartScreenState extends State<StartScreen>
                                     letterSpacing: 2,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.orange.withOpacity(0.6),
+                                        color: Colors.orange.withValues(
+                                          alpha: 0.6,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 1),
                                       ),
@@ -183,10 +187,10 @@ class _StartScreenState extends State<StartScreen>
                         vertical: 15,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
-                          color: Colors.purple.withOpacity(0.3),
+                          color: Colors.purple.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -272,8 +276,8 @@ class _StartScreenState extends State<StartScreen>
         boxShadow: [
           BoxShadow(
             color: primary
-                ? Colors.deepPurple.withOpacity(0.4)
-                : Colors.black.withOpacity(0.3),
+                ? Colors.deepPurple.withValues(alpha: 0.4)
+                : Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

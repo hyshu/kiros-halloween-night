@@ -158,7 +158,11 @@ class AllyAI {
       }
 
       // Primary direction blocked, try alternative paths
-      final alternativeDirections = _getAlternativeDirections(ally.position, primaryDirection, target);
+      final alternativeDirections = _getAlternativeDirections(
+        ally.position,
+        primaryDirection,
+        target,
+      );
 
       for (final direction in alternativeDirections) {
         if (_attemptMove(ally, direction, tileMap)) {
@@ -170,7 +174,6 @@ class AllyAI {
     // If no direct path available, try random movement as last resort
     _wanderRandomly(ally, tileMap);
   }
-
 
   /// Makes ally wander randomly
   static void _wanderRandomly(AllyCharacter ally, TileMap tileMap) {
@@ -205,7 +208,11 @@ class AllyAI {
   }
 
   /// Gets alternative directions to try when primary direction is blocked
-  static List<Direction> _getAlternativeDirections(Position from, Direction primaryDirection, Position target) {
+  static List<Direction> _getAlternativeDirections(
+    Position from,
+    Direction primaryDirection,
+    Position target,
+  ) {
     final dx = target.x - from.x;
     final dz = target.z - from.z;
     final alternatives = <Direction>[];
@@ -253,27 +260,6 @@ class AllyAI {
     }
 
     return uniqueAlternatives;
-  }
-
-  /// Gets the best direction to move away from a target
-  static Direction? _getBestDirectionAwayFrom(Position from, Position target) {
-    final dx = target.x - from.x;
-    final dz = target.z - from.z;
-
-    // Move in the opposite direction of the largest difference
-    if (dx.abs() > dz.abs()) {
-      return dx > 0 ? Direction.west : Direction.east;
-    } else if (dz.abs() > dx.abs()) {
-      return dz > 0 ? Direction.north : Direction.south;
-    } else if (dx != 0) {
-      return dx > 0 ? Direction.west : Direction.east;
-    } else if (dz != 0) {
-      return dz > 0 ? Direction.north : Direction.south;
-    }
-
-    // If at the exact same position, pick a random direction to move away
-    final directions = Direction.values;
-    return directions[_random.nextInt(directions.length)];
   }
 
   /// Attempts to move ally in the specified direction

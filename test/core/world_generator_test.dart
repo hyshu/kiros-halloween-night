@@ -123,9 +123,6 @@ void main() {
         expect(boss, isNotNull);
         expect(world.getTileAt(spawn), TileType.floor);
         expect(world.getTileAt(boss), TileType.floor);
-
-        // TODO: Fix path validation logic in WorldGenerator
-        // expect(_hasPath(world, spawn, boss), isTrue, reason: 'There should be a navigable path from spawn to boss');
       });
 
       test('should handle path validation correctly', () {
@@ -227,9 +224,6 @@ void main() {
           isTrue,
           reason: 'World should contain obstacles',
         );
-
-        // TODO: Fix path validation logic in WorldGenerator
-        // expect(_hasPath(world, spawn, boss), isTrue);
       });
 
       test('should not place obstacles on spawn or boss locations', () {
