@@ -98,9 +98,8 @@ class CandyItem {
           id: id,
           name: t.candyTypes.cookie.name,
           modelPath: 'assets/foods/cookie.obj',
-          effect: CandyEffect.speedIncrease,
-          value: 2,
-          abilityModifications: {'speedMultiplier': 1.5, 'duration': 30},
+          effect: CandyEffect.healthBoost,
+          value: 18,
           description: t.candyTypes.cookie.description,
           position: position,
         );
@@ -145,9 +144,8 @@ class CandyItem {
           id: id,
           name: t.candyTypes.lollipop.name,
           modelPath: 'assets/foods/lollypop.obj',
-          effect: CandyEffect.statModification,
-          value: 3,
-          abilityModifications: {'luck': 3, 'duration': 25},
+          effect: CandyEffect.healthBoost,
+          value: 22,
           description: t.candyTypes.lollipop.description,
           position: position,
         );

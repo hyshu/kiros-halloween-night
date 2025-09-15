@@ -155,7 +155,7 @@
     },
     "cookie": {
       "name": "Cookie",
-      "description": "A crispy cookie that increases movement speed for 30 turns"
+      "description": "A crispy cookie that restores 18 health points"
     },
     "cupcake": {
       "name": "Cupcake",
@@ -171,7 +171,7 @@
     },
     "lollipop": {
       "name": "Lollipop",
-      "description": "A colorful lollipop that increases luck for 25 turns"
+      "description": "A colorful lollipop that restores 22 health points"
     },
     "popsicle": {
       "name": "Popsicle",

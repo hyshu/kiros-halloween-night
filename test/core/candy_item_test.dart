@@ -32,15 +32,13 @@ void main() {
       expect(candy.modelPath, equals('assets/foods/chocolate.obj'));
     });
 
-    test('should create cookie with speed increase and temporary effect', () {
+    test('should create cookie as health boost item', () {
       final candy = CandyItem.create(CandyType.cookie, 'cookie_1');
 
       expect(candy.name, equals('Cookie'));
-      expect(candy.effect, equals(CandyEffect.speedIncrease));
-      expect(candy.value, equals(2));
-      expect(candy.isTemporaryEffect, isTrue);
-      expect(candy.effectDuration, equals(30));
-      expect(candy.abilityModifications['speedMultiplier'], equals(1.5));
+      expect(candy.effect, equals(CandyEffect.healthBoost));
+      expect(candy.value, equals(18));
+      expect(candy.isTemporaryEffect, isFalse);
     });
 
     test('should create ice cream with special ability', () {
@@ -141,7 +139,9 @@ void main() {
     test('should have appropriate effects for candy types', () {
       final healthBoostTypes = [
         CandyType.candyBar,
+        CandyType.cookie,
         CandyType.donut,
+        CandyType.lollipop,
         CandyType.popsicle,
         CandyType.muffin,
       ];
@@ -154,10 +154,6 @@ void main() {
       expect(
         CandyItem.create(CandyType.chocolate, 'test').effect,
         equals(CandyEffect.maxHealthIncrease),
-      );
-      expect(
-        CandyItem.create(CandyType.cookie, 'test').effect,
-        equals(CandyEffect.speedIncrease),
       );
       expect(
         CandyItem.create(CandyType.cupcake, 'test').effect,
