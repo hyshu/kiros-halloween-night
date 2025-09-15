@@ -95,8 +95,8 @@ class CandyMenu extends StatelessWidget {
     required bool enabled,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
+    return FilledButton(
+      onPressed: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(

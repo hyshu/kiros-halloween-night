@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter_gpu/gpu.dart' as gpu;
 import 'package:vector_math/vector_math_64.dart';
@@ -161,7 +162,7 @@ class _GridRendererState extends material.State<GridRenderer> {
               );
             },
           ),
-          if (widget.sceneManager.tileMap != null)
+          if (widget.sceneManager.tileMap != null && kDebugMode)
             material.Positioned(
               top: 20,
               left: 20,

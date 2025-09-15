@@ -424,79 +424,95 @@ class _AppNavigatorState extends State<AppNavigator> {
                 },
               ),
 
-            // Back to Menu button for game screen
+            // Map coordinates display (positioned at bottom to avoid dialogue overlap)
             Positioned(
-              top: 40,
-              right: 20,
+              bottom: 40,
+              left: 20,
               child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: Colors.black.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.deepPurple.withValues(alpha: 0.5),
+                  ),
                 ),
-                child: IconButton(
-                  onPressed: () {
-                    _showPauseMenu();
-                  },
-                  icon: const Icon(Icons.menu, color: Colors.white, size: 24),
+                child: Text(
+                  'X: ${_ghostCharacter!.position.x}, Z: ${_ghostCharacter!.position.z}, ←↓↑→: Move, i: Show Candy menu',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  void _showPauseMenu() {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A0D2E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text(
-          "⏸️ Game Paused",
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "What would you like to do?",
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
+            // HP bar display (positioned at bottom to avoid dialogue overlap)
+            Positioned(
+              bottom: 40,
+              right: 20,
+              child: StatefulBuilder(
+                builder: (context, setHPState) {
+                  return StreamBuilder<void>(
+                    stream: Stream.periodic(const Duration(milliseconds: 100)),
+                    builder: (context, snapshot) {
+                      return Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.deepPurple.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'HP: ${_ghostCharacter!.health}/${_ghostCharacter!.maxHealth}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: FractionallySizedBox(
+                                widthFactor:
+                                    (_ghostCharacter!.health /
+                                            _ghostCharacter!.maxHealth)
+                                        .clamp(0.0, 1.0),
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color:
+                                        _ghostCharacter!.health >
+                                            _ghostCharacter!.maxHealth * 0.3
+                                        ? Colors.green
+                                        : Colors.red,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                ),
-                child: const Text(
-                  "▶️ Resume Game",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _resetGame();
-                  _navigateToScreen(AppScreen.start);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade700,
-                ),
-                child: const Text(
-                  "🏠 Main Menu",
-                  style: TextStyle(color: Colors.white),
-                ),
               ),
             ),
           ],
