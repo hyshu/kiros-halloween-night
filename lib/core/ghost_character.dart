@@ -571,7 +571,7 @@ class GhostCharacter extends Character {
     // Update position immediately for game logic
     position = newPosition;
 
-    // Start animation with update callback to ensure position sync
+    // Start animation with completion callback to ensure position sync
     _animationSystem!.animateCharacter(
       id,
       fromPosition,
@@ -580,7 +580,16 @@ class GhostCharacter extends Character {
         // This ensures visual position stays synchronized with animation
         // No additional logic needed as the animation handles visual updates
       },
-    );
+    ).then((_) {
+      // Ensure position is correctly set when animation completes
+      // This handles cases where animation was cancelled or interrupted
+      position = newPosition;
+      debugPrint('GhostCharacter: Animation completed, position confirmed at $newPosition');
+    }).catchError((error) {
+      // Handle animation errors by ensuring position is still correct
+      position = newPosition;
+      debugPrint('GhostCharacter: Animation error, position set to $newPosition');
+    });
   }
 
   @override

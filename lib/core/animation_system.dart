@@ -510,7 +510,9 @@ class CharacterAnimation {
     _isCancelled = true;
     _currentWorldPosition = Vector3.copy(_toWorldPosition);
     _progress = 1.0;
+    // Ensure the final position update is called when cancelling
     onUpdate?.call(currentWorldPosition);
+    debugPrint('CharacterAnimation: Animation cancelled for $characterId, position set to final target: $toPosition');
     _complete();
   }
 

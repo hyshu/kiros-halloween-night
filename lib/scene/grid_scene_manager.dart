@@ -376,22 +376,28 @@ class GridSceneManager extends ChangeNotifier {
     // Use easing directly (already converted to AnimationEasing)
     final unifiedEasing = easing ?? AnimationEasing.easeInOut;
 
-    await _animationSystem.animateCharacter(
-      characterId,
-      fromPosition,
-      toPosition,
-      duration: duration,
-      easing: unifiedEasing,
-      onUpdate: (worldPosition) {
-        // Update the character's GridObject with animated position
-        final gridObject = _characterObjects[characterId];
-        if (gridObject != null) {
-          gridObject.setAnimatedPosition(worldPosition);
-          // Trigger re-render
-          notifyListeners();
-        }
-      },
-    );
+    try {
+      await _animationSystem.animateCharacter(
+        characterId,
+        fromPosition,
+        toPosition,
+        duration: duration,
+        easing: unifiedEasing,
+        onUpdate: (worldPosition) {
+          // Update the character's GridObject with animated position
+          final gridObject = _characterObjects[characterId];
+          if (gridObject != null) {
+            gridObject.setAnimatedPosition(worldPosition);
+            // Trigger re-render
+            notifyListeners();
+          }
+        },
+      );
+    } finally {
+      // Ensure GridObject position is updated to final position regardless of how animation ended
+      _updateCharacterGridPosition(characterId, toPosition);
+      debugPrint('GridSceneManager: Character $characterId animation ended, final position: $toPosition');
+    }
   }
 
   /// Animate enemy movement from current position to new position
@@ -400,24 +406,27 @@ class GridSceneManager extends ChangeNotifier {
     Position fromPosition,
     Position toPosition,
   ) async {
-    await _animationSystem.animateCharacter(
-      enemyId,
-      fromPosition,
-      toPosition,
-      easing: AnimationEasing.easeOut,
-      onUpdate: (worldPosition) {
-        // Update the enemy's GridObject with animated position
-        final gridObject = _characterObjects[enemyId];
-        if (gridObject != null) {
-          gridObject.setAnimatedPosition(worldPosition);
-          // Trigger re-render
-          notifyListeners();
-        }
-      },
-    );
-
-    // After animation completes, update the GridObject's grid position
-    _updateCharacterGridPosition(enemyId, toPosition);
+    try {
+      await _animationSystem.animateCharacter(
+        enemyId,
+        fromPosition,
+        toPosition,
+        easing: AnimationEasing.easeOut,
+        onUpdate: (worldPosition) {
+          // Update the enemy's GridObject with animated position
+          final gridObject = _characterObjects[enemyId];
+          if (gridObject != null) {
+            gridObject.setAnimatedPosition(worldPosition);
+            // Trigger re-render
+            notifyListeners();
+          }
+        },
+      );
+    } finally {
+      // Ensure GridObject position is updated to final position regardless of how animation ended
+      _updateCharacterGridPosition(enemyId, toPosition);
+      debugPrint('GridSceneManager: Enemy $enemyId animation ended, final position: $toPosition');
+    }
   }
 
   /// Animate ally movement from current position to new position
@@ -426,24 +435,27 @@ class GridSceneManager extends ChangeNotifier {
     Position fromPosition,
     Position toPosition,
   ) async {
-    await _animationSystem.animateCharacter(
-      allyId,
-      fromPosition,
-      toPosition,
-      easing: AnimationEasing.easeInOut,
-      onUpdate: (worldPosition) {
-        // Update the ally's GridObject with animated position
-        final gridObject = _characterObjects[allyId];
-        if (gridObject != null) {
-          gridObject.setAnimatedPosition(worldPosition);
-          // Trigger re-render
-          notifyListeners();
-        }
-      },
-    );
-
-    // After animation completes, update the GridObject's grid position
-    _updateCharacterGridPosition(allyId, toPosition);
+    try {
+      await _animationSystem.animateCharacter(
+        allyId,
+        fromPosition,
+        toPosition,
+        easing: AnimationEasing.easeInOut,
+        onUpdate: (worldPosition) {
+          // Update the ally's GridObject with animated position
+          final gridObject = _characterObjects[allyId];
+          if (gridObject != null) {
+            gridObject.setAnimatedPosition(worldPosition);
+            // Trigger re-render
+            notifyListeners();
+          }
+        },
+      );
+    } finally {
+      // Ensure GridObject position is updated to final position regardless of how animation ended
+      _updateCharacterGridPosition(allyId, toPosition);
+      debugPrint('GridSceneManager: Ally $allyId animation ended, final position: $toPosition');
+    }
   }
 
   /// Store enemy position for animation tracking
@@ -511,8 +523,7 @@ class GridSceneManager extends ChangeNotifier {
     // Wait for both animations to complete
     await Future.wait([characterAnimationFuture, cameraAnimationFuture]);
 
-    // Update the player's GridObject grid position after animation
-    _updateCharacterGridPosition(_ghostCharacter!.id, currentPosition);
+    // Note: _updateCharacterGridPosition is now handled in the finally block of animateCharacterMovement
 
     debugPrint('GridSceneManager: Player movement animation completed');
   }
