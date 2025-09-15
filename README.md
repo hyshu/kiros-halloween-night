@@ -1,204 +1,300 @@
-# Kiro Halloween Night Game
+# Kiro Halloween Game 🎃👻
 
-## Overview
-A 3D Halloween-themed survivor game built with Flutter GPU, featuring a graveyard scene with various spooky objects and characters. The game uses Flutter's experimental GPU rendering capabilities for hardware-accelerated 3D graphics.
+> **Created for the Code With Kiro Hackathon**
+> Learn more: [https://kiro.devpost.com/?trk=b85f313f-a67c-452d-b088-07f0ddbd7e15&sc_channel=el](https://kiro.devpost.com/?trk=b85f313f-a67c-452d-b088-07f0ddbd7e15&sc_channel=el)
 
-## Features
-- **3D Grid-Based Scene**: 10x10 grid system for object placement
-- **Halloween Theme**: Complete with graveyards, zombies, ghosts, and other spooky elements
-- **GPU Acceleration**: Leverages Flutter GPU for efficient 3D rendering
-- **Dynamic Scene Management**: Add, remove, and manage 3D objects in real-time
-- **Rich Asset Library**: Includes graveyard objects, characters, and food items
+A 3D Halloween-themed RPG game built with Flutter GPU. Navigate through a massive 100x200 world, convert enemies into allies with candy gifts, and defeat the final boss.
 
-## Technical Architecture
+## Game Features
 
-### Core Components
-- **GridSceneManager**: Manages the 10x10 grid layout and object placement
-- **GridRenderer**: Handles 3D rendering using Flutter GPU
-- **Model3D**: Loads and manages 3D models from OBJ files
-- **TextureManager**: Handles texture loading and management
-- **Shaders**: Custom shader implementation for rendering effects
+### 🎮 Core Gameplay
+- **Turn-based Combat**: Strategic battle system with 5-phase animations
+- **Ally System**: Convert enemies into allies using candy gifts (max 10 allies)
+- **Massive World**: Procedurally generated 100x200 tile world
+- **RPG Elements**: HP management, inventory system, abilities, and progression
+- **Boss Battle**: Final confrontation with the powerful Vampire Lord
 
-### Technology Stack
+### 🍭 Candy System
+- **150+ Candy Types**: Various items with unique effects and abilities
+- **Strategic Gifting**: Give candy to enemies to convert them into allies
+- **Temporary Effects**: Boost abilities, health, and special powers
+- **Inventory Management**: Limited slots requiring strategic item management
+
+### 🎯 Game Objectives
+- **Survival**: Maintain player HP while exploring the world
+- **Ally Collection**: Build an army by converting enemies with candy gifts
+- **Boss Defeat**: Take down the final boss Vampire Lord
+- **Statistics**: Track enemies defeated, candies given, and survival time
+
+## Technical Specifications
+
+### 🚀 Flutter GPU Technology
+- **3D Rendering**: Custom shader-based high-performance graphics
+- **Matrix Transformations**: Advanced 3D coordinate transformations and camera control
+- **Depth Testing**: Accurate 3D object rendering with proper depth sorting
+- **Texture Mapping**: OBJ model loading with texture support
+
+### 🎨 Graphics Features
+- **Camera Controls**: Pan, zoom, and rotation with gesture support
+- **Animation System**: Smooth character movement and combat animations
+- **UI Overlays**: HP bars, coordinate display, inventory management
+- **Performance Optimization**: Efficient rendering for large-scale worlds
+
+### 🧠 AI Systems
+- **Enemy AI**: Intelligent enemies that track and attack the player
+- **Ally AI**: Supportive allies that assist in combat and follow the player
+- **Pathfinding**: A* algorithm for optimal route finding
+- **Collision Detection**: Prevents character overlap and handles movement constraints
+
+## Controls
+
+### ⌨️ Keyboard Controls
+- **Movement**: `Arrow Keys` or `WASD` - Move character in four directions
+- **Attack**: Press movement key toward an enemy to attack
+- **Inventory**: `I` key - Open candy inventory menu
+- **Gift**: `G` key - Give candy to adjacent enemies
+
+### 🖱️ Mouse Controls
+- **Camera Rotation**: Drag to change viewing angle
+- **Zoom**: Pinch or scroll to zoom in/out
+- **Pan**: Single finger drag to move camera position
+
+### 📱 UI Interactions
+- **Inventory**: Use candy for healing or select gifts for enemies
+- **Dialogue**: Combat messages and story progression
+- **Statistics**: View HP, coordinates, enemy count, and game stats
+
+## Setup & Installation
+
+### 🔧 Requirements
 - **Flutter SDK**: ^3.9.0
-- **Flutter GPU**: Experimental GPU rendering API
-- **Flutter GPU Shaders**: ^0.3.0
-- **Vector Math**: ^2.1.4 for 3D transformations
+- **Dart SDK**: ^3.9.0
+- **macOS**: Primary supported platform
+- **Flutter GPU**: Experimental features enabled
 
-## Project Structure
-```
-kiro_halloween_game/
-├── lib/
-│   ├── main.dart                 # Application entry point
-│   ├── grid_scene_manager.dart   # Grid-based scene management
-│   ├── grid_renderer.dart        # 3D rendering implementation
-│   ├── model_3d.dart             # 3D model loading and management
-│   ├── texture_manager.dart      # Texture handling
-│   ├── obj_parser.dart           # OBJ file parser
-│   ├── multi_model_renderer.dart # Multi-model rendering
-│   ├── scene_manager.dart        # Base scene management
-│   └── shaders.dart              # Shader definitions
-├── assets/
-│   ├── graveyard/               # Graveyard-themed 3D models
-│   │   ├── *.obj                # 3D models (graves, fences, crypts, etc.)
-│   │   └── Textures/            # Model textures
-│   ├── characters/              # Character models
-│   │   ├── *.obj                # Ghost, zombie, skeleton models
-│   │   └── Textures/            # Character textures
-│   ├── foods/                   # Food item models
-│   │   ├── *.obj                # Various food models
-│   │   └── Textures/            # Food textures
-│   └── shaderbundles/           # Compiled shader bundles
-└── pubspec.yaml                 # Project dependencies
-```
+### 📦 Installation
 
-## Game Characters
-
-### Player Character
-- **Ghost** - The player controls a ghost character navigating through the haunted graveyard
-
-### Enemy Characters (Most of Humans)
-- **character-female-a** through **character-female-f** - Female human enemies
-- **character-male-a** through **character-male-f** - Male human enemies
-- **Zombie** - Undead enemies
-- **Skeleton** - Bone warrior enemies
-- **Vampire** - Vampiric enemies
-- **Digger** - Grave digger enemies
-
-## Available Environment Objects
-
-### Structures & Buildings
-- **Crypts**: crypt, crypt-small, crypt-large, crypt-small-entrance, crypt-small-entrance-alternative, crypt-door, crypt-small-roof, crypt-large-roof
-- **Altars**: altar-stone, altar-wood
-- **Columns & Pillars**: column-large, pillar-large, pillar-small, pillar-square, pillar-obelisk, border-pillar, cross-column
-
-### Grave Markers & Tombstones
-- **Gravestones**: gravestone-bevel, gravestone-broken, gravestone-cross, gravestone-cross-large, gravestone-decorative, gravestone-flat, gravestone-flat-open, gravestone-roof, gravestone-round, gravestone-wide, gravestone-debris
-- **Crosses**: cross, cross-wood
-- **Graves**: grave, grave-border
-
-### Walls & Fences
-- **Brick Walls**: brick-wall, brick-wall-curve, brick-wall-curve-small, brick-wall-end
-- **Stone Walls**: stone-wall, stone-wall-curve, stone-wall-damaged, stone-wall-column
-- **Wooden Fences**: fence, fence-damaged, fence-gate
-- **Iron Fences**: iron-fence, iron-fence-bar, iron-fence-border, iron-fence-border-column, iron-fence-border-curve, iron-fence-border-gate, iron-fence-curve, iron-fence-damaged
-
-### Trees & Nature
-- **Pine Trees**: pine, pine-crooked, pine-fall, pine-fall-crooked
-- **Wood Elements**: trunk, trunk-long, debris-wood, debris
-- **Rocks**: rocks, rocks-tall
-
-### Decorative Items
-- **Lighting**: lantern-candle, lantern-glass, lightpost-single, lightpost-double, lightpost-all, fire-basket
-- **Candles**: candle, candle-multiple
-- **Halloween**: pumpkin, pumpkin-carved, pumpkin-tall, pumpkin-tall-carved
-
-### Cemetery Objects
-- **Coffins**: coffin, coffin-old
-- **Benches**: bench, bench-damaged
-- **Tools**: shovel, shovel-dirt
-- **Containers**: urn, barrel
-- **Details**: detail-bowl, detail-chalice, detail-plate
-
-### Terrain & Paths
-- **Road**: road
-- **Hay**: hay-bale, hay-bale-bundled
-
-### Food Items (Collectibles/Power-ups)
-- **Fruits**: apple, apple-half, avocado, banana, beet
-- **Vegetables**: broccoli
-- **Meat**: bacon, bacon-raw
-- **Containers**: bag, bag-flat, barrel, bowl, bowl-broth, bowl-cereal, bowl-soup
-- **Condiments**: bottle-ketchup, bottle-mustard, bottle-oil
-- **Other**: bread
-- And many more food items available in assets/foods/
-
-## Getting Started
-
-### Prerequisites
-- Flutter SDK (with GPU support enabled)
-- Dart SDK ^3.9.0
-- Development environment supporting Flutter GPU features
-
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone [repository-url]
-   cd kiro_halloween_game
-   ```
-
-2. Install dependencies:
+1. **Install dependencies**:
    ```bash
    flutter pub get
    ```
 
-3. Compile shaders (if needed):
+2. **Run the game**:
    ```bash
-   ./compile_shader.sh
+   flutter run -d macOS --release
    ```
 
-4. Run the application:
-   ```bash
-   flutter run
-   ```
+## Project Structure
 
-## Usage
-
-### Scene Controls
-- **Reset Scene**: Click the refresh button to reset to the default graveyard layout
-- **Clear Scene**: Click the clear button to remove all objects
-
-### Default Scene Layout
-The game initializes with a pre-configured graveyard scene featuring:
-- Fence perimeter around the 10x10 grid
-- Central crypt structure
-- Scattered grave markers
-- Trees for atmosphere
-- Character spawns (zombie, ghost, skeleton)
-- Decorative lanterns
-
-### Grid System
-Objects are placed on a 10x10 grid where:
-- Each grid cell can contain one 3D object
-- Objects are automatically positioned with 2.0 unit spacing
-- Grid coordinates range from (0,0) to (9,9)
-
-## Development
-
-### Adding New Models
-1. Place OBJ files in the appropriate assets directory
-2. Add corresponding textures to the Textures subdirectory
-3. Update `pubspec.yaml` if adding new asset directories
-4. Models can be loaded using the `Model3D.loadFromAsset()` method
-
-### Modifying the Scene
-Edit the pattern array in `main.dart` to change the default scene layout:
-```dart
-final pattern = [
-  ['fence', 'fence', ...],
-  ['fence', null, 'tree', ...],
-  // ...
-];
+```
+kiro_halloween_game/
+├── lib/
+│   ├── core/                     # Core game logic
+│   │   ├── ghost_character.dart  # Player character (Kiro the ghost)
+│   │   ├── enemy_character.dart  # Enemy characters and AI
+│   │   ├── ally_character.dart   # Ally characters and AI
+│   │   ├── game_loop_manager.dart # Turn-based game loop management
+│   │   ├── world_generator.dart  # Procedural world generation
+│   │   ├── candy_item.dart       # Candy items and effects
+│   │   ├── combat_manager.dart   # Combat system
+│   │   ├── gift_system.dart      # Enemy conversion system
+│   │   └── ...                   # Other core systems
+│   ├── rendering/                # 3D rendering system
+│   │   ├── grid_renderer.dart    # Main 3D renderer with Flutter GPU
+│   │   └── multi_model_renderer.dart # Multi-object rendering
+│   ├── scene/                    # Scene management
+│   │   └── grid_scene_manager.dart # 3D scene and object management
+│   ├── managers/                 # Various game managers
+│   │   ├── input_manager.dart    # Keyboard and input handling
+│   │   ├── model_manager.dart    # 3D model loading and caching
+│   │   └── texture_manager.dart  # Texture management
+│   ├── widgets/                  # UI components
+│   │   ├── dialogue_ui.dart      # Combat and story messages
+│   │   ├── inventory_ui.dart     # Candy inventory interface
+│   │   └── gift_ui.dart          # Gift selection interface
+│   ├── screens/                  # Game screens
+│   │   ├── start_screen.dart     # Main menu
+│   │   ├── game_over_screen.dart # End game statistics
+│   │   └── story_dialogue.dart   # Opening story
+│   └── l10n/                     # Internationalization
+├── assets/
+│   ├── graveyard/                # Graveyard environment objects
+│   │   ├── *.obj                 # 3D models (graves, crypts, fences)
+│   │   └── Textures/             # Object textures
+│   ├── characters/               # Character models
+│   │   ├── *.obj                 # Ghost, zombie, skeleton, vampire models
+│   │   └── Textures/             # Character textures
+│   ├── foods/                    # Candy item models
+│   │   ├── *.obj                 # Various candy models
+│   │   └── Textures/             # Candy textures
+│   └── shaderbundles/            # Compiled GPU shaders
+└── test/                         # Test suite (33 files, 8,472 lines)
+    └── core/                     # Core system tests
 ```
 
-### Custom Shaders
-Shaders are defined in `lib/shaders.dart` and compiled into bundles. Modify and recompile as needed for custom rendering effects.
+## Game Screens
 
-## Performance Considerations
-- The game uses Flutter GPU for hardware acceleration
-- Models are loaded asynchronously to prevent UI blocking
-- Grid-based system limits objects to improve performance
-- Texture management optimizes memory usage
+### 🎪 Main Game Screen
+- **3D World View**: Real-time 3D rendering of the game world
+- **HP Bar**: Player health display in bottom-right corner
+- **Coordinates**: Current position display in bottom-left corner
+- **Control Guide**: Movement and inventory operation instructions
 
-## Future Enhancements
-- Player character control
-- Interactive objects
-- Lighting effects
-- Sound effects and ambient music
-- Save/load functionality
-- Level editor
-- Animation support
-- Particle effects
+### 🎒 Inventory Screen
+- **Candy List**: Display of collected candy items with icons
+- **Use Button**: Consume candy for HP restoration or ability boosts
+- **Gift Button**: Select candy to give to adjacent enemies
+- **Effect Description**: Detailed explanation of each candy's effects
+
+### 💬 Dialogue System
+- **Combat Messages**: Attack results and battle outcomes
+- **Story Dialogue**: Opening narrative and character interactions
+- **Collection Notifications**: Candy discovery and pickup messages
+- **Boss Encounters**: Special dialogue for boss battles
+
+## Development & Testing
+
+### 🧪 Running Tests
+```bash
+# Run all tests
+flutter test
+
+# Run specific test files
+flutter test test/core/ghost_character_test.dart
+
+# Run tests with coverage
+flutter test --coverage
+```
+
+### 🔍 Debug Mode Features
+Debug mode displays additional information:
+- **Object Count**: Number of objects in the scene
+- **Combat Statistics**: Active combat encounters
+- **Enemy Information**: Total and active enemy counts
+- **Performance Metrics**: FPS and memory usage
+- **Player Stats**: HP, combat strength, ally count
+
+### 📊 Test Coverage
+- **33 Test Files**: Comprehensive test suite with 8,472 lines of test code
+- **Core Systems**: All major game systems thoroughly tested
+- **Integration Tests**: Cross-system functionality verification
+- **Performance Tests**: World generation and rendering performance
+
+## Performance Optimization
+
+### ⚡ Optimization Features
+- **Device-Private Textures**: GPU memory efficiency improvements
+- **Batch Rendering**: Reduced draw calls for better performance
+- **Memory Management**: Proper resource allocation and cleanup
+- **LOD System**: Level-of-detail adjustments based on camera distance
+- **Culling**: Off-screen object culling for performance
+
+### 📱 Recommended Specifications
+- **macOS**: 10.14 or later
+- **Memory**: 8GB RAM minimum
+- **GPU**: Metal-compatible GPU required
+- **Storage**: 500MB+ available space
+- **Display**: 1920x1080 or higher resolution
+
+## Troubleshooting
+
+### ❗ Common Issues
+
+**Q: Game won't start**
+A: Ensure Flutter GPU experimental features are enabled and you're running on a supported macOS version.
+
+**Q: 3D models not displaying**
+A: Check that assets are properly loaded and shaders are compiled correctly. Try running with `--verbose` flag for detailed logs.
+
+**Q: Poor performance**
+A: Run in release mode (`--release`) and disable debug information. Ensure your GPU supports Metal.
+
+**Q: Controls not responding**
+A: Make sure the game window is active and focused. Check that keyboard input is properly captured.
+
+**Q: Shader compilation errors**
+A: Verify that shader bundles are present in `assets/shaderbundles/` and properly referenced in `pubspec.yaml`.
+
+## Game Mechanics Deep Dive
+
+### 🎮 Turn-Based Combat System
+The game uses a sophisticated 5-phase turn system:
+1. **Player Movement**: Character movement and position updates
+2. **Enemy AI**: Enemy movement and positioning
+3. **Combat Resolution**: Attack calculations and damage application
+4. **Ally Actions**: Ally movement and combat assistance
+5. **Effects Processing**: Status effects, cleanup, and state updates
+
+### 🍬 Candy Effects System
+Candy items provide various strategic benefits:
+- **Health Restoration**: Immediate HP recovery
+- **Ability Boosts**: Temporary combat strength increases
+- **Special Powers**: Wall vision, enemy freezing, damage reduction
+- **Ally Enhancement**: Boost ally combat effectiveness
+- **Conversion Tools**: Make enemies more receptive to becoming allies
+
+### 🏰 World Generation
+The procedural world generation creates:
+- **Room-Based Layout**: 50+ interconnected rooms
+- **Corridor System**: Narrow 1-tile corridors for strategic movement
+- **Guaranteed Pathfinding**: A* algorithm ensures solvable paths
+- **Obstacle Placement**: Strategic barriers that don't block critical paths
+- **Candy Distribution**: 150 candy items placed throughout the world
+
+## Contributing
+
+Contributions to this project are welcome:
+
+1. **Issue Reporting**: Report bugs and suggest improvements on GitHub
+2. **Pull Requests**: Submit new features and fixes
+3. **Testing**: Add tests for better coverage
+4. **Documentation**: Improve explanations and examples
+
+### Development Guidelines
+- Follow Dart/Flutter code style conventions
+- Add tests for new features
+- Update documentation for API changes
+- Use meaningful commit messages
 
 ## License
-MIT
+
+```
+MIT License
+
+Copyright (c) 2025 Kiro Halloween Game
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## Credits & Acknowledgments
+
+- **Flutter GPU**: Experimental 3D rendering capabilities
+- **3D Models**: Character and environment assets by [Kenny](https://kenney.nl)
+- **Textures**: High-quality texture files for immersive graphics
+
+---
+
+## Support
+
+For questions and support:
+- **GitHub Issues**: Bug reports and feature requests
+- **Documentation**: This README and additional documentation
+- **Community**: Flutter GPU community discussions
+
+**Enjoy your spooky adventure! 🎮✨**
