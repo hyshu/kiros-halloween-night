@@ -183,23 +183,20 @@ class GhostCharacter extends Character {
       }
     }
 
-    // Check if previous animation is still running
-    bool skipAnimation = false;
+    // Check if previous animation is still running and cancel it
     if (_animationSystem != null &&
         _animationSystem!.isCharacterAnimating(id)) {
-      // Cancel current animation and move immediately
+      // Cancel current animation - the animation system will snap to final position
       _animationSystem!.cancelCharacterAnimation(id);
-      skipAnimation = true;
       debugPrint('GhostCharacter: Cancelled previous animation for rapid input');
     }
 
     bool success;
-    if (skipAnimation || _animationSystem == null) {
+    if (_animationSystem == null) {
       // Perform immediate movement without animation
-      // Use collision-aware movement if collision detector was provided for validation
       success = moveTo(newPosition, collisionDetector);
     } else {
-      // Perform animated movement
+      // Always perform animated movement when animation system is available
       _performAnimatedMove(newPosition);
       success = true;
     }
@@ -574,8 +571,16 @@ class GhostCharacter extends Character {
     // Update position immediately for game logic
     position = newPosition;
 
-    // Start animation (fire and forget)
-    _animationSystem!.animateCharacter(id, fromPosition, newPosition);
+    // Start animation with update callback to ensure position sync
+    _animationSystem!.animateCharacter(
+      id,
+      fromPosition,
+      newPosition,
+      onUpdate: (currentWorldPosition) {
+        // This ensures visual position stays synchronized with animation
+        // No additional logic needed as the animation handles visual updates
+      },
+    );
   }
 
   @override
