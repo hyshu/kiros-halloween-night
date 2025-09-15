@@ -134,18 +134,4 @@ enum AnimationPhase {
         return 'Effects';
     }
   }
-
-  /// Whether this animation phase blocks user input
-  bool get blocksInput {
-    switch (this) {
-      case AnimationPhase.none:
-        return false;
-      case AnimationPhase.movement:
-      case AnimationPhase.combat:
-      case AnimationPhase.aiMovement:
-      case AnimationPhase.allyMovement:
-      case AnimationPhase.effects:
-        return true;
-    }
-  }
 }

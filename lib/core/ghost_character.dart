@@ -15,7 +15,7 @@ import 'ally_character.dart';
 import 'enemy_character.dart';
 import 'enemy_manager.dart';
 import 'player_combat_result.dart';
-import 'character_movement_animation_system.dart';
+import 'animation_system.dart';
 
 /// Represents the player-controlled ghost character Kiro
 class GhostCharacter extends Character {
@@ -29,10 +29,10 @@ class GhostCharacter extends Character {
   final AllyManager allyManager;
 
   /// Animation system for character movements
-  CharacterMovementAnimationSystem? _animationSystem;
+  AnimationSystem? _animationSystem;
 
-  /// Movement input state
-  bool _isProcessingInput = false;
+  /// Movement input state (removed - input is always allowed)
+  // bool _isProcessingInput = false; // Removed to allow free input
 
   /// Last movement direction for animation purposes
   Direction? lastMovementDirection;
@@ -85,7 +85,7 @@ class GhostCharacter extends Character {
     Function()? onInventoryToggle,
     Function()? onGiftToggle,
   }) {
-    if (_isProcessingInput || !canMove) return false;
+    if (!canMove) return false; // Removed _isProcessingInput check
 
     // Handle inventory toggle
     if (key == LogicalKeyboardKey.keyI) {
@@ -152,73 +152,68 @@ class GhostCharacter extends Character {
     EnemyManager? enemyManager,
     CollisionDetector? collisionDetector,
   }) {
-    if (_isProcessingInput || !canMove) return false;
+    if (!canMove) return false; // Removed _isProcessingInput check
 
-    _isProcessingInput = true;
+    final newPosition = _getNewPosition(direction);
 
-    try {
-      final newPosition = _getNewPosition(direction);
+    // Use CollisionDetector if available, otherwise fall back to manual checks
+    if (collisionDetector != null) {
+      if (!collisionDetector.canMoveTo(this, newPosition)) {
+        setIdle();
+        return false;
+      }
+    } else {
+      // Legacy collision detection (keep for backward compatibility)
 
-      // Use CollisionDetector if available, otherwise fall back to manual checks
-      if (collisionDetector != null) {
-        if (!collisionDetector.canMoveTo(this, newPosition)) {
+      // Check for enemies at target position (prevent overlap)
+      if (enemyManager != null) {
+        final enemiesAtTarget = enemyManager.getEnemiesAt(newPosition);
+        if (enemiesAtTarget.isNotEmpty) {
+          setIdle();
+          return false; // Cannot move into enemy position
+        }
+      }
+
+      // Validate movement with tile map if available
+      if (tileMap != null) {
+        if (!_canMoveTo(newPosition, tileMap)) {
           setIdle();
           return false;
         }
-      } else {
-        // Legacy collision detection (keep for backward compatibility)
-
-        // Check for enemies at target position (prevent overlap)
-        if (enemyManager != null) {
-          final enemiesAtTarget = enemyManager.getEnemiesAt(newPosition);
-          if (enemiesAtTarget.isNotEmpty) {
-            setIdle();
-            return false; // Cannot move into enemy position
-          }
-        }
-
-        // Validate movement with tile map if available
-        if (tileMap != null) {
-          if (!_canMoveTo(newPosition, tileMap)) {
-            setIdle();
-            return false;
-          }
-        }
       }
-
-      // Check if previous animation is still running
-      bool skipAnimation = false;
-      if (_animationSystem != null &&
-          _animationSystem!.isCharacterAnimating(id)) {
-        // Cancel current animation and move immediately
-        _animationSystem!.cancelCharacterAnimation(id);
-        skipAnimation = true;
-      }
-
-      bool success;
-      if (skipAnimation || _animationSystem == null) {
-        // Perform immediate movement without animation
-        // Use collision-aware movement if collision detector was provided for validation
-        success = moveTo(newPosition, collisionDetector);
-      } else {
-        // Perform animated movement
-        _performAnimatedMove(newPosition);
-        success = true;
-      }
-
-      if (success) {
-        lastMovementDirection = direction;
-        _facingDirection = direction; // Update facing direction when moving
-        setActive(); // Character is moving, not idle
-        _moveAllies(direction, tileMap);
-      } else {
-        setIdle();
-      }
-
-      return success;
-    } finally {
-      _isProcessingInput = false;
     }
+
+    // Check if previous animation is still running
+    bool skipAnimation = false;
+    if (_animationSystem != null &&
+        _animationSystem!.isCharacterAnimating(id)) {
+      // Cancel current animation and move immediately
+      _animationSystem!.cancelCharacterAnimation(id);
+      skipAnimation = true;
+      debugPrint('GhostCharacter: Cancelled previous animation for rapid input');
+    }
+
+    bool success;
+    if (skipAnimation || _animationSystem == null) {
+      // Perform immediate movement without animation
+      // Use collision-aware movement if collision detector was provided for validation
+      success = moveTo(newPosition, collisionDetector);
+    } else {
+      // Perform animated movement
+      _performAnimatedMove(newPosition);
+      success = true;
+    }
+
+    if (success) {
+      lastMovementDirection = direction;
+      _facingDirection = direction; // Update facing direction when moving
+      setActive(); // Character is moving, not idle
+      _moveAllies(direction, tileMap);
+    } else {
+      setIdle();
+    }
+
+    return success;
   }
 
   /// Gets the new position based on direction
@@ -549,14 +544,11 @@ class GhostCharacter extends Character {
   /// Gets the current facing direction for animation purposes
   Direction get facingDirection => _facingDirection;
 
-  /// Returns true if the character is currently moving
-  bool get isMoving => !isIdle && _isProcessingInput;
-
-  /// Returns true if the character is currently processing input
-  bool get isProcessingInput => _isProcessingInput;
+  /// Returns true if the character is currently moving (simplified - based on animation state)
+  bool get isMoving => !isIdle;
 
   /// Gets the animation system for character movement
-  CharacterMovementAnimationSystem? get animationSystem => _animationSystem;
+  AnimationSystem? get animationSystem => _animationSystem;
 
   /// Gets the number of active allies
   int get allyCount => allyManager.count;
@@ -565,7 +557,7 @@ class GhostCharacter extends Character {
   List<AllyCharacter> get allies => allyManager.allies;
 
   /// Sets the animation system for character movement
-  void setAnimationSystem(CharacterMovementAnimationSystem? animationSystem) {
+  void setAnimationSystem(AnimationSystem? animationSystem) {
     _animationSystem = animationSystem;
   }
 
@@ -583,7 +575,7 @@ class GhostCharacter extends Character {
     position = newPosition;
 
     // Start animation (fire and forget)
-    _animationSystem!.animateCharacterMovement(id, fromPosition, newPosition);
+    _animationSystem!.animateCharacter(id, fromPosition, newPosition);
   }
 
   @override

@@ -188,8 +188,10 @@ class GameLoopManager extends ChangeNotifier {
   /// Processes the result of a single combat encounter
   void _processCombatResult(CombatResult result) {
     // Generate combat feedback messages
-    final feedbackMessages = _combatFeedbackSystem.generateCombatFeedback([result]);
-    
+    final feedbackMessages = _combatFeedbackSystem.generateCombatFeedback([
+      result,
+    ]);
+
     // Display each combat feedback message through dialogue manager
     for (final feedbackMessage in feedbackMessages) {
       if (_dialogueManager != null) {
@@ -200,9 +202,10 @@ class GameLoopManager extends ChangeNotifier {
     if (result.enemyDefeated) {
       _enemiesDefeated++;
       _handleEnemyDefeated(result.enemy);
-      
+
       // Generate additional feedback for enemy defeated
-      final enemyDefeatedFeedback = _combatFeedbackSystem.generateEnemyDefeatedFeedback(result.enemy);
+      final enemyDefeatedFeedback = _combatFeedbackSystem
+          .generateEnemyDefeatedFeedback(result.enemy);
       if (_dialogueManager != null) {
         _dialogueManager!.showCombatFeedback(enemyDefeatedFeedback.text);
       }
@@ -210,7 +213,6 @@ class GameLoopManager extends ChangeNotifier {
 
     if (result.allyDefeated) {
       _alliesLost++;
-      _handleAllyDefeated(result.ally);
     }
 
     // Log significant combat events
@@ -234,26 +236,23 @@ class GameLoopManager extends ChangeNotifier {
     debugPrint('GameLoopManager: Enemy ${enemy.id} defeated and removed');
   }
 
-  /// Handles when an ally is defeated in combat
-  void _handleAllyDefeated(AllyCharacter ally) {
-    // Ally will be automatically removed by AllyManager
-    debugPrint('GameLoopManager: Ally ${ally.id} defeated');
-  }
-
   /// Handles ally state changes and generates appropriate feedback
-  void _handleAllyStateChange(AllyCharacter ally, AllyState previousState, AllyState newState) {
+  void _handleAllyStateChange(
+    AllyCharacter ally,
+    AllyState previousState,
+    AllyState newState,
+  ) {
     // Generate feedback for ally state change
-    final stateChangeFeedback = _combatFeedbackSystem.generateAllyStateChangeFeedback(
-      ally, 
-      previousState, 
-      newState,
-    );
-    
+    final stateChangeFeedback = _combatFeedbackSystem
+        .generateAllyStateChangeFeedback(ally, previousState, newState);
+
     if (stateChangeFeedback != null && _dialogueManager != null) {
       _dialogueManager!.showCombatFeedback(stateChangeFeedback.text);
     }
 
-    debugPrint('GameLoopManager: Ally ${ally.id} state changed from ${previousState.name} to ${newState.name}');
+    debugPrint(
+      'GameLoopManager: Ally ${ally.id} state changed from ${previousState.name} to ${newState.name}',
+    );
   }
 
   /// Cleans up satisfied enemies from the game

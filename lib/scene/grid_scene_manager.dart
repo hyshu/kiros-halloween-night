@@ -12,8 +12,7 @@ import '../core/enemy_manager.dart';
 import '../core/enemy_character.dart';
 import '../core/game_loop_manager.dart';
 import '../core/ally_character.dart';
-import '../core/camera_animation_system.dart';
-import '../core/character_movement_animation_system.dart';
+import '../core/animation_system.dart';
 import '../core/dialogue_manager.dart';
 import '../core/candy_item.dart';
 import '../core/candy_collection_system.dart';
@@ -102,11 +101,10 @@ class GridSceneManager extends ChangeNotifier {
   // Dialogue manager for narrative and feedback
   final DialogueManager _dialogueManager = DialogueManager();
 
-  // Camera animation system for smooth transitions
-  final CameraAnimationSystem _cameraAnimationSystem = CameraAnimationSystem();
+  // Unified animation system for smooth transitions (replaces all wrapper systems)
+  final AnimationSystem _animationSystem = AnimationSystem();
 
-  // Character movement animation system
-  final _characterAnimationSystem = CharacterMovementAnimationSystem();
+  // Removed legacy wrappers - using _animationSystem directly
 
   // Candy collection system
   final CandyCollectionSystem _candyCollectionSystem = CandyCollectionSystem();
@@ -132,21 +130,27 @@ class GridSceneManager extends ChangeNotifier {
       _updateCameraTarget();
     }
 
-    // Listen to camera animation updates
-    _cameraAnimationSystem.addListener(() {
-      _cameraTarget = _cameraAnimationSystem.currentPosition;
-      notifyListeners();
-    });
+    // Using unified animation system directly
 
-    // Listen to character animation updates
-    _characterAnimationSystem.addListener(() {
+    // Listen to unified animation system updates
+    _animationSystem.addListener(() {
+      _cameraTarget = _animationSystem.currentCameraPosition;
       _updateCharacterAnimationPositions();
       notifyListeners();
     });
   }
 
   // Default constructor for backward compatibility
-  GridSceneManager() : _tileMap = null;
+  GridSceneManager() : _tileMap = null {
+    // Using unified animation system directly
+
+    // Listen to unified animation system updates
+    _animationSystem.addListener(() {
+      _cameraTarget = _animationSystem.currentCameraPosition;
+      _updateCharacterAnimationPositions();
+      notifyListeners();
+    });
+  }
 
   List<GridObject> get allObjects {
     final objects = <GridObject>[];
@@ -205,14 +209,10 @@ class GridSceneManager extends ChangeNotifier {
   TileMap? get tileMap => _tileMap;
 
   // Get camera target for renderer
-  Vector3 get cameraTarget => _cameraAnimationSystem.currentPosition;
+  Vector3 get cameraTarget => _animationSystem.currentCameraPosition;
 
-  // Get camera animation system
-  CameraAnimationSystem get cameraAnimationSystem => _cameraAnimationSystem;
-
-  // Get character movement animation system
-  CharacterMovementAnimationSystem get characterAnimationSystem =>
-      _characterAnimationSystem;
+  // Get unified animation system (replaces both camera and character systems)
+  AnimationSystem get animationSystem => _animationSystem;
 
   // Get the ghost character
   GhostCharacter? get ghostCharacter => _ghostCharacter;
@@ -236,7 +236,7 @@ class GridSceneManager extends ChangeNotifier {
   // Update camera target (for following player character later)
   void updateCameraTarget(Vector3 newTarget) {
     _cameraTarget = newTarget;
-    _cameraAnimationSystem.setPosition(newTarget);
+    _animationSystem.setCameraPosition(newTarget);
     // Reload objects around new camera position for large world
     if (_tileMap != null) {
       _loadObjectsAroundCamera();
@@ -249,7 +249,7 @@ class GridSceneManager extends ChangeNotifier {
     _ghostCharacter = character;
 
     // Set animation system reference for character movement coordination
-    character.setAnimationSystem(_characterAnimationSystem);
+    character.setAnimationSystem(_animationSystem);
 
     // Create a GridObject for the character
     final characterObject = GridObject(
@@ -287,9 +287,16 @@ class GridSceneManager extends ChangeNotifier {
     final character = _ghostCharacter!;
     final currentPosition = character.position;
 
-    // Update position tracking for animations
+    // Store the actual previous position at the moment of movement
+    // This ensures we have the correct starting position for animations
     if (fromPosition != null) {
       _lastPlayerPosition = fromPosition;
+    } else {
+      // If no fromPosition provided, use the last known position
+      // This prevents animation desync during rapid inputs
+      if (_lastPlayerPosition == null) {
+        _lastPlayerPosition = currentPosition;
+      }
     }
 
     // Update or create the character object with new grid position
@@ -309,10 +316,21 @@ class GridSceneManager extends ChangeNotifier {
       _loadObjectsAroundCamera();
     }
 
-    // Skip immediate camera update - let animation system handle it
+    // Always update camera to follow player - smooth animation system will handle transitions
     debugPrint(
-      'GridSceneManager: Skipping camera update in updateGhostCharacterPosition - animation system will handle it',
+      'GridSceneManager: Immediately syncing camera to player position',
     );
+
+    // Use immediate camera sync instead of animation - the camera animation system will smooth this out
+    final newCameraTarget = Vector3(
+      currentPosition.x * Position.tileSpacing,
+      0.0,
+      currentPosition.z * Position.tileSpacing,
+    );
+
+    // Set the camera target immediately - the animation system will smoothly follow
+    _animationSystem.animateCamera(newCameraTarget, duration: 100);
+    _cameraTarget = newCameraTarget;
 
     // Notify game loop manager of player movement (this will handle animations)
     if (_gameLoopManager != null) {
@@ -332,8 +350,9 @@ class GridSceneManager extends ChangeNotifier {
       final gridObject = entry.value;
 
       // Get current animated position from animation system
-      final animatedPosition = _characterAnimationSystem
-          .getCharacterWorldPosition(characterId);
+      final animatedPosition = _animationSystem.getCharacterWorldPosition(
+        characterId,
+      );
 
       if (animatedPosition != null) {
         // Character is animating, use animated position
@@ -352,14 +371,17 @@ class GridSceneManager extends ChangeNotifier {
     Position fromPosition,
     Position toPosition, {
     int? duration,
-    MovementEasing? easing,
+    AnimationEasing? easing,
   }) async {
-    await _characterAnimationSystem.animateCharacterMovement(
+    // Use easing directly (already converted to AnimationEasing)
+    final unifiedEasing = easing ?? AnimationEasing.easeInOut;
+
+    await _animationSystem.animateCharacter(
       characterId,
       fromPosition,
       toPosition,
       duration: duration,
-      easing: easing,
+      easing: unifiedEasing,
       onUpdate: (worldPosition) {
         // Update the character's GridObject with animated position
         final gridObject = _characterObjects[characterId];
@@ -378,11 +400,11 @@ class GridSceneManager extends ChangeNotifier {
     Position fromPosition,
     Position toPosition,
   ) async {
-    await _characterAnimationSystem.animateCharacterMovement(
+    await _animationSystem.animateCharacter(
       enemyId,
       fromPosition,
       toPosition,
-      easing: MovementEasing.easeOut,
+      easing: AnimationEasing.easeOut,
       onUpdate: (worldPosition) {
         // Update the enemy's GridObject with animated position
         final gridObject = _characterObjects[enemyId];
@@ -404,11 +426,11 @@ class GridSceneManager extends ChangeNotifier {
     Position fromPosition,
     Position toPosition,
   ) async {
-    await _characterAnimationSystem.animateCharacterMovement(
+    await _animationSystem.animateCharacter(
       allyId,
       fromPosition,
       toPosition,
-      easing: MovementEasing.easeInOut,
+      easing: AnimationEasing.easeInOut,
       onUpdate: (worldPosition) {
         // Update the ally's GridObject with animated position
         final gridObject = _characterObjects[allyId];
@@ -463,7 +485,7 @@ class GridSceneManager extends ChangeNotifier {
     // Get stored previous and current positions from main.dart tracking
     final currentPosition = _ghostCharacter!.position;
 
-    // We need to get the previous position from somewhere - let's store it
+    // Use the stored previous position - it should be set correctly in updateGhostCharacterPosition
     Position? previousPosition = _lastPlayerPosition;
 
     // If this is the first move or no previous position, don't animate
@@ -481,7 +503,7 @@ class GridSceneManager extends ChangeNotifier {
       _ghostCharacter!.id,
       previousPosition,
       currentPosition,
-      easing: MovementEasing.easeInOut,
+      easing: AnimationEasing.easeInOut,
     );
 
     final cameraAnimationFuture = _updateCameraToFollowCharacter(animate: true);
@@ -509,18 +531,18 @@ class GridSceneManager extends ChangeNotifier {
         debugPrint(
           'GridSceneManager: Starting camera animation to $newCameraTarget',
         );
-        await _cameraAnimationSystem.animateToPosition(
+        // Use shorter duration for responsive camera following
+        await _animationSystem.animateCamera(
           newCameraTarget,
-          duration:
-              CharacterMovementAnimationSystem.globalAnimationSpeed.durationMs,
-          easingCurve: EasingCurve.easeInOut,
+          duration: 100, // Fast camera following for responsive feel
+          easing: AnimationEasing.easeInOut,
         );
         debugPrint('GridSceneManager: Camera animation completed');
       } else {
         debugPrint(
           'GridSceneManager: Setting camera position instantly to $newCameraTarget',
         );
-        _cameraAnimationSystem.setPosition(newCameraTarget);
+        _animationSystem.setCameraPosition(newCameraTarget);
       }
       _cameraTarget = newCameraTarget;
 
@@ -610,7 +632,7 @@ class GridSceneManager extends ChangeNotifier {
         spawn.z * Position.tileSpacing,
       );
       _cameraTarget = initialTarget;
-      _cameraAnimationSystem.initialize(initialTarget);
+      _animationSystem.initialize(initialTarget);
     }
   }
 
@@ -1240,8 +1262,7 @@ class GridSceneManager extends ChangeNotifier {
     _gameLoopManager?.stopTurnBasedSystem();
     _gameLoopManager?.removeListener(_onGameLoopUpdate);
     _gameLoopManager?.dispose();
-    _cameraAnimationSystem.dispose();
-    _characterAnimationSystem.dispose();
+    _animationSystem.dispose();
     super.dispose();
   }
 }

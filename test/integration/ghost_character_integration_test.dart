@@ -98,7 +98,7 @@ void main() {
       sceneManager.updateGhostCharacterPosition();
 
       // Manually trigger camera animation to follow character
-      await sceneManager.cameraAnimationSystem.animateToPosition(
+      await sceneManager.animationSystem.animateCamera(
         Vector3(
           ghostCharacter.position.x * Position.tileSpacing,
           0.0,

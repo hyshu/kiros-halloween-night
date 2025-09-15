@@ -178,14 +178,5 @@ void main() {
       expect(AnimationPhase.allyMovement.displayName, equals('Ally Movement'));
       expect(AnimationPhase.effects.displayName, equals('Effects'));
     });
-
-    test('should have correct input blocking behavior', () {
-      expect(AnimationPhase.none.blocksInput, isFalse);
-      expect(AnimationPhase.movement.blocksInput, isTrue);
-      expect(AnimationPhase.combat.blocksInput, isTrue);
-      expect(AnimationPhase.aiMovement.blocksInput, isTrue);
-      expect(AnimationPhase.allyMovement.blocksInput, isTrue);
-      expect(AnimationPhase.effects.blocksInput, isTrue);
-    });
   });
 }

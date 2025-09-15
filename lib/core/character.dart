@@ -1,7 +1,7 @@
 import 'package:vector_math/vector_math.dart';
 import '../models/model_3d.dart';
 import 'position.dart';
-import 'character_movement_animation_system.dart';
+import 'animation_system.dart';
 import 'collision_detector.dart';
 
 /// Base class for all characters in the game
@@ -81,10 +81,10 @@ abstract class Character {
   /// Returns a Future that completes when the animation finishes, or immediately if collision occurs
   Future<bool> moveToAnimated(
     Position newPosition,
-    CharacterMovementAnimationSystem animationSystem, {
+    AnimationSystem animationSystem, {
     CollisionDetector? collisionDetector,
     int? duration,
-    MovementEasing? easing,
+    AnimationEasing? easing,
   }) async {
     if (!canMove) return false;
 
@@ -102,7 +102,7 @@ abstract class Character {
     isIdle = false;
 
     // Start animation from old position to new position
-    await animationSystem.animateCharacterMovement(
+    await animationSystem.animateCharacter(
       id,
       fromPosition,
       newPosition,

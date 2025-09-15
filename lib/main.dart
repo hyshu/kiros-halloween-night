@@ -156,16 +156,18 @@ class _GridSceneViewState extends State<GridSceneView> {
       tileMap: _tileMap,
       sceneManager: _sceneManager,
       onCharacterMoved: () async {
-        // Track previous position for animation
+        // Capture the actual current position at the moment of movement call
         final currentPosition = _ghostCharacter.position;
+        final actualPreviousPosition = _previousPlayerPosition;
+
+        // Update previous position BEFORE calling updateGhostCharacterPosition
+        // to ensure the next movement has the correct starting position
+        _previousPlayerPosition = currentPosition;
 
         // Update the scene when character moves
         await _sceneManager.updateGhostCharacterPosition(
-          fromPosition: _previousPlayerPosition,
+          fromPosition: actualPreviousPosition,
         );
-
-        // Update previous position for next move
-        _previousPlayerPosition = currentPosition;
       },
       onInventoryToggle: () {
         setState(() {

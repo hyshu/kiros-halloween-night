@@ -42,12 +42,6 @@ class InputManager {
   /// Handles a key press event
   /// Returns true if the key was handled
   Future<bool> handleKeyPress(LogicalKeyboardKey key) async {
-    // Check if input should be blocked due to active animations
-    if (_shouldBlockInput(key)) {
-      debugPrint('InputManager: Blocking input due to active animations');
-      return false; // Input blocked during animations
-    }
-
     final enemyManager = _sceneManager?.enemyManager;
     final wasHandled = _ghostCharacter.handleInput(
       key,
@@ -96,61 +90,6 @@ class InputManager {
     // we'll create a new InputManager when the tile map changes
   }
 
-  /// Checks if input should be blocked due to active animations
-  bool _shouldBlockInput(LogicalKeyboardKey key) {
-    // Check AnimationPhaseManager for blocking animations
-    final gameLoopManager = _sceneManager?.gameLoopManager;
-    if (gameLoopManager != null) {
-      final animationManager = gameLoopManager.animationManager;
-      if (animationManager.isAnimating &&
-          animationManager.currentPhase.blocksInput) {
-        debugPrint(
-          'InputManager: Blocking input due to AnimationPhaseManager '
-          '(phase: ${animationManager.currentPhase})',
-        );
-        return true; // Block input during animation phases
-      }
-    }
-
-    // Allow movement keys during character movement animations
-    if (_isMovementKey(key)) {
-      // Don't block movement keys - let them cancel current animations
-      return false;
-    }
-
-    // Check character-level movement animations for non-movement keys
-    final characterAnimationSystem = _ghostCharacter.animationSystem;
-    if (characterAnimationSystem != null &&
-        characterAnimationSystem.hasActiveAnimations) {
-      debugPrint(
-        'InputManager: Blocking non-movement input due to character movement animations',
-      );
-      return true; // Block non-movement input during character movement animations
-    }
-
-    // Check if character is already processing input
-    if (_ghostCharacter.isProcessingInput) {
-      debugPrint(
-        'InputManager: Blocking input due to character processing input',
-      );
-      return true; // Block input if character is already processing input
-    }
-
-    return false; // Input is allowed
-  }
-
-  /// Checks if the given key is a movement key
-  bool _isMovementKey(LogicalKeyboardKey key) {
-    return key == LogicalKeyboardKey.arrowUp ||
-        key == LogicalKeyboardKey.arrowDown ||
-        key == LogicalKeyboardKey.arrowLeft ||
-        key == LogicalKeyboardKey.arrowRight ||
-        key == LogicalKeyboardKey.keyW ||
-        key == LogicalKeyboardKey.keyS ||
-        key == LogicalKeyboardKey.keyA ||
-        key == LogicalKeyboardKey.keyD;
-  }
-
   /// Initializes the collision detector with all current characters
   void _initializeCollisionDetector() {
     if (_tileMap == null || _sceneManager == null) return;
@@ -165,12 +104,6 @@ class InputManager {
     if (enemyManager != null) {
       allCharacters.addAll(enemyManager.activeEnemies);
     }
-
-    // Note: Add allies when ally manager is available
-    // final allyManager = _sceneManager!.allyManager;
-    // if (allyManager != null) {
-    //   allCharacters.addAll(allyManager.allies);
-    // }
 
     _collisionDetector = CollisionDetector(
       tileMap: _tileMap,

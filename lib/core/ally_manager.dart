@@ -108,7 +108,7 @@ class AllyManager extends ChangeNotifier {
     for (final ally in _allies) {
       // Store previous state to detect changes
       final previousState = ally.state;
-      
+
       await ally.updateAI(
         tileMap,
         hostileEnemies,
