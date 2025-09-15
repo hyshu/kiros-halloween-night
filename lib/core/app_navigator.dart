@@ -15,17 +15,9 @@ import '../widgets/inventory_ui.dart';
 import '../widgets/gift_ui.dart';
 import '../widgets/story_dialogue.dart';
 
-enum AppScreen {
-  start,
-  story,
-  game,
-  gameOver,
-}
+enum AppScreen { start, story, game, gameOver }
 
-enum GameResult {
-  victory,
-  defeat,
-}
+enum GameResult { victory, defeat }
 
 class AppNavigator extends StatefulWidget {
   const AppNavigator({super.key});
@@ -50,6 +42,7 @@ class _AppNavigatorState extends State<AppNavigator> {
   // Game statistics for game over screen
   int _candyCollected = 0;
   int _enemiesDefeated = 0;
+  int _candiesGiven = 0;
   Duration _survivalTime = Duration.zero;
   DateTime? _gameStartTime;
   GameResult _gameResult = GameResult.defeat;
@@ -84,6 +77,7 @@ class _AppNavigatorState extends State<AppNavigator> {
       _gameStartTime = DateTime.now();
       _candyCollected = 0;
       _enemiesDefeated = 0;
+      _candiesGiven = 0;
     });
 
     await _initializeWorldMap();
@@ -106,9 +100,11 @@ class _AppNavigatorState extends State<AppNavigator> {
       _candyCollected = _ghostCharacter!.inventory.candyItems.length;
     }
 
-    // Get enemy defeat count from scene manager if available
+    // Get statistics from scene manager if available
     if (_sceneManager?.gameLoopManager != null) {
-      _enemiesDefeated = _sceneManager!.gameLoopManager!.getEnemiesDefeatedCount();
+      _enemiesDefeated = _sceneManager!.gameLoopManager!
+          .getEnemiesDefeatedCount();
+      _candiesGiven = _sceneManager!.gameLoopManager!.candiesGiven;
     }
 
     _navigateToScreen(AppScreen.gameOver);
@@ -303,15 +299,10 @@ class _AppNavigatorState extends State<AppNavigator> {
   Widget build(BuildContext context) {
     switch (_currentScreen) {
       case AppScreen.start:
-        return StartScreen(
-          onStartGame: _startGame,
-          onExit: _exitApp,
-        );
+        return StartScreen(onStartGame: _startGame, onExit: _exitApp);
 
       case AppScreen.story:
-        return StoryDialogue(
-          onContinue: _startActualGame,
-        );
+        return StoryDialogue(onContinue: _startActualGame);
 
       case AppScreen.game:
         return _buildGameScreen();
@@ -321,6 +312,7 @@ class _AppNavigatorState extends State<AppNavigator> {
           isVictory: _gameResult == GameResult.victory,
           candyCollected: _candyCollected,
           enemiesDefeated: _enemiesDefeated,
+          candiesGiven: _candiesGiven,
           survivalTime: _survivalTime,
           onRestart: () {
             _resetGame();
@@ -369,7 +361,8 @@ class _AppNavigatorState extends State<AppNavigator> {
               sceneManager: _sceneManager!,
             ),
             DialogueUI(dialogueManager: _sceneManager!.dialogueManager),
-            if (_sceneManager!.gameLoopManager?.giftSystem.isGiftUIActive == true)
+            if (_sceneManager!.gameLoopManager?.giftSystem.isGiftUIActive ==
+                true)
               GiftOverlay(
                 giftSystem: _sceneManager!.gameLoopManager!.giftSystem,
                 onConfirmGift: () {
@@ -421,7 +414,8 @@ class _AppNavigatorState extends State<AppNavigator> {
                   }
                 },
                 checkCanGiveToEnemies: () {
-                  return _sceneManager!.gameLoopManager?.canGiveGifts() ?? false;
+                  return _sceneManager!.gameLoopManager?.canGiveGifts() ??
+                      false;
                 },
                 onClose: () {
                   setState(() {
@@ -443,11 +437,7 @@ class _AppNavigatorState extends State<AppNavigator> {
                   onPressed: () {
                     _showPauseMenu();
                   },
-                  icon: const Icon(
-                    Icons.menu,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  icon: const Icon(Icons.menu, color: Colors.white, size: 24),
                 ),
               ),
             ),
@@ -463,9 +453,7 @@ class _AppNavigatorState extends State<AppNavigator> {
       barrierDismissible: true,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A0D2E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: const Text(
           "⏸️ Game Paused",
           style: TextStyle(color: Colors.white),

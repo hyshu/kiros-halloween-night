@@ -5,6 +5,7 @@ class GameOverScreen extends StatefulWidget {
   final bool isVictory;
   final int candyCollected;
   final int enemiesDefeated;
+  final int candiesGiven;
   final Duration survivalTime;
   final VoidCallback onRestart;
   final VoidCallback onMainMenu;
@@ -14,6 +15,7 @@ class GameOverScreen extends StatefulWidget {
     required this.isVictory,
     required this.candyCollected,
     required this.enemiesDefeated,
+    required this.candiesGiven,
     required this.survivalTime,
     required this.onRestart,
     required this.onMainMenu,
@@ -52,29 +54,17 @@ class _GameOverScreenState extends State<GameOverScreen>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.elasticOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
 
-    _statsAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _statsController,
-      curve: Curves.easeOutBack,
-    ));
+    _statsAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _statsController, curve: Curves.easeOutBack),
+    );
 
     _playAnimations();
   }
@@ -96,12 +86,6 @@ class _GameOverScreenState extends State<GameOverScreen>
     _scaleController.dispose();
     _statsController.dispose();
     super.dispose();
-  }
-
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    return '${minutes}m ${seconds}s';
   }
 
   @override
@@ -179,8 +163,8 @@ class _GameOverScreenState extends State<GameOverScreen>
         boxShadow: [
           BoxShadow(
             color: widget.isVictory
-                ? Colors.purple.withOpacity(0.4)
-                : Colors.red.withOpacity(0.4),
+                ? Colors.purple.withValues(alpha: 0.4)
+                : Colors.red.withValues(alpha: 0.4),
             blurRadius: 30,
             spreadRadius: 5,
           ),
@@ -197,8 +181,8 @@ class _GameOverScreenState extends State<GameOverScreen>
               shadows: [
                 Shadow(
                   color: widget.isVictory
-                      ? Colors.purple.withOpacity(0.8)
-                      : Colors.red.withOpacity(0.8),
+                      ? Colors.purple.withValues(alpha: 0.8)
+                      : Colors.red.withValues(alpha: 0.8),
                   blurRadius: 15,
                   offset: const Offset(0, 3),
                 ),
@@ -228,12 +212,12 @@ class _GameOverScreenState extends State<GameOverScreen>
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: widget.isVictory
-              ? Colors.purple.withOpacity(0.3)
-              : Colors.red.withOpacity(0.3),
+              ? Colors.purple.withValues(alpha: 0.3)
+              : Colors.red.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -259,7 +243,16 @@ class _GameOverScreenState extends State<GameOverScreen>
                   color: Colors.orange,
                 ),
               ),
-              const SizedBox(width: 15),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildStatItem(
+                  icon: "🎁",
+                  label: "Candies Given",
+                  value: widget.candiesGiven.toString(),
+                  color: Colors.purple,
+                ),
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: _buildStatItem(
                   icon: "⚔️",
@@ -271,22 +264,12 @@ class _GameOverScreenState extends State<GameOverScreen>
             ],
           ),
 
-          const SizedBox(height: 15),
-
-          _buildStatItem(
-            icon: "⏱️",
-            label: "Survival Time",
-            value: _formatDuration(widget.survivalTime),
-            color: Colors.blue,
-            fullWidth: true,
-          ),
-
           if (widget.isVictory) ...[
             const SizedBox(height: 15),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.2),
+                color: Colors.purple.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Row(
@@ -318,18 +301,13 @@ class _GameOverScreenState extends State<GameOverScreen>
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
-          Text(
-            icon,
-            style: const TextStyle(fontSize: 24),
-          ),
+          Text(icon, style: const TextStyle(fontSize: 24)),
           const SizedBox(height: 8),
           Text(
             value,
@@ -342,10 +320,7 @@ class _GameOverScreenState extends State<GameOverScreen>
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 12),
             textAlign: TextAlign.center,
           ),
         ],
@@ -357,15 +332,12 @@ class _GameOverScreenState extends State<GameOverScreen>
     return Column(
       children: [
         _buildActionButton(
-          label: "🔄 Play Again",
+          label: "🆕 New Game",
           onPressed: widget.onRestart,
           primary: true,
         ),
         const SizedBox(height: 15),
-        _buildActionButton(
-          label: "🏠 Main Menu",
-          onPressed: widget.onMainMenu,
-        ),
+        _buildActionButton(label: "🏠 Main Menu", onPressed: widget.onMainMenu),
       ],
     );
   }
@@ -392,18 +364,15 @@ class _GameOverScreenState extends State<GameOverScreen>
                 ],
               )
             : LinearGradient(
-                colors: [
-                  Colors.grey.shade700,
-                  Colors.grey.shade600,
-                ],
+                colors: [Colors.grey.shade700, Colors.grey.shade600],
               ),
         boxShadow: [
           BoxShadow(
             color: primary
                 ? (widget.isVictory
-                    ? Colors.deepPurple.withOpacity(0.4)
-                    : Colors.red.withOpacity(0.4))
-                : Colors.black.withOpacity(0.3),
+                      ? Colors.deepPurple.withValues(alpha: 0.4)
+                      : Colors.red.withValues(alpha: 0.4))
+                : Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

@@ -105,6 +105,7 @@ class BossCharacter extends EnemyCharacter {
   }
 
   /// Boss cannot receive candy gifts
+  @override
   bool canReceiveCandy() {
     return false;
   }

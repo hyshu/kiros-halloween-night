@@ -447,6 +447,7 @@ class GhostCharacter extends Character {
 
   /// Takes damage from enemy attack
   void takeDamageFromEnemy(int damage, EnemyCharacter attacker) {
+    final initialHealth = health;
     takeDamage(damage);
 
     // Apply defensive abilities from candies
@@ -457,6 +458,9 @@ class GhostCharacter extends Character {
       final reducedDamage = (damage * (1.0 - reduction)).round();
       heal(damage - reducedDamage); // Restore some health due to reduction
     }
+
+    // Log health change for debugging
+    debugPrint('Ghost Character: Health changed from $initialHealth to $health (damage: $damage, alive: $isAlive)');
   }
 
   /// Increases combat strength temporarily

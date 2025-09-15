@@ -93,6 +93,9 @@ class GameLoopManager extends ChangeNotifier {
   int _alliesLost = 0;
   int _playerEnemiesDefeated = 0;
 
+  /// Gift statistics
+  int _candiesGiven = 0;
+
   /// Recent combat results for UI feedback
   final List<PlayerCombatResult> _recentPlayerCombats = [];
   static const int maxRecentCombats = 5;
@@ -113,6 +116,9 @@ class GameLoopManager extends ChangeNotifier {
   int get enemiesDefeated => _enemiesDefeated;
   int get alliesLost => _alliesLost;
   int get playerEnemiesDefeated => _playerEnemiesDefeated;
+
+  /// Gift statistics getters
+  int get candiesGiven => _candiesGiven;
 
   /// Recent combat results getter
   List<PlayerCombatResult> get recentPlayerCombats =>
@@ -427,7 +433,8 @@ class GameLoopManager extends ChangeNotifier {
       // Check if player was defeated
       if (!_ghostCharacter!.isAlive) {
         debugPrint('GameLoopManager: Player was defeated!');
-        // TODO: Handle player death
+        // Trigger game over with defeat
+        onDefeat?.call();
         break;
       }
     }
@@ -569,6 +576,10 @@ class GameLoopManager extends ChangeNotifier {
     final success = _giftSystem.confirmGift(_ghostCharacter!);
 
     if (success && targetEnemy != null) {
+      // Increment candies given counter
+      _candiesGiven++;
+      debugPrint('GameLoopManager: Candy given! Total candies given: $_candiesGiven');
+
       // Convert the target enemy to ally
       convertEnemyToAlly(targetEnemy);
     }

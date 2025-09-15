@@ -156,15 +156,15 @@
     - Create game state initialization when starting new game
     - _Requirements: UI design, game flow management_
 
-- [ ] 11. Create game over screen and state management
-  - [ ] 11.1 Implement GameOverScreen with statistics display
+- [x] 11. Create game over screen and state management
+  - [x] 11.1 Implement GameOverScreen with statistics display
     - Create GameOverScreen widget showing final game statistics
     - Display collected candy count, enemies defeated, and survival time
     - Add visual feedback for victory vs defeat scenarios with different styling
     - Implement smooth transition animations from game world to game over screen
     - _Requirements: game statistics tracking, UI design_
 
-  - [ ] 11.2 Add restart and navigation functionality
+  - [x] 11.2 Add restart and navigation functionality
     - Create restart game functionality that resets all game state
     - Add return to main menu option with proper state cleanup
     - Implement game state reset for new game initialization
