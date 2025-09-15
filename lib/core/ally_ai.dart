@@ -129,12 +129,9 @@ class AllyAI {
     if (distanceToPlayer > maxFollowDistance) {
       // Too far from player, move closer quickly
       _moveTowardsTarget(ally, player.position, tileMap);
-    } else if (distanceToPlayer > ally.preferredFollowDistance) {
-      // Move to preferred distance
+    } else if (distanceToPlayer > minFollowDistance) {
+      // Move to preferred distance (1 tile away)
       _moveTowardsTarget(ally, player.position, tileMap);
-    } else if (distanceToPlayer < minFollowDistance) {
-      // Too close to player, move away slightly
-      _moveAwayFromTarget(ally, player.position, tileMap);
     } else {
       // At good distance, occasionally move randomly or stay put
       if (_random.nextDouble() < 0.2) {
@@ -146,36 +143,34 @@ class AllyAI {
     }
   }
 
-  /// Moves ally towards a target position
+  /// Moves ally towards a target position with obstacle avoidance
   static void _moveTowardsTarget(
     AllyCharacter ally,
     Position target,
     TileMap tileMap,
   ) {
-    final direction = _getBestDirectionTowards(ally.position, target);
+    final primaryDirection = _getBestDirectionTowards(ally.position, target);
 
-    if (direction != null) {
-      _attemptMove(ally, direction, tileMap);
-    } else {
-      // If no direct path, try random movement
-      _wanderRandomly(ally, tileMap);
+    if (primaryDirection != null) {
+      // Try primary direction first
+      if (_attemptMove(ally, primaryDirection, tileMap)) {
+        return; // Successfully moved in primary direction
+      }
+
+      // Primary direction blocked, try alternative paths
+      final alternativeDirections = _getAlternativeDirections(ally.position, primaryDirection, target);
+
+      for (final direction in alternativeDirections) {
+        if (_attemptMove(ally, direction, tileMap)) {
+          return; // Successfully moved in alternative direction
+        }
+      }
     }
+
+    // If no direct path available, try random movement as last resort
+    _wanderRandomly(ally, tileMap);
   }
 
-  /// Moves ally away from a target position
-  static void _moveAwayFromTarget(
-    AllyCharacter ally,
-    Position target,
-    TileMap tileMap,
-  ) {
-    final direction = _getBestDirectionAwayFrom(ally.position, target);
-
-    if (direction != null) {
-      _attemptMove(ally, direction, tileMap);
-    } else {
-      ally.setIdle();
-    }
-  }
 
   /// Makes ally wander randomly
   static void _wanderRandomly(AllyCharacter ally, TileMap tileMap) {
@@ -207,6 +202,57 @@ class AllyAI {
     }
 
     return null; // Already at target
+  }
+
+  /// Gets alternative directions to try when primary direction is blocked
+  static List<Direction> _getAlternativeDirections(Position from, Direction primaryDirection, Position target) {
+    final dx = target.x - from.x;
+    final dz = target.z - from.z;
+    final alternatives = <Direction>[];
+
+    // Add perpendicular directions based on the secondary axis
+    switch (primaryDirection) {
+      case Direction.north:
+      case Direction.south:
+        // Primary is vertical, try horizontal alternatives
+        if (dx > 0) {
+          alternatives.add(Direction.east);
+        } else if (dx < 0) {
+          alternatives.add(Direction.west);
+        }
+        // Add the opposite horizontal direction as backup
+        if (dx >= 0) {
+          alternatives.add(Direction.west);
+        } else {
+          alternatives.add(Direction.east);
+        }
+        break;
+      case Direction.east:
+      case Direction.west:
+        // Primary is horizontal, try vertical alternatives
+        if (dz > 0) {
+          alternatives.add(Direction.south);
+        } else if (dz < 0) {
+          alternatives.add(Direction.north);
+        }
+        // Add the opposite vertical direction as backup
+        if (dz >= 0) {
+          alternatives.add(Direction.north);
+        } else {
+          alternatives.add(Direction.south);
+        }
+        break;
+    }
+
+    // Remove duplicates while preserving order
+    final uniqueAlternatives = <Direction>[];
+    for (final direction in alternatives) {
+      if (!uniqueAlternatives.contains(direction)) {
+        uniqueAlternatives.add(direction);
+      }
+    }
+
+    return uniqueAlternatives;
   }
 
   /// Gets the best direction to move away from a target

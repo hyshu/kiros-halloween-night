@@ -47,7 +47,7 @@ class AllyCharacter extends Character {
 
   AllyCharacter({
     required this.originalEnemy,
-    this.preferredFollowDistance = 2,
+    this.preferredFollowDistance = 1,
     this.maxFollowDistance = 5,
     this.state = AllyState.following,
     this.movementCooldown = 0,
@@ -137,18 +137,15 @@ class AllyCharacter extends Character {
     // Follow the player
     final distanceToPlayer = position.distanceTo(_followTarget!.position);
 
-    if (distanceToPlayer > 2) {
-      // Distance > 2: Always rush toward player
+    if (distanceToPlayer > 1) {
+      // Distance > 1: Always rush toward player
       await _moveTowardsTarget(
         _followTarget!.position,
         tileMap,
         onAnimateMovement: onAnimateMovement,
       );
-    } else if (distanceToPlayer < 1) {
-      // Distance < 1: Stay in place (don't move away)
-      setIdle();
     } else {
-      // Distance 1-2: At good distance, stay put or move randomly
+      // Distance = 1: At perfect distance, stay put or move randomly
       if (_random.nextDouble() < 0.3) {
         // 30% chance to move randomly
         await _wanderRandomly(tileMap, onAnimateMovement: onAnimateMovement);
@@ -206,24 +203,40 @@ class AllyCharacter extends Character {
     }).toList();
   }
 
-  /// Moves towards a target position
+  /// Moves towards a target position with obstacle avoidance
   Future<void> _moveTowardsTarget(
     Position target,
     TileMap tileMap, {
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
-    final direction = _getDirectionTowards(target);
+    final primaryDirection = _getDirectionTowards(target);
 
-    if (direction != null) {
-      await _attemptMove(
-        direction,
+    if (primaryDirection != null) {
+      // Try primary direction first
+      if (await _attemptMove(
+        primaryDirection,
         tileMap,
         onAnimateMovement: onAnimateMovement,
-      );
-    } else {
-      // If no direct path, try random movement
-      await _wanderRandomly(tileMap, onAnimateMovement: onAnimateMovement);
+      )) {
+        return; // Successfully moved in primary direction
+      }
+
+      // Primary direction blocked, try alternative paths
+      final alternativeDirections = _getAlternativeDirections(primaryDirection, target);
+
+      for (final direction in alternativeDirections) {
+        if (await _attemptMove(
+          direction,
+          tileMap,
+          onAnimateMovement: onAnimateMovement,
+        )) {
+          return; // Successfully moved in alternative direction
+        }
+      }
     }
+
+    // If no direct path available, try random movement as last resort
+    await _wanderRandomly(tileMap, onAnimateMovement: onAnimateMovement);
   }
 
   /// Makes the ally wander randomly
@@ -263,6 +276,57 @@ class AllyCharacter extends Character {
     }
 
     return null; // Already at target
+  }
+
+  /// Gets alternative directions to try when primary direction is blocked
+  List<Direction> _getAlternativeDirections(Direction primaryDirection, Position target) {
+    final dx = target.x - position.x;
+    final dz = target.z - position.z;
+    final alternatives = <Direction>[];
+
+    // Add perpendicular directions based on the secondary axis
+    switch (primaryDirection) {
+      case Direction.north:
+      case Direction.south:
+        // Primary is vertical, try horizontal alternatives
+        if (dx > 0) {
+          alternatives.add(Direction.east);
+        } else if (dx < 0) {
+          alternatives.add(Direction.west);
+        }
+        // Add the opposite horizontal direction as backup
+        if (dx >= 0) {
+          alternatives.add(Direction.west);
+        } else {
+          alternatives.add(Direction.east);
+        }
+        break;
+      case Direction.east:
+      case Direction.west:
+        // Primary is horizontal, try vertical alternatives
+        if (dz > 0) {
+          alternatives.add(Direction.south);
+        } else if (dz < 0) {
+          alternatives.add(Direction.north);
+        }
+        // Add the opposite vertical direction as backup
+        if (dz >= 0) {
+          alternatives.add(Direction.north);
+        } else {
+          alternatives.add(Direction.south);
+        }
+        break;
+    }
+
+    // Remove duplicates while preserving order
+    final uniqueAlternatives = <Direction>[];
+    for (final direction in alternatives) {
+      if (!uniqueAlternatives.contains(direction)) {
+        uniqueAlternatives.add(direction);
+      }
+    }
+
+    return uniqueAlternatives;
   }
 
   /// Attempts to move in the specified direction
