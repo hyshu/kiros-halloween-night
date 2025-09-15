@@ -78,6 +78,7 @@ class AllyCharacter extends Character {
     TileMap tileMap,
     List<EnemyCharacter> hostileEnemies, {
     Function(String, Position, Position)? onAnimateMovement,
+    List<AllyCharacter>? allAllies,
   }) async {
     // Update satisfaction (decreases slowly over time)
     _updateSatisfaction();
@@ -94,6 +95,7 @@ class AllyCharacter extends Character {
         await _executeFollowingBehavior(
           tileMap,
           hostileEnemies,
+          allAllies: allAllies,
           onAnimateMovement: onAnimateMovement,
         );
         break;
@@ -101,6 +103,7 @@ class AllyCharacter extends Character {
         await _executeCombatBehavior(
           tileMap,
           hostileEnemies,
+          allAllies: allAllies,
           onAnimateMovement: onAnimateMovement,
         );
         break;
@@ -115,6 +118,7 @@ class AllyCharacter extends Character {
   Future<void> _executeFollowingBehavior(
     TileMap tileMap,
     List<EnemyCharacter> hostileEnemies, {
+    List<AllyCharacter>? allAllies,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     if (_followTarget == null) {
@@ -129,6 +133,7 @@ class AllyCharacter extends Character {
       await _executeCombatBehavior(
         tileMap,
         hostileEnemies,
+        allAllies: allAllies,
         onAnimateMovement: onAnimateMovement,
       );
       return;
@@ -142,13 +147,14 @@ class AllyCharacter extends Character {
       await _moveTowardsTarget(
         _followTarget!.position,
         tileMap,
+        allAllies: allAllies,
         onAnimateMovement: onAnimateMovement,
       );
     } else {
       // Distance = 1: At perfect distance, stay put or move randomly
       if (_random.nextDouble() < 0.3) {
         // 30% chance to move randomly
-        await _wanderRandomly(tileMap, onAnimateMovement: onAnimateMovement);
+        await _wanderRandomly(tileMap, allAllies: allAllies, onAnimateMovement: onAnimateMovement);
       } else {
         setIdle();
       }
@@ -159,6 +165,7 @@ class AllyCharacter extends Character {
   Future<void> _executeCombatBehavior(
     TileMap tileMap,
     List<EnemyCharacter> hostileEnemies, {
+    List<AllyCharacter>? allAllies,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final nearbyEnemies = _getNearbyHostileEnemies(hostileEnemies);
@@ -169,6 +176,7 @@ class AllyCharacter extends Character {
       await _executeFollowingBehavior(
         tileMap,
         hostileEnemies,
+        allAllies: allAllies,
         onAnimateMovement: onAnimateMovement,
       );
       return;
@@ -186,6 +194,7 @@ class AllyCharacter extends Character {
     await _moveTowardsTarget(
       closestEnemy.position,
       tileMap,
+      allAllies: allAllies,
       onAnimateMovement: onAnimateMovement,
     );
   }
@@ -207,6 +216,7 @@ class AllyCharacter extends Character {
   Future<void> _moveTowardsTarget(
     Position target,
     TileMap tileMap, {
+    List<AllyCharacter>? allAllies,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final primaryDirection = _getDirectionTowards(target);
@@ -216,6 +226,7 @@ class AllyCharacter extends Character {
       if (await _attemptMove(
         primaryDirection,
         tileMap,
+        allAllies: allAllies,
         onAnimateMovement: onAnimateMovement,
       )) {
         return; // Successfully moved in primary direction
@@ -231,6 +242,7 @@ class AllyCharacter extends Character {
         if (await _attemptMove(
           direction,
           tileMap,
+          allAllies: allAllies,
           onAnimateMovement: onAnimateMovement,
         )) {
           return; // Successfully moved in alternative direction
@@ -239,12 +251,13 @@ class AllyCharacter extends Character {
     }
 
     // If no direct path available, try random movement as last resort
-    await _wanderRandomly(tileMap, onAnimateMovement: onAnimateMovement);
+    await _wanderRandomly(tileMap, allAllies: allAllies, onAnimateMovement: onAnimateMovement);
   }
 
   /// Makes the ally wander randomly
   Future<void> _wanderRandomly(
     TileMap tileMap, {
+    List<AllyCharacter>? allAllies,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final directions = Direction.values;
@@ -255,6 +268,7 @@ class AllyCharacter extends Character {
       if (await _attemptMove(
         direction,
         tileMap,
+        allAllies: allAllies,
         onAnimateMovement: onAnimateMovement,
       )) {
         break; // Successfully moved (facing direction updated in _attemptMove)
@@ -339,6 +353,7 @@ class AllyCharacter extends Character {
   Future<bool> _attemptMove(
     Direction direction,
     TileMap tileMap, {
+    List<AllyCharacter>? allAllies,
     Function(String, Position, Position)? onAnimateMovement,
   }) async {
     final newPosition = _getNewPosition(direction);
@@ -346,6 +361,17 @@ class AllyCharacter extends Character {
     // Check if the new position is valid and walkable
     if (!tileMap.isWalkable(newPosition)) {
       return false;
+    }
+
+    // Check if another ally is already at the target position
+    if (allAllies != null) {
+      for (final otherAlly in allAllies) {
+        if (otherAlly != this &&
+            otherAlly.position.x == newPosition.x &&
+            otherAlly.position.z == newPosition.z) {
+          return false;
+        }
+      }
     }
 
     // Store previous position for animation

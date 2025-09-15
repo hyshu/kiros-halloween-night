@@ -113,6 +113,7 @@ class AllyManager extends ChangeNotifier {
         tileMap,
         hostileEnemies,
         onAnimateMovement: onAnimateMovement,
+        allAllies: _allies,
       );
 
       // Check for state changes and notify if callback provided
@@ -213,6 +214,15 @@ class AllyManager extends ChangeNotifier {
   /// Gets allies with low satisfaction
   List<AllyCharacter> getLowSatisfactionAllies() {
     return _allies.where((ally) => ally.satisfactionPercentage < 0.3).toList();
+  }
+
+  /// Checks if a position is occupied by any ally (excluding the specified ally)
+  bool isPositionOccupiedByAlly(Position position, AllyCharacter? excludeAlly) {
+    return _allies.any((ally) =>
+      ally != excludeAlly &&
+      ally.position.x == position.x &&
+      ally.position.z == position.z
+    );
   }
 
   /// Activates all allies (makes them active for processing)

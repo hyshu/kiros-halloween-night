@@ -43,7 +43,7 @@ void main() {
         // Place hostile enemy near ally
         hostileEnemy.position = Position(9, 8); // Adjacent to ally
 
-        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap);
+        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap, [ally]);
 
         expect(ally.state, equals(AllyState.combat));
       });
@@ -52,7 +52,7 @@ void main() {
         // Keep hostile enemy far from ally
         hostileEnemy.position = Position(15, 15);
 
-        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap);
+        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap, [ally]);
 
         expect(ally.state, equals(AllyState.following));
       });
@@ -61,7 +61,7 @@ void main() {
         hostileEnemy.position = Position(9, 8);
         hostileEnemy.deactivate(); // Make enemy inactive
 
-        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap);
+        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap, [ally]);
 
         expect(ally.state, equals(AllyState.following));
       });
@@ -70,7 +70,7 @@ void main() {
         hostileEnemy.position = Position(9, 8);
         hostileEnemy.state = EnemyState.satisfied; // Not hostile
 
-        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap);
+        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap, [ally]);
 
         expect(ally.state, equals(AllyState.following));
       });
@@ -83,7 +83,7 @@ void main() {
         player.position = Position(15, 15);
 
         final initialPosition = ally.position;
-        AllyAI.updateAllyAI(ally, player, [], tileMap);
+        AllyAI.updateAllyAI(ally, player, [], tileMap, [ally]);
 
         // Ally should have moved (position changed)
         expect(ally.position, isNot(equals(initialPosition)));
@@ -96,7 +96,7 @@ void main() {
         player.position = Position(10, 10);
 
         ally.setActive(); // Start as active
-        AllyAI.updateAllyAI(ally, player, [], tileMap);
+        AllyAI.updateAllyAI(ally, player, [], tileMap, [ally]);
 
         // Ally should be idle when at preferred distance (might move randomly 20% chance)
         // For a more deterministic test, we check if ally didn't move towards player
@@ -110,7 +110,7 @@ void main() {
         ally.position = Position(10, 10);
         player.position = Position(10, 10); // Same position
 
-        AllyAI.updateAllyAI(ally, player, [], tileMap);
+        AllyAI.updateAllyAI(ally, player, [], tileMap, [ally]);
 
         // Ally should either stay idle or move (random 20% chance)
         // Since we're at distance 0 (less than minFollowDistance of 1), it should be handled correctly
@@ -130,7 +130,7 @@ void main() {
         hostileEnemy.position = Position(10, 8);
 
         final initialPosition = ally.position;
-        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap);
+        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap, [ally]);
 
         // Ally should move towards enemy
         expect(ally.position, isNot(equals(initialPosition)));
@@ -144,7 +144,7 @@ void main() {
         hostileEnemy.position = Position(9, 8); // Adjacent
 
         ally.setIdle();
-        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap);
+        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap, [ally]);
 
         // Ally should stay active (engaged in combat)
         expect(ally.isActive, isTrue);
@@ -156,7 +156,7 @@ void main() {
         ally.position = Position(8, 8);
         hostileEnemy.position = Position(18, 18); // Very far
 
-        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap);
+        AllyAI.updateAllyAI(ally, player, [hostileEnemy], tileMap, [ally]);
 
         // Ally should return to following mode
         expect(ally.state, equals(AllyState.following));
@@ -293,7 +293,7 @@ void main() {
         player.position = Position(15, 15);
 
         final initialPosition = ally.position;
-        AllyAI.updateAllyAI(ally, player, [], tileMap);
+        AllyAI.updateAllyAI(ally, player, [], tileMap, [ally]);
 
         // Ally should not move due to cooldown
         expect(ally.position, equals(initialPosition));
@@ -306,7 +306,7 @@ void main() {
         player.position = Position(15, 15);
 
         final initialPosition = ally.position;
-        AllyAI.updateAllyAI(ally, player, [], tileMap);
+        AllyAI.updateAllyAI(ally, player, [], tileMap, [ally]);
 
         // Ally should move when cooldown is zero
         expect(ally.position, isNot(equals(initialPosition)));

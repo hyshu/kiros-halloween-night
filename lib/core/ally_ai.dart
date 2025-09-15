@@ -28,6 +28,7 @@ class AllyAI {
     GhostCharacter player,
     List<EnemyCharacter> hostileEnemies,
     TileMap tileMap,
+    List<AllyCharacter> allAllies,
   ) {
     if (!ally.isAlive || ally.isSatisfied) {
       return;
@@ -47,13 +48,13 @@ class AllyAI {
       if (ally.state != AllyState.combat) {
         ally.state = AllyState.combat;
       }
-      _executeCombatAI(ally, nearbyEnemies, tileMap);
+      _executeCombatAI(ally, nearbyEnemies, tileMap, allAllies);
     } else {
       // Switch to following mode
       if (ally.state != AllyState.following) {
         ally.state = AllyState.following;
       }
-      _executeFollowingAI(ally, player, tileMap);
+      _executeFollowingAI(ally, player, tileMap, allAllies);
     }
   }
 
@@ -65,7 +66,7 @@ class AllyAI {
     TileMap tileMap,
   ) {
     for (final ally in allies) {
-      updateAllyAI(ally, player, hostileEnemies, tileMap);
+      updateAllyAI(ally, player, hostileEnemies, tileMap, allies);
     }
   }
 
@@ -87,6 +88,7 @@ class AllyAI {
     AllyCharacter ally,
     List<EnemyCharacter> nearbyEnemies,
     TileMap tileMap,
+    List<AllyCharacter> allAllies,
   ) {
     if (nearbyEnemies.isEmpty) {
       return;
@@ -111,7 +113,7 @@ class AllyAI {
 
     // If enemy is within chase range, move towards it
     if (distanceToEnemy <= maxChaseDistance) {
-      _moveTowardsTarget(ally, closestEnemy.position, tileMap);
+      _moveTowardsTarget(ally, closestEnemy.position, tileMap, allAllies);
     } else {
       // Enemy too far, return to following mode
       ally.state = AllyState.following;
@@ -123,20 +125,21 @@ class AllyAI {
     AllyCharacter ally,
     GhostCharacter player,
     TileMap tileMap,
+    List<AllyCharacter> allAllies,
   ) {
     final distanceToPlayer = ally.position.distanceTo(player.position);
 
     if (distanceToPlayer > maxFollowDistance) {
       // Too far from player, move closer quickly
-      _moveTowardsTarget(ally, player.position, tileMap);
+      _moveTowardsTarget(ally, player.position, tileMap, allAllies);
     } else if (distanceToPlayer > minFollowDistance) {
       // Move to preferred distance (1 tile away)
-      _moveTowardsTarget(ally, player.position, tileMap);
+      _moveTowardsTarget(ally, player.position, tileMap, allAllies);
     } else {
       // At good distance, occasionally move randomly or stay put
       if (_random.nextDouble() < 0.2) {
         // 20% chance to move randomly
-        _wanderRandomly(ally, tileMap);
+        _wanderRandomly(ally, tileMap, allAllies);
       } else {
         ally.setIdle();
       }
@@ -148,12 +151,13 @@ class AllyAI {
     AllyCharacter ally,
     Position target,
     TileMap tileMap,
+    List<AllyCharacter> allAllies,
   ) {
     final primaryDirection = _getBestDirectionTowards(ally.position, target);
 
     if (primaryDirection != null) {
       // Try primary direction first
-      if (_attemptMove(ally, primaryDirection, tileMap)) {
+      if (_attemptMove(ally, primaryDirection, tileMap, allAllies)) {
         return; // Successfully moved in primary direction
       }
 
@@ -165,24 +169,24 @@ class AllyAI {
       );
 
       for (final direction in alternativeDirections) {
-        if (_attemptMove(ally, direction, tileMap)) {
+        if (_attemptMove(ally, direction, tileMap, allAllies)) {
           return; // Successfully moved in alternative direction
         }
       }
     }
 
     // If no direct path available, try random movement as last resort
-    _wanderRandomly(ally, tileMap);
+    _wanderRandomly(ally, tileMap, allAllies);
   }
 
   /// Makes ally wander randomly
-  static void _wanderRandomly(AllyCharacter ally, TileMap tileMap) {
+  static void _wanderRandomly(AllyCharacter ally, TileMap tileMap, List<AllyCharacter> allAllies) {
     final directions = Direction.values;
     final shuffledDirections = List<Direction>.from(directions)
       ..shuffle(_random);
 
     for (final direction in shuffledDirections) {
-      if (_attemptMove(ally, direction, tileMap)) {
+      if (_attemptMove(ally, direction, tileMap, allAllies)) {
         break; // Successfully moved
       }
     }
@@ -267,12 +271,22 @@ class AllyAI {
     AllyCharacter ally,
     Direction direction,
     TileMap tileMap,
+    List<AllyCharacter> allAllies,
   ) {
     final newPosition = _getNewPosition(ally.position, direction);
 
     // Check if the new position is valid and walkable
     if (!tileMap.isWalkable(newPosition)) {
       return false;
+    }
+
+    // Check if another ally is already at the target position
+    for (final otherAlly in allAllies) {
+      if (otherAlly != ally &&
+          otherAlly.position.x == newPosition.x &&
+          otherAlly.position.z == newPosition.z) {
+        return false;
+      }
     }
 
     // Perform the movement
