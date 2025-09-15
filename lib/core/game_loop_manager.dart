@@ -172,8 +172,10 @@ class GameLoopManager extends ChangeNotifier {
       dialogueManager: dialogueManager,
       enemyManager: enemyManager,
       onVictory: () => _victoryManager.checkVictoryConditions(ghostCharacter),
-      onBossEncounterStart: () => debugPrint('GameLoopManager: Boss encounter started!'),
-      onBossDefeated: () => _victoryManager.checkVictoryConditions(ghostCharacter),
+      onBossEncounterStart: () =>
+          debugPrint('GameLoopManager: Boss encounter started!'),
+      onBossDefeated: () =>
+          _victoryManager.checkVictoryConditions(ghostCharacter),
     );
 
     debugPrint(
@@ -218,11 +220,16 @@ class GameLoopManager extends ChangeNotifier {
 
     // Separate boss from regular enemies
     final boss = hostileEnemies.whereType<BossCharacter>().firstOrNull;
-    final regularEnemies = hostileEnemies.where((enemy) => enemy is! BossCharacter).toList();
+    final regularEnemies = hostileEnemies
+        .where((enemy) => enemy is! BossCharacter)
+        .toList();
 
     // Process regular combat encounters
     if (regularEnemies.isNotEmpty) {
-      final combatResults = _combatManager.processCombat(allies, regularEnemies);
+      final combatResults = _combatManager.processCombat(
+        allies,
+        regularEnemies,
+      );
 
       if (combatResults.isNotEmpty) {
         _totalCombatsProcessed += combatResults.length;
@@ -298,11 +305,11 @@ class GameLoopManager extends ChangeNotifier {
       final boss = result.enemy as BossCharacter;
       if (_dialogueManager != null) {
         _dialogueManager!.showBossAttack(
-          '${result.ally.id} delivers a devastating blow to the Vampire Lord for ${result.allyDamageDealt} damage!'
+          '${result.ally.id} delivers a devastating blow to the Vampire Lord for ${result.allyDamageDealt} damage!',
         );
         if (boss.isDefeated) {
           _dialogueManager!.showBossAttack(
-            'The mighty Vampire Lord has been defeated by ${result.ally.id}!'
+            'The mighty Vampire Lord has been defeated by ${result.ally.id}!',
           );
         }
       }
@@ -311,7 +318,7 @@ class GameLoopManager extends ChangeNotifier {
     } else if (result.allyDefeated) {
       if (_dialogueManager != null) {
         _dialogueManager!.showBossAttack(
-          'The Vampire Lord crushes ${result.ally.id} with ${result.enemyDamageDealt} damage!'
+          'The Vampire Lord crushes ${result.ally.id} with ${result.enemyDamageDealt} damage!',
         );
       }
       _alliesLost++;
@@ -320,7 +327,7 @@ class GameLoopManager extends ChangeNotifier {
       if (_dialogueManager != null) {
         _dialogueManager!.showCombatFeedback(
           'Epic battle: ${result.ally.id} deals ${result.allyDamageDealt} damage, '
-          'Vampire Lord retaliates for ${result.enemyDamageDealt} damage!'
+          'Vampire Lord retaliates for ${result.enemyDamageDealt} damage!',
         );
       }
     }
@@ -578,7 +585,9 @@ class GameLoopManager extends ChangeNotifier {
     if (success && targetEnemy != null) {
       // Increment candies given counter
       _candiesGiven++;
-      debugPrint('GameLoopManager: Candy given! Total candies given: $_candiesGiven');
+      debugPrint(
+        'GameLoopManager: Candy given! Total candies given: $_candiesGiven',
+      );
 
       // Convert the target enemy to ally
       convertEnemyToAlly(targetEnemy);

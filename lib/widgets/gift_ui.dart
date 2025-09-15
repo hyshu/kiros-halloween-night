@@ -48,7 +48,10 @@ class _GiftOverlayState extends State<GiftOverlay> {
             children: [
               // Title
               Text(
-                t.giftUI.giveCandy.replaceAll('{enemyName}', targetEnemy?.enemyType.displayName ?? "Enemy"),
+                t.giftUI.giveCandy.replaceAll(
+                  '{enemyName}',
+                  targetEnemy?.enemyType.displayName ?? "Enemy",
+                ),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,

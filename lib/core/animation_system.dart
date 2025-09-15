@@ -512,7 +512,9 @@ class CharacterAnimation {
     _progress = 1.0;
     // Ensure the final position update is called when cancelling
     onUpdate?.call(currentWorldPosition);
-    debugPrint('CharacterAnimation: Animation cancelled for $characterId, position set to final target: $toPosition');
+    debugPrint(
+      'CharacterAnimation: Animation cancelled for $characterId, position set to final target: $toPosition',
+    );
     _complete();
   }
 

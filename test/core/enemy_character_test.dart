@@ -117,9 +117,9 @@ void main() {
 
       expect(boss.id, startsWith('boss_'));
       expect(boss.position, equals(const Position(100, 200)));
-      expect(boss.health, equals(200));
-      expect(boss.maxHealth, equals(200));
-      expect(boss.activationRadius, equals(15));
+      expect(boss.health, equals(500));
+      expect(boss.maxHealth, equals(500));
+      expect(boss.activationRadius, equals(25));
     });
 
     test('should spawn single enemy at position', () {

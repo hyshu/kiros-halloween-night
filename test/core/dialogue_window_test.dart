@@ -95,6 +95,7 @@ void main() {
       const event = DialogueEvent(
         message: 'Test message',
         type: DialogueType.interaction,
+        canDismiss: false,
       );
 
       dialogueWindow.displayDialogue(event);

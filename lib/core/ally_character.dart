@@ -222,7 +222,10 @@ class AllyCharacter extends Character {
       }
 
       // Primary direction blocked, try alternative paths
-      final alternativeDirections = _getAlternativeDirections(primaryDirection, target);
+      final alternativeDirections = _getAlternativeDirections(
+        primaryDirection,
+        target,
+      );
 
       for (final direction in alternativeDirections) {
         if (await _attemptMove(
@@ -279,7 +282,10 @@ class AllyCharacter extends Character {
   }
 
   /// Gets alternative directions to try when primary direction is blocked
-  List<Direction> _getAlternativeDirections(Direction primaryDirection, Position target) {
+  List<Direction> _getAlternativeDirections(
+    Direction primaryDirection,
+    Position target,
+  ) {
     final dx = target.x - position.x;
     final dz = target.z - position.z;
     final alternatives = <Direction>[];

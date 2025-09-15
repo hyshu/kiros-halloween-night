@@ -314,10 +314,7 @@ class EnemySpawner {
   static BossCharacter spawnBoss(Position position) {
     final id = 'boss_${_enemyIdCounter++}';
 
-    return BossCharacter.mainBoss(
-      id: id,
-      position: position,
-    );
+    return BossCharacter.mainBoss(id: id, position: position);
   }
 
   /// Resets the enemy ID counter (useful for testing)

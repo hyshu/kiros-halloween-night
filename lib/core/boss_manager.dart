@@ -222,10 +222,12 @@ class BossManager extends ChangeNotifier {
     String message;
     switch (phase) {
       case BossPhase.tactical:
-        message = "The Vampire Lord's tactics become more calculated and dangerous!";
+        message =
+            "The Vampire Lord's tactics become more calculated and dangerous!";
         break;
       case BossPhase.desperate:
-        message = "The wounded Vampire Lord enters a frenzied, desperate state!";
+        message =
+            "The wounded Vampire Lord enters a frenzied, desperate state!";
         break;
       case BossPhase.defeated:
         message = "The Vampire Lord staggers, its power finally fading...";
@@ -247,7 +249,7 @@ class BossManager extends ChangeNotifier {
     // Show warnings for dangerous situations
     if (distance <= 2 && _currentBoss!.currentPhase == BossPhase.desperate) {
       _dialogueManager?.showBossWarning(
-        "Danger! The desperate Vampire Lord is extremely dangerous at close range!"
+        "Danger! The desperate Vampire Lord is extremely dangerous at close range!",
       );
     }
   }
@@ -296,27 +298,39 @@ class BossManager extends ChangeNotifier {
     switch (candy.effect) {
       case CandyEffect.allyStrength:
         // Ally strength candy gives extra damage against boss
-        _showCandyEffectMessage("Your strength candy empowers your allies against the Vampire Lord!");
+        _showCandyEffectMessage(
+          "Your strength candy empowers your allies against the Vampire Lord!",
+        );
         break;
       case CandyEffect.healthBoost:
         // Health candy is more effective during boss fight
-        _showCandyEffectMessage("The healing candy glows with extra power near the boss!");
+        _showCandyEffectMessage(
+          "The healing candy glows with extra power near the boss!",
+        );
         break;
       case CandyEffect.speedIncrease:
         // Speed candy helps with boss positioning
-        _showCandyEffectMessage("Your speed candy helps you evade the boss's attacks!");
+        _showCandyEffectMessage(
+          "Your speed candy helps you evade the boss's attacks!",
+        );
         break;
       case CandyEffect.specialAbility:
         // Special ability candy has powerful effects against boss
-        _showCandyEffectMessage("The special candy unleashes unexpected power against the boss!");
+        _showCandyEffectMessage(
+          "The special candy unleashes unexpected power against the boss!",
+        );
         break;
       case CandyEffect.maxHealthIncrease:
         // Max health candy provides lasting benefit
-        _showCandyEffectMessage("The health candy provides lasting strength for the battle!");
+        _showCandyEffectMessage(
+          "The health candy provides lasting strength for the battle!",
+        );
         break;
       case CandyEffect.statModification:
         // Stat candy has general beneficial effects
-        _showCandyEffectMessage("The powerful candy enhances your abilities against the boss!");
+        _showCandyEffectMessage(
+          "The powerful candy enhances your abilities against the boss!",
+        );
         break;
     }
 

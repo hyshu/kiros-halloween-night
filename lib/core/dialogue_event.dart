@@ -14,6 +14,7 @@ class DialogueEvent {
   final String message;
   final DialogueType type;
   final bool canAdvance;
+  final bool canDismiss;
   final String? speakerName;
   final Duration? displayDuration;
 
@@ -21,6 +22,7 @@ class DialogueEvent {
     required this.message,
     required this.type,
     this.canAdvance = true,
+    this.canDismiss = true,
     this.speakerName,
     this.displayDuration,
   });
@@ -100,11 +102,12 @@ class DialogueEvent {
         other.message == message &&
         other.type == type &&
         other.canAdvance == canAdvance &&
+        other.canDismiss == canDismiss &&
         other.speakerName == speakerName;
   }
 
   @override
   int get hashCode {
-    return Object.hash(message, type, canAdvance, speakerName);
+    return Object.hash(message, type, canAdvance, canDismiss, speakerName);
   }
 }

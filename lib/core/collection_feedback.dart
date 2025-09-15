@@ -164,7 +164,10 @@ class CollectionFeedbackManager extends ChangeNotifier {
       case CandyEffect.healthBoost:
         return t.items.healthBoost.replaceAll('{value}', '${candy.value}');
       case CandyEffect.maxHealthIncrease:
-        return t.items.maxHealthIncrease.replaceAll('{value}', '${candy.value}');
+        return t.items.maxHealthIncrease.replaceAll(
+          '{value}',
+          '${candy.value}',
+        );
       case CandyEffect.speedIncrease:
         return t.items.speedBoost;
       case CandyEffect.allyStrength:

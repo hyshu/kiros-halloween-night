@@ -98,8 +98,9 @@ class CandyItem {
           id: id,
           name: t.candyTypes.cookie.name,
           modelPath: 'assets/foods/cookie.obj',
-          effect: CandyEffect.healthBoost,
-          value: 18,
+          effect: CandyEffect.speedIncrease,
+          value: 1,
+          abilityModifications: {'speedMultiplier': 1.5, 'duration': 30},
           description: t.candyTypes.cookie.description,
           position: position,
         );

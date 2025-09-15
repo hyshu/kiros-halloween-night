@@ -68,7 +68,9 @@ class VictoryManager extends ChangeNotifier {
     if (_bossManager == null) return false;
 
     final boss = _bossManager!.currentBoss;
-    return boss != null && boss.isDefeated && boss.currentPhase == BossPhase.defeated;
+    return boss != null &&
+        boss.isDefeated &&
+        boss.currentPhase == BossPhase.defeated;
   }
 
   /// Checks alternate victory conditions (for future expansion)
@@ -180,7 +182,10 @@ class VictoryManager extends ChangeNotifier {
   }
 
   /// Forces victory for testing purposes
-  void forceVictory(GhostCharacter player, {VictoryType type = VictoryType.bossDefeated}) {
+  void forceVictory(
+    GhostCharacter player, {
+    VictoryType type = VictoryType.bossDefeated,
+  }) {
     debugPrint('VictoryManager: Forcing victory for testing');
     _triggerVictory(type, player);
   }
@@ -220,8 +225,8 @@ class VictoryManager extends ChangeNotifier {
 
 /// Types of victory conditions
 enum VictoryType {
-  bossDefeated,  // Primary: Boss is defeated
-  alternate;     // Future: Alternate victory conditions
+  bossDefeated, // Primary: Boss is defeated
+  alternate; // Future: Alternate victory conditions
 
   String get displayName {
     switch (this) {

@@ -421,8 +421,10 @@ class BossCharacter extends EnemyCharacter {
     heal(healAmount);
 
     // Show regeneration message with heal amount
-    final regenerationMessage = t.combat.bossAbilities.regeneration
-        .replaceAll('{healAmount}', healAmount.toString());
+    final regenerationMessage = t.combat.bossAbilities.regeneration.replaceAll(
+      '{healAmount}',
+      healAmount.toString(),
+    );
     _dialogueManager?.showBossAttack(regenerationMessage);
 
     debugPrint('BossCharacter: Boss $id regenerates $healAmount health');

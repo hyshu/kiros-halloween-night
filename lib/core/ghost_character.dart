@@ -188,7 +188,9 @@ class GhostCharacter extends Character {
         _animationSystem!.isCharacterAnimating(id)) {
       // Cancel current animation - the animation system will snap to final position
       _animationSystem!.cancelCharacterAnimation(id);
-      debugPrint('GhostCharacter: Cancelled previous animation for rapid input');
+      debugPrint(
+        'GhostCharacter: Cancelled previous animation for rapid input',
+      );
     }
 
     bool success;
@@ -460,7 +462,9 @@ class GhostCharacter extends Character {
     }
 
     // Log health change for debugging
-    debugPrint('Ghost Character: Health changed from $initialHealth to $health (damage: $damage, alive: $isAlive)');
+    debugPrint(
+      'Ghost Character: Health changed from $initialHealth to $health (damage: $damage, alive: $isAlive)',
+    );
   }
 
   /// Increases combat strength temporarily
@@ -576,24 +580,31 @@ class GhostCharacter extends Character {
     position = newPosition;
 
     // Start animation with completion callback to ensure position sync
-    _animationSystem!.animateCharacter(
-      id,
-      fromPosition,
-      newPosition,
-      onUpdate: (currentWorldPosition) {
-        // This ensures visual position stays synchronized with animation
-        // No additional logic needed as the animation handles visual updates
-      },
-    ).then((_) {
-      // Ensure position is correctly set when animation completes
-      // This handles cases where animation was cancelled or interrupted
-      position = newPosition;
-      debugPrint('GhostCharacter: Animation completed, position confirmed at $newPosition');
-    }).catchError((error) {
-      // Handle animation errors by ensuring position is still correct
-      position = newPosition;
-      debugPrint('GhostCharacter: Animation error, position set to $newPosition');
-    });
+    _animationSystem!
+        .animateCharacter(
+          id,
+          fromPosition,
+          newPosition,
+          onUpdate: (currentWorldPosition) {
+            // This ensures visual position stays synchronized with animation
+            // No additional logic needed as the animation handles visual updates
+          },
+        )
+        .then((_) {
+          // Ensure position is correctly set when animation completes
+          // This handles cases where animation was cancelled or interrupted
+          position = newPosition;
+          debugPrint(
+            'GhostCharacter: Animation completed, position confirmed at $newPosition',
+          );
+        })
+        .catchError((error) {
+          // Handle animation errors by ensuring position is still correct
+          position = newPosition;
+          debugPrint(
+            'GhostCharacter: Animation error, position set to $newPosition',
+          );
+        });
   }
 
   @override

@@ -150,7 +150,7 @@ void main() {
         (CandyType.cookie, CandyEffect.speedIncrease, 'Speed Boost!'),
         (CandyType.cupcake, CandyEffect.allyStrength, 'Ally Power!'),
         (CandyType.iceCream, CandyEffect.specialAbility, 'Special Power!'),
-        (CandyType.lollipop, CandyEffect.statModification, 'Stat Boost!'),
+        (CandyType.lollipop, CandyEffect.healthBoost, '+22 Health'),
       ];
 
       for (final (candyType, expectedEffect, expectedMessage) in testCases) {
@@ -179,7 +179,10 @@ void main() {
         (CandyType.cookie, '#FFFF00'), // Yellow for speed
         (CandyType.cupcake, '#FF8800'), // Orange for ally strength
         (CandyType.iceCream, '#FF00FF'), // Magenta for special ability
-        (CandyType.lollipop, '#8800FF'), // Purple for stat modification
+        (
+          CandyType.lollipop,
+          '#00FF00',
+        ), // Green for health (lollipop is healthBoost)
       ];
 
       for (final (candyType, expectedColor) in testCases) {
