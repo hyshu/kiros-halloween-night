@@ -616,16 +616,11 @@ class GameLoopManager extends ChangeNotifier {
   void _showCandyCollectionMessage(CandyItem candy) {
     if (_dialogueManager == null) return;
 
-    final messages = [
-      'Kiro finds a ${candy.name}! ${candy.description}',
-      'A glowing ${candy.name} catches Kiro\'s attention. Sweet supernatural treat!',
-      'Kiro discovers a magical ${candy.name} that sparkles with otherworldly flavor.',
-      'The ${candy.name} makes Kiro glow brighter with ghostly happiness.',
-      'Kiro gobbles up the ${candy.name}, feeling more spirited than ever!',
-    ];
-
+    final messages = t.candyCollection.messages;
     final random = (DateTime.now().millisecondsSinceEpoch % messages.length);
-    final message = messages[random];
+    final message = messages[random]
+        .replaceAll('{name}', candy.name)
+        .replaceAll('{description}', candy.description);
 
     _dialogueManager!.showItemCollection(message);
   }
@@ -635,7 +630,7 @@ class GameLoopManager extends ChangeNotifier {
     if (_dialogueManager == null) return;
 
     _dialogueManager!.showItemCollection(
-      'Kiro\'s inventory is full! Can\'t pick up more candy.',
+      t.candyCollection.inventoryFullMessage,
     );
   }
 

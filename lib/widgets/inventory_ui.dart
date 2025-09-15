@@ -112,8 +112,8 @@ class _InventoryUIState extends State<InventoryUI> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Active Effects',
+          Text(
+            t.items.activeEffects,
             style: TextStyle(
               color: Colors.amber,
               fontSize: 14,
@@ -132,7 +132,7 @@ class _InventoryUIState extends State<InventoryUI> {
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                   Text(
-                    '${effect.remainingDuration} turns',
+                    '${effect.remainingDuration} ${t.items.turns}',
                     style: const TextStyle(color: Colors.amber, fontSize: 12),
                   ),
                 ],
@@ -146,9 +146,9 @@ class _InventoryUIState extends State<InventoryUI> {
 
   Widget _buildCandyList() {
     if (widget.inventory.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'No candies in inventory',
+          t.items.noCandies,
           style: TextStyle(color: Colors.white60, fontSize: 16),
         ),
       );
@@ -241,13 +241,13 @@ class _InventoryUIState extends State<InventoryUI> {
           bottomRight: Radius.circular(10),
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.info_outline, color: Colors.white60, size: 16),
-          SizedBox(width: 8),
+          const Icon(Icons.info_outline, color: Colors.white60, size: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Tap an item for options. Press I to close.',
+              t.items.helpText,
               style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
           ),

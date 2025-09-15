@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'candy_collection_system.dart';
 import 'candy_item.dart';
 import 'position.dart';
+import '../l10n/strings.g.dart';
 
 /// Types of visual feedback for candy collection
 enum FeedbackType {
@@ -147,7 +148,7 @@ class CollectionFeedbackManager extends ChangeNotifier {
   void _createFailedCollectionFeedback(CandyCollectionEvent event) {
     final feedback = CollectionFeedback(
       type: FeedbackType.text,
-      message: 'Inventory Full!',
+      message: t.items.inventoryFull,
       position: event.position,
       durationMs: 1500,
       color: '#FF4444', // Red
@@ -161,17 +162,17 @@ class CollectionFeedbackManager extends ChangeNotifier {
   String _getCollectionMessage(CandyItem candy) {
     switch (candy.effect) {
       case CandyEffect.healthBoost:
-        return '+${candy.value} Health';
+        return t.items.healthBoost.replaceAll('{value}', '${candy.value}');
       case CandyEffect.maxHealthIncrease:
-        return '+${candy.value} Max Health';
+        return t.items.maxHealthIncrease.replaceAll('{value}', '${candy.value}');
       case CandyEffect.speedIncrease:
-        return 'Speed Boost!';
+        return t.items.speedBoost;
       case CandyEffect.allyStrength:
-        return 'Ally Power!';
+        return t.items.allyPower;
       case CandyEffect.specialAbility:
-        return 'Special Power!';
+        return t.items.specialPower;
       case CandyEffect.statModification:
-        return 'Stat Boost!';
+        return t.items.statBoost;
     }
   }
 

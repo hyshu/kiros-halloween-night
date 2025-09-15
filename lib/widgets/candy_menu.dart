@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/candy_item.dart';
+import '../l10n/strings.g.dart';
 
 /// Simple custom menu for candy actions that doesn't depend on MaterialLocalizations
 class CandyMenu extends StatelessWidget {
@@ -61,7 +62,7 @@ class CandyMenu extends StatelessWidget {
                   children: [
                     _buildMenuItem(
                       icon: Icons.restaurant,
-                      label: '食べる',
+                      label: t.items.eat,
                       color: Colors.green,
                       enabled: true,
                       onTap: onEat,
@@ -72,7 +73,7 @@ class CandyMenu extends StatelessWidget {
                     ),
                     _buildMenuItem(
                       icon: Icons.favorite_outline,
-                      label: 'あげる',
+                      label: t.items.give,
                       color: Colors.pink,
                       enabled: canGiveToEnemies,
                       onTap: onGive,

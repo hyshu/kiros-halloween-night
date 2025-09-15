@@ -107,7 +107,79 @@
     "candy": "キャンディ",
     "collected": "{item}を入手しました！",
     "useItem": "アイテム使用",
-    "noItems": "アイテムがありません"
+    "noItems": "アイテムがありません",
+    "eat": "食べる",
+    "give": "あげる",
+    "noCandies": "インベントリにキャンディがありません",
+    "activeEffects": "有効な効果",
+    "turns": "ターン",
+    "helpText": "アイテムをタップしてオプションを表示。Iキーで閉じます。",
+    "inventoryFull": "インベントリがいっぱいです！",
+    "healthBoost": "+{value} 体力",
+    "maxHealthIncrease": "+{value} 最大体力",
+    "speedBoost": "スピードアップ！",
+    "allyPower": "仲間の力！",
+    "specialPower": "特殊能力！",
+    "statBoost": "ステータスアップ！"
+  },
+  "candyCollection": {
+    "messages": [
+      "キロが{name}を見つけました！{description}",
+      "光る{name}がキロの注意を引きました。甘い超自然的な御馳走です！",
+      "キロが異世界の味でキラキラ光る魔法の{name}を発見しました。",
+      "{name}でキロが幽霊の幸せでより明るく光ります。",
+      "キロが{name}をむしゃむしゃ食べて、これまで以上に元気になりました！"
+    ],
+    "inventoryFullMessage": "キロのインベントリがいっぱいです！これ以上キャンディを拾えません。"
+  },
+  "candyTypes": {
+    "candyBar": {
+      "name": "キャンディバー",
+      "description": "20ポイントの体力を回復する甘いキャンディバー"
+    },
+    "chocolate": {
+      "name": "チョコレート",
+      "description": "最大体力を永久に10ポイント増加させるリッチなチョコレート"
+    },
+    "cookie": {
+      "name": "クッキー",
+      "description": "30ターンの間移動速度を上げるサクサククッキー"
+    },
+    "cupcake": {
+      "name": "カップケーキ",
+      "description": "20ターンの間仲間の戦闘力を向上させる美味しいカップケーキ"
+    },
+    "donut": {
+      "name": "ドーナツ",
+      "description": "15ポイントの体力を回復するグレーズドーナツ"
+    },
+    "iceCream": {
+      "name": "アイスクリーム",
+      "description": "10ターンの間近くの敵を凍らせる冷たいアイスクリーム"
+    },
+    "lollipop": {
+      "name": "ロリポップ",
+      "description": "25ターンの間運を上げるカラフルなロリポップ"
+    },
+    "popsicle": {
+      "name": "アイスキャンディ",
+      "description": "12ポイントの体力を回復する爐しいアイスキャンディ"
+    },
+    "gingerbread": {
+      "name": "ジンジャーブレッド",
+      "description": "15ターンの間壁を透して見ることができる魔法のジンジャーブレッド"
+    },
+    "muffin": {
+      "name": "マフィン",
+      "description": "25ポイントの体力を回復するボリュームあるマフィン"
+    }
+  },
+  "giftUI": {
+    "giveCandy": "{enemyName}にキャンディをあげる",
+    "chooseCandyTitle": "あげるキャンディを選んでください：",
+    "cancel": "キャンセル",
+    "giveGift": "プレゼントする",
+    "health": "体力"
   },
   "enemies": {
     "ghost": "ゴースト",

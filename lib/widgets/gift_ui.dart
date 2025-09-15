@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/candy_item.dart';
 import '../core/gift_system.dart';
+import '../l10n/strings.g.dart';
 
 /// UI overlay for the gift system
 class GiftOverlay extends StatefulWidget {
@@ -47,7 +48,7 @@ class _GiftOverlayState extends State<GiftOverlay> {
             children: [
               // Title
               Text(
-                'Give Candy to ${targetEnemy?.enemyType.displayName ?? "Enemy"}',
+                t.giftUI.giveCandy.replaceAll('{enemyName}', targetEnemy?.enemyType.displayName ?? "Enemy"),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -75,7 +76,7 @@ class _GiftOverlayState extends State<GiftOverlay> {
                         ),
                       ),
                       Text(
-                        'Health: ${targetEnemy.health}/${targetEnemy.maxHealth}',
+                        '${t.giftUI.health}: ${targetEnemy.health}/${targetEnemy.maxHealth}',
                         style: const TextStyle(
                           color: Colors.white54,
                           fontSize: 12,
@@ -89,7 +90,7 @@ class _GiftOverlayState extends State<GiftOverlay> {
 
               // Available candy list
               Text(
-                'Choose candy to give:',
+                t.giftUI.chooseCandyTitle,
                 style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 12),
@@ -204,7 +205,7 @@ class _GiftOverlayState extends State<GiftOverlay> {
                         vertical: 12,
                       ),
                     ),
-                    child: const Text('Cancel'),
+                    child: Text(t.giftUI.cancel),
                   ),
                   ElevatedButton(
                     onPressed: selectedCandy != null
@@ -219,7 +220,7 @@ class _GiftOverlayState extends State<GiftOverlay> {
                         vertical: 12,
                       ),
                     ),
-                    child: const Text('Give Gift'),
+                    child: Text(t.giftUI.giveGift),
                   ),
                 ],
               ),

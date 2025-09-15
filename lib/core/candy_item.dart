@@ -1,6 +1,7 @@
 import 'package:vector_math/vector_math.dart';
 import '../models/model_3d.dart';
 import 'position.dart';
+import '../l10n/strings.g.dart';
 
 /// Represents different types of candy effects
 enum CandyEffect {
@@ -73,120 +74,115 @@ class CandyItem {
       case CandyType.candyBar:
         return CandyItem(
           id: id,
-          name: 'Candy Bar',
+          name: t.candyTypes.candyBar.name,
           modelPath: 'assets/foods/candy-bar.obj',
           effect: CandyEffect.healthBoost,
           value: 20,
-          description: 'A sweet candy bar that restores 20 health points',
+          description: t.candyTypes.candyBar.description,
           position: position,
         );
 
       case CandyType.chocolate:
         return CandyItem(
           id: id,
-          name: 'Chocolate',
+          name: t.candyTypes.chocolate.name,
           modelPath: 'assets/foods/chocolate.obj',
           effect: CandyEffect.maxHealthIncrease,
           value: 10,
-          description:
-              'Rich chocolate that permanently increases max health by 10',
+          description: t.candyTypes.chocolate.description,
           position: position,
         );
 
       case CandyType.cookie:
         return CandyItem(
           id: id,
-          name: 'Cookie',
+          name: t.candyTypes.cookie.name,
           modelPath: 'assets/foods/cookie.obj',
           effect: CandyEffect.speedIncrease,
           value: 2,
           abilityModifications: {'speedMultiplier': 1.5, 'duration': 30},
-          description:
-              'A crispy cookie that increases movement speed for 30 turns',
+          description: t.candyTypes.cookie.description,
           position: position,
         );
 
       case CandyType.cupcake:
         return CandyItem(
           id: id,
-          name: 'Cupcake',
+          name: t.candyTypes.cupcake.name,
           modelPath: 'assets/foods/cupcake.obj',
           effect: CandyEffect.allyStrength,
           value: 5,
           abilityModifications: {'allyDamageBonus': 5, 'duration': 20},
-          description:
-              'A delicious cupcake that boosts ally combat strength for 20 turns',
+          description: t.candyTypes.cupcake.description,
           position: position,
         );
 
       case CandyType.donut:
         return CandyItem(
           id: id,
-          name: 'Donut',
+          name: t.candyTypes.donut.name,
           modelPath: 'assets/foods/donut.obj',
           effect: CandyEffect.healthBoost,
           value: 15,
-          description: 'A glazed donut that restores 15 health points',
+          description: t.candyTypes.donut.description,
           position: position,
         );
 
       case CandyType.iceCream:
         return CandyItem(
           id: id,
-          name: 'Ice Cream',
+          name: t.candyTypes.iceCream.name,
           modelPath: 'assets/foods/ice-cream.obj',
           effect: CandyEffect.specialAbility,
           value: 1,
           abilityModifications: {'freezeEnemies': true, 'duration': 10},
-          description:
-              'Cool ice cream that freezes nearby enemies for 10 turns',
+          description: t.candyTypes.iceCream.description,
           position: position,
         );
 
       case CandyType.lollipop:
         return CandyItem(
           id: id,
-          name: 'Lollipop',
+          name: t.candyTypes.lollipop.name,
           modelPath: 'assets/foods/lollypop.obj',
           effect: CandyEffect.statModification,
           value: 3,
           abilityModifications: {'luck': 3, 'duration': 25},
-          description: 'A colorful lollipop that increases luck for 25 turns',
+          description: t.candyTypes.lollipop.description,
           position: position,
         );
 
       case CandyType.popsicle:
         return CandyItem(
           id: id,
-          name: 'Popsicle',
+          name: t.candyTypes.popsicle.name,
           modelPath: 'assets/foods/popsicle.obj',
           effect: CandyEffect.healthBoost,
           value: 12,
-          description: 'A refreshing popsicle that restores 12 health points',
+          description: t.candyTypes.popsicle.description,
           position: position,
         );
 
       case CandyType.gingerbread:
         return CandyItem(
           id: id,
-          name: 'Gingerbread',
+          name: t.candyTypes.gingerbread.name,
           modelPath: 'assets/foods/ginger-bread.obj',
           effect: CandyEffect.specialAbility,
           value: 1,
           abilityModifications: {'wallVision': true, 'duration': 15},
-          description:
-              'Magical gingerbread that allows seeing through walls for 15 turns',
+          description: t.candyTypes.gingerbread.description,
           position: position,
         );
 
       case CandyType.muffin:
         return CandyItem(
           id: id,
-          name: 'Muffin',
+          name: t.candyTypes.muffin.name,
           modelPath: 'assets/foods/muffin.obj',
           effect: CandyEffect.healthBoost,
           value: 25,
-          description: 'A hearty muffin that restores 25 health points',
+          description: t.candyTypes.muffin.description,
           position: position,
         );
     }

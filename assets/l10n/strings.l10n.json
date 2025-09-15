@@ -107,7 +107,79 @@
     "candy": "Candy",
     "collected": "Collected {item}!",
     "useItem": "Use Item",
-    "noItems": "No items available"
+    "noItems": "No items available",
+    "eat": "Eat",
+    "give": "Give",
+    "noCandies": "No candies in inventory",
+    "activeEffects": "Active Effects",
+    "turns": "turns",
+    "helpText": "Tap an item for options. Press I to close.",
+    "inventoryFull": "Inventory Full!",
+    "healthBoost": "+{value} Health",
+    "maxHealthIncrease": "+{value} Max Health",
+    "speedBoost": "Speed Boost!",
+    "allyPower": "Ally Power!",
+    "specialPower": "Special Power!",
+    "statBoost": "Stat Boost!"
+  },
+  "candyCollection": {
+    "messages": [
+      "Kiro finds a {name}! {description}",
+      "A glowing {name} catches Kiro's attention. Sweet supernatural treat!",
+      "Kiro discovers a magical {name} that sparkles with otherworldly flavor.",
+      "The {name} makes Kiro glow brighter with ghostly happiness.",
+      "Kiro gobbles up the {name}, feeling more spirited than ever!"
+    ],
+    "inventoryFullMessage": "Kiro's inventory is full! Can't pick up more candy."
+  },
+  "candyTypes": {
+    "candyBar": {
+      "name": "Candy Bar",
+      "description": "A sweet candy bar that restores 20 health points"
+    },
+    "chocolate": {
+      "name": "Chocolate",
+      "description": "Rich chocolate that permanently increases max health by 10"
+    },
+    "cookie": {
+      "name": "Cookie",
+      "description": "A crispy cookie that increases movement speed for 30 turns"
+    },
+    "cupcake": {
+      "name": "Cupcake",
+      "description": "A delicious cupcake that boosts ally combat strength for 20 turns"
+    },
+    "donut": {
+      "name": "Donut",
+      "description": "A glazed donut that restores 15 health points"
+    },
+    "iceCream": {
+      "name": "Ice Cream",
+      "description": "Cool ice cream that freezes nearby enemies for 10 turns"
+    },
+    "lollipop": {
+      "name": "Lollipop",
+      "description": "A colorful lollipop that increases luck for 25 turns"
+    },
+    "popsicle": {
+      "name": "Popsicle",
+      "description": "A refreshing popsicle that restores 12 health points"
+    },
+    "gingerbread": {
+      "name": "Gingerbread",
+      "description": "Magical gingerbread that allows seeing through walls for 15 turns"
+    },
+    "muffin": {
+      "name": "Muffin",
+      "description": "A hearty muffin that restores 25 health points"
+    }
+  },
+  "giftUI": {
+    "giveCandy": "Give Candy to {enemyName}",
+    "chooseCandyTitle": "Choose candy to give:",
+    "cancel": "Cancel",
+    "giveGift": "Give Gift",
+    "health": "Health"
   },
   "enemies": {
     "ghost": "Ghost",
