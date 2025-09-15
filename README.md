@@ -1,7 +1,9 @@
-# Kiro Halloween Game 🎃👻
+# Kiro's Halloween Night 🎃👻
 
-> **Created for the Code With Kiro Hackathon**
-> Learn more: [https://kiro.devpost.com/?trk=b85f313f-a67c-452d-b088-07f0ddbd7e15&sc_channel=el](https://kiro.devpost.com/?trk=b85f313f-a67c-452d-b088-07f0ddbd7e15&sc_channel=el)
+**Created for the Code With Kiro Hackathon**
+
+Learn more: [DevPost](https://kiro.devpost.com/?trk=b85f313f-a67c-452d-b088-07f0ddbd7e15&sc_channel=el) and 
+[Project Page](https://devpost.com/software/kiro-s-halloween-night?ref_content=my-projects-tab&ref_feature=my_projects)
 
 A 3D Halloween-themed RPG game built with Flutter GPU. Navigate through a massive 100x200 world, convert enemies into allies with candy gifts, and defeat the final boss.
 
