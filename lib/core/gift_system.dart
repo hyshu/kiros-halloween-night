@@ -39,8 +39,8 @@ class GiftSystem extends ChangeNotifier {
       return false;
     }
 
-    // Check if enemy can receive gifts (must be hostile)
-    if (!enemy.isHostile) {
+    // Check if enemy can receive gifts (must be hostile and able to receive candy)
+    if (!enemy.isHostile || !enemy.canReceiveCandy()) {
       return false;
     }
 
@@ -180,7 +180,8 @@ class GiftSystem extends ChangeNotifier {
     return enemies.where((enemy) {
       return _isAdjacent(player.position, enemy.position) &&
           enemy.isHostile &&
-          enemy.isProximityActive;
+          enemy.isProximityActive &&
+          enemy.canReceiveCandy();
     }).toList();
   }
 

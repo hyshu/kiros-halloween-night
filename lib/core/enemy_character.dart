@@ -529,6 +529,11 @@ class EnemyCharacter extends Character {
   /// Gets the current facing direction for animation purposes
   Direction get facingDirection => _facingDirection;
 
+  /// Returns true if this enemy can receive candy (default: true for normal enemies)
+  bool canReceiveCandy() {
+    return true;
+  }
+
   @override
   String toString() {
     return 'EnemyCharacter($id) at $position [State: ${state.name}, '

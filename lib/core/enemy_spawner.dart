@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import 'enemy_character.dart';
+import 'boss_character.dart';
 import 'position.dart';
 import 'tile_map.dart';
 
@@ -310,17 +311,12 @@ class EnemySpawner {
   }
 
   /// Spawns boss enemy at the specified location
-  static EnemyCharacter spawnBoss(Position position) {
+  static BossCharacter spawnBoss(Position position) {
     final id = 'boss_${_enemyIdCounter++}';
 
-    return EnemyCharacter.monster(
+    return BossCharacter.mainBoss(
       id: id,
       position: position,
-      modelType: MonsterModelType.vampire, // Use vampire as boss model
-      health: 200,
-      maxHealth: 200,
-      aiType: EnemyAIType.aggressive,
-      activationRadius: 15, // Boss has large detection range
     );
   }
 

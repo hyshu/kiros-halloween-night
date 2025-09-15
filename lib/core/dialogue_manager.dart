@@ -100,6 +100,36 @@ class DialogueManager {
     triggerDialogue(DialogueEvent.boss(message, speakerName: speakerName));
   }
 
+  /// Convenience method for boss encounter start
+  void showBossEncounter(String message) {
+    triggerDialogue(DialogueEvent.boss(message, speakerName: "Boss Encounter"));
+  }
+
+  /// Convenience method for boss attack messages
+  void showBossAttack(String message) {
+    triggerDialogue(DialogueEvent.boss(message, speakerName: "Boss Attack"));
+  }
+
+  /// Convenience method for boss phase changes
+  void showBossPhaseChange(String message) {
+    triggerDialogue(DialogueEvent.boss(message, speakerName: "Boss Phase"));
+  }
+
+  /// Convenience method for boss warnings
+  void showBossWarning(String message) {
+    triggerDialogue(DialogueEvent.boss(message, speakerName: "Warning"));
+  }
+
+  /// Convenience method for victory messages
+  void showVictory(String message) {
+    triggerDialogue(DialogueEvent.boss(message, speakerName: "Victory"));
+  }
+
+  /// Convenience method for candy effects against boss
+  void showCandyEffect(String message) {
+    triggerDialogue(DialogueEvent.itemCollection(message));
+  }
+
   /// Processes the next event in the queue
   void _processNextEvent() {
     if (_isProcessingQueue || _eventQueue.isEmpty) return;

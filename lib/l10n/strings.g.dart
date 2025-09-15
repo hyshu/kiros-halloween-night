@@ -4,9 +4,9 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 2
-/// Strings: 302 (151 per locale)
+/// Strings: 310 (155 per locale)
 ///
-/// Built on 2025-09-15 at 06:57 UTC
+/// Built on 2025-09-15 at 10:13 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -208,6 +208,7 @@ class _StringsCombatEn {
 	String get enemyDefeated => 'Enemy defeated!';
 	String get takeDamage => 'You took {damage} damage';
 	String get dealDamage => 'You dealt {damage} damage';
+	late final _StringsCombatBossAbilitiesEn bossAbilities = _StringsCombatBossAbilitiesEn._(_root);
 	late final _StringsCombatEnemyAttacksEn enemyAttacks = _StringsCombatEnemyAttacksEn._(_root);
 	late final _StringsCombatPlayerAttacksEn playerAttacks = _StringsCombatPlayerAttacksEn._(_root);
 	late final _StringsCombatMessagesEn messages = _StringsCombatMessagesEn._(_root);
@@ -348,6 +349,19 @@ class _StringsDebugEn {
 	String get turnCompleted => 'GameLoopManager: Turn completed';
 	String get errorInTurnProcessing => 'GameLoopManager: Error in turn processing: {}';
 	String get convertedEnemyToAlly => 'GameLoopManager: Converted enemy {} to ally';
+}
+
+// Path: combat.bossAbilities
+class _StringsCombatBossAbilitiesEn {
+	_StringsCombatBossAbilitiesEn._(this._root);
+
+	final Strings _root; // ignore: unused_field
+
+	// Translations
+	String get charge => '💀 The Boss unleashes a devastating charge! The ground trembles!';
+	String get areaAttack => '⚡ The Boss casts a destructive area attack! Devastation spreads!';
+	String get regeneration => '💚 The Boss regenerates with dark power! {healAmount} health restored!';
+	String get summonMinions => '👻 The Boss summons minions! New threats emerge!';
 }
 
 // Path: combat.enemyAttacks
@@ -637,6 +651,7 @@ class _StringsCombatJa extends _StringsCombatEn {
 	@override String get enemyDefeated => '敵を倒しました！';
 	@override String get takeDamage => '{damage}のダメージを受けました';
 	@override String get dealDamage => '{damage}のダメージを与えました';
+	@override late final _StringsCombatBossAbilitiesJa bossAbilities = _StringsCombatBossAbilitiesJa._(_root);
 	@override late final _StringsCombatEnemyAttacksJa enemyAttacks = _StringsCombatEnemyAttacksJa._(_root);
 	@override late final _StringsCombatPlayerAttacksJa playerAttacks = _StringsCombatPlayerAttacksJa._(_root);
 	@override late final _StringsCombatMessagesJa messages = _StringsCombatMessagesJa._(_root);
@@ -777,6 +792,19 @@ class _StringsDebugJa extends _StringsDebugEn {
 	@override String get turnCompleted => 'GameLoopManager: ターン完了';
 	@override String get errorInTurnProcessing => 'GameLoopManager: ターン処理でエラー: {}';
 	@override String get convertedEnemyToAlly => 'GameLoopManager: エネミー{}をアライに変換しました';
+}
+
+// Path: combat.bossAbilities
+class _StringsCombatBossAbilitiesJa extends _StringsCombatBossAbilitiesEn {
+	_StringsCombatBossAbilitiesJa._(_StringsJa root) : this._root = root, super._(root);
+
+	@override final _StringsJa _root; // ignore: unused_field
+
+	// Translations
+	@override String get charge => '💀 ボスが突進攻撃を繰り出した！ 大地が震える！';
+	@override String get areaAttack => '⚡ ボスが範囲攻撃を放った！ 周囲一帯に破壊の嵐！';
+	@override String get regeneration => '💚 ボスが邪悪な力で体力を回復した！ {healAmount}の体力が復活！';
+	@override String get summonMinions => '👻 ボスが雑魚敵を召喚した！ 新たな脅威が現れる！';
 }
 
 // Path: combat.enemyAttacks
@@ -1008,6 +1036,10 @@ extension on Strings {
 			case 'combat.enemyDefeated': return 'Enemy defeated!';
 			case 'combat.takeDamage': return 'You took {damage} damage';
 			case 'combat.dealDamage': return 'You dealt {damage} damage';
+			case 'combat.bossAbilities.charge': return '💀 The Boss unleashes a devastating charge! The ground trembles!';
+			case 'combat.bossAbilities.areaAttack': return '⚡ The Boss casts a destructive area attack! Devastation spreads!';
+			case 'combat.bossAbilities.regeneration': return '💚 The Boss regenerates with dark power! {healAmount} health restored!';
+			case 'combat.bossAbilities.summonMinions': return '👻 The Boss summons minions! New threats emerge!';
 			case 'combat.enemyAttacks.withDamage.0': return 'The {} gives Kiro an unexpected hug! It\'s surprisingly warm! ({} damage)';
 			case 'combat.enemyAttacks.withDamage.1': return 'A friendly {} bumps into Kiro playfully! ({} damage)';
 			case 'combat.enemyAttacks.withDamage.2': return 'The {} tries to high-five Kiro, but ghosts are tricky to touch! ({} damage)';
@@ -1167,6 +1199,10 @@ extension on _StringsJa {
 			case 'combat.enemyDefeated': return '敵を倒しました！';
 			case 'combat.takeDamage': return '{damage}のダメージを受けました';
 			case 'combat.dealDamage': return '{damage}のダメージを与えました';
+			case 'combat.bossAbilities.charge': return '💀 ボスが突進攻撃を繰り出した！ 大地が震える！';
+			case 'combat.bossAbilities.areaAttack': return '⚡ ボスが範囲攻撃を放った！ 周囲一帯に破壊の嵐！';
+			case 'combat.bossAbilities.regeneration': return '💚 ボスが邪悪な力で体力を回復した！ {healAmount}の体力が復活！';
+			case 'combat.bossAbilities.summonMinions': return '👻 ボスが雑魚敵を召喚した！ 新たな脅威が現れる！';
 			case 'combat.enemyAttacks.withDamage.0': return '{}がキロに意外なハグをしました！驚くほど温かいです！（{}ダメージ）';
 			case 'combat.enemyAttacks.withDamage.1': return 'フレンドリーな{}がキロに遊び半分でぶつかってきました！（{}ダメージ）';
 			case 'combat.enemyAttacks.withDamage.2': return '{}がキロとハイタッチしようとしましたが、幽霊に触るのは難しいようです！（{}ダメージ）';

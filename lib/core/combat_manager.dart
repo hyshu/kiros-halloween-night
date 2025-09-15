@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'ally_character.dart';
+import 'boss_character.dart';
 import 'enemy_character.dart';
 import 'enemy_spawner.dart';
 import 'health_system.dart';
@@ -164,6 +165,12 @@ class CombatManager {
 
   /// Gets the combat strength of an enemy
   int _getEnemyCombatStrength(EnemyCharacter enemy) {
+    // Check if this is a boss character
+    if (enemy is BossCharacter) {
+      return enemy.baseCombatStrength ??
+          75; // Boss has much higher combat strength
+    }
+
     // Base strength varies by enemy type
     switch (enemy.enemyType) {
       case EnemyType.human:
@@ -175,8 +182,15 @@ class CombatManager {
 
   /// Handles when an enemy is defeated in combat
   void _handleEnemyDefeated(EnemyCharacter enemy) {
-    // Enemy becomes satisfied and will be removed
-    enemy.setSatisfied();
+    // Special handling for boss characters
+    if (enemy is BossCharacter) {
+      enemy.isDefeated = true;
+      enemy.currentPhase = BossPhase.defeated;
+      // Don't set satisfied for boss - let BossManager handle it
+    } else {
+      // Regular enemies become satisfied and will be removed
+      enemy.setSatisfied();
+    }
   }
 
   /// Handles when an ally is defeated in combat
@@ -201,6 +215,137 @@ class CombatManager {
       combat.finish();
     }
     _activeCombats.clear();
+  }
+
+  /// Special boss combat processing with enhanced mechanics
+  List<CombatResult> processBossCombat(
+    List<AllyCharacter> allies,
+    BossCharacter boss,
+  ) {
+    final results = <CombatResult>[];
+
+    if (!boss.isAlive || boss.isDefeated) return results;
+
+    // Find allies within boss combat range (boss has extended range)
+    final combatableAllies = allies.where((ally) {
+      if (!ally.isAlive || ally.isSatisfied) return false;
+
+      final distance = ally.position.distanceTo(boss.position);
+      return distance <= (combatRange + 1); // Boss has extended combat range
+    }).toList();
+
+    // Process each ally vs boss encounter
+    for (final ally in combatableAllies) {
+      final encounter = BossCombatEncounter(
+        ally: ally,
+        boss: boss,
+        startTime: DateTime.now(),
+      );
+
+      final result = _resolveBossCombat(encounter);
+      if (result != null) {
+        results.add(result);
+      }
+    }
+
+    return results;
+  }
+
+  /// Resolves boss combat with special mechanics
+  CombatResult? _resolveBossCombat(BossCombatEncounter encounter) {
+    if (!encounter.ally.isAlive || !encounter.boss.isAlive) {
+      return null;
+    }
+
+    // Boss combat strength varies by phase
+    final bossCombatStrength = _getBossCombatStrengthByPhase(encounter.boss);
+
+    // Calculate damage for ally attacking boss
+    final allyDamage = _calculateBossDamage(
+      encounter.ally.effectiveCombatStrength,
+      encounter.boss.health,
+      false, // ally attacking boss
+    );
+
+    // Calculate damage for boss attacking ally (much higher)
+    final bossDamage = _calculateBossDamage(
+      bossCombatStrength,
+      encounter.ally.health,
+      true, // boss attacking ally
+    );
+
+    // Apply damage
+    final bossWasAlive = healthSystem.applyDamage(encounter.boss, allyDamage);
+    final allyWasAlive = healthSystem.applyDamage(encounter.ally, bossDamage);
+
+    // Create boss combat result
+    final result = CombatResult(
+      ally: encounter.ally,
+      enemy: encounter.boss, // Boss extends EnemyCharacter
+      allyDamageDealt: allyDamage,
+      enemyDamageDealt: bossDamage,
+      allyDefeated: !allyWasAlive,
+      enemyDefeated: !bossWasAlive,
+      timestamp: DateTime.now(),
+    );
+
+    // Handle defeated characters
+    if (!bossWasAlive) {
+      _handleEnemyDefeated(encounter.boss);
+    }
+
+    if (!allyWasAlive) {
+      _handleAllyDefeated(encounter.ally);
+    }
+
+    return result;
+  }
+
+  /// Gets boss combat strength based on current phase
+  int _getBossCombatStrengthByPhase(BossCharacter boss) {
+    final baseStrength = boss.baseCombatStrength ?? 75;
+
+    switch (boss.currentPhase) {
+      case BossPhase.aggressive:
+        return baseStrength;
+      case BossPhase.tactical:
+        return (baseStrength * 1.2).round(); // 20% stronger
+      case BossPhase.desperate:
+        return (baseStrength * 1.5).round(); // 50% stronger in desperate phase
+      case BossPhase.defeated:
+        return 0; // No combat strength when defeated
+    }
+  }
+
+  /// Calculates damage specifically for boss combat
+  int _calculateBossDamage(
+    int attackerStrength,
+    int defenderHealth,
+    bool isBossAttacking,
+  ) {
+    // Base damage with some randomness
+    final baseDamage =
+        baseDamageMin + _random.nextInt(baseDamageMax - baseDamageMin + 1);
+
+    // Apply strength modifier
+    final strengthModifier = (attackerStrength / 10.0).clamp(
+      0.5,
+      3.0,
+    ); // Higher cap for boss
+    final modifiedDamage = (baseDamage * strengthModifier).round();
+
+    // Boss attacks are more variable and dangerous
+    final randomFactor = isBossAttacking
+        ? 0.7 +
+              (_random.nextDouble() * 0.6) // 70-130% for boss attacks
+        : 0.8 + (_random.nextDouble() * 0.4); // 80-120% for ally attacks
+
+    final finalDamage = (modifiedDamage * randomFactor).round();
+
+    return finalDamage.clamp(
+      1,
+      defenderHealth,
+    ); // At least 1 damage, max current health
   }
 }
 
@@ -307,5 +452,26 @@ class CombatResult {
   @override
   String toString() {
     return 'CombatResult($description, Ally: ${ally.health}hp, Enemy: ${enemy.health}hp)';
+  }
+}
+
+/// Represents a combat encounter between an ally and a boss
+class BossCombatEncounter {
+  final AllyCharacter ally;
+  final BossCharacter boss;
+  final DateTime startTime;
+
+  BossCombatEncounter({
+    required this.ally,
+    required this.boss,
+    required this.startTime,
+  });
+
+  /// Gets the duration of this boss combat
+  Duration get duration => DateTime.now().difference(startTime);
+
+  @override
+  String toString() {
+    return 'BossCombatEncounter(${ally.id} vs BOSS ${boss.id}, duration: ${duration.inSeconds}s)';
   }
 }

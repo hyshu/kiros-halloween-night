@@ -27,6 +27,12 @@
     "enemyDefeated": "敵を倒しました！",
     "takeDamage": "{damage}のダメージを受けました",
     "dealDamage": "{damage}のダメージを与えました",
+    "bossAbilities": {
+      "charge": "💀 ボスが突進攻撃を繰り出した！ 大地が震える！",
+      "areaAttack": "⚡ ボスが範囲攻撃を放った！ 周囲一帯に破壊の嵐！",
+      "regeneration": "💚 ボスが邪悪な力で体力を回復した！ {healAmount}の体力が復活！",
+      "summonMinions": "👻 ボスが雑魚敵を召喚した！ 新たな脅威が現れる！"
+    },
     "enemyAttacks": {
       "withDamage": [
         "{}がキロに意外なハグをしました！驚くほど温かいです！（{}ダメージ）",

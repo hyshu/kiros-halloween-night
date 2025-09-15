@@ -3,7 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'ally_character.dart';
 import 'ally_manager.dart';
 import 'animation_phase_manager.dart';
+import 'boss_character.dart';
+import 'boss_manager.dart';
 import 'combat_manager.dart';
+import 'victory_manager.dart';
 import 'enemy_character.dart';
 import 'enemy_manager.dart';
 import 'ghost_character.dart';
@@ -28,6 +31,12 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Ally manager
   final AllyManager _allyManager = AllyManager(maxAllies: 10);
+
+  /// Boss manager
+  final BossManager _bossManager = BossManager();
+
+  /// Victory manager
+  final VictoryManager _victoryManager = VictoryManager();
 
   /// Combat manager
   final CombatManager _combatManager = CombatManager();
@@ -83,6 +92,8 @@ class GameLoopManager extends ChangeNotifier {
 
   /// Getters for accessing managers
   AllyManager get allyManager => _allyManager;
+  BossManager get bossManager => _bossManager;
+  VictoryManager get victoryManager => _victoryManager;
   CombatManager get combatManager => _combatManager;
   CombatFeedbackSystem get combatFeedbackSystem => _combatFeedbackSystem;
   GiftSystem get giftSystem => _giftSystem;
@@ -129,6 +140,23 @@ class GameLoopManager extends ChangeNotifier {
     // Set player reference for ally manager
     _allyManager.setPlayer(ghostCharacter);
 
+    // Initialize victory manager
+    _victoryManager.initialize(
+      dialogueManager: dialogueManager,
+      bossManager: _bossManager,
+      onVictory: () => debugPrint('GameLoopManager: Victory achieved!'),
+      onGameComplete: () => debugPrint('GameLoopManager: Game completed!'),
+    );
+
+    // Initialize boss manager
+    _bossManager.initialize(
+      dialogueManager: dialogueManager,
+      enemyManager: enemyManager,
+      onVictory: () => _victoryManager.checkVictoryConditions(ghostCharacter),
+      onBossEncounterStart: () => debugPrint('GameLoopManager: Boss encounter started!'),
+      onBossDefeated: () => _victoryManager.checkVictoryConditions(ghostCharacter),
+    );
+
     debugPrint(
       'GameLoopManager: Initialized with player at ${ghostCharacter.position}',
     );
@@ -169,19 +197,42 @@ class GameLoopManager extends ChangeNotifier {
       return;
     }
 
-    // Process combat encounters
-    final combatResults = _combatManager.processCombat(allies, hostileEnemies);
+    // Separate boss from regular enemies
+    final boss = hostileEnemies.whereType<BossCharacter>().firstOrNull;
+    final regularEnemies = hostileEnemies.where((enemy) => enemy is! BossCharacter).toList();
 
-    if (combatResults.isNotEmpty) {
-      _totalCombatsProcessed += combatResults.length;
+    // Process regular combat encounters
+    if (regularEnemies.isNotEmpty) {
+      final combatResults = _combatManager.processCombat(allies, regularEnemies);
 
-      for (final result in combatResults) {
-        _processCombatResult(result);
+      if (combatResults.isNotEmpty) {
+        _totalCombatsProcessed += combatResults.length;
+
+        for (final result in combatResults) {
+          _processCombatResult(result);
+        }
+
+        debugPrint(
+          'GameLoopManager: Processed ${combatResults.length} regular combat encounters',
+        );
       }
+    }
 
-      debugPrint(
-        'GameLoopManager: Processed ${combatResults.length} combat encounters',
-      );
+    // Process boss combat separately with enhanced mechanics
+    if (boss != null && boss.isAlive && !boss.isDefeated) {
+      final bossCombatResults = _combatManager.processBossCombat(allies, boss);
+
+      if (bossCombatResults.isNotEmpty) {
+        _totalCombatsProcessed += bossCombatResults.length;
+
+        for (final result in bossCombatResults) {
+          _processBossCombatResult(result);
+        }
+
+        debugPrint(
+          'GameLoopManager: Processed ${bossCombatResults.length} BOSS combat encounters',
+        );
+      }
     }
   }
 
@@ -219,6 +270,44 @@ class GameLoopManager extends ChangeNotifier {
     if (result.enemyDefeated || result.allyDefeated) {
       debugPrint('GameLoopManager: Combat result - ${result.description}');
     }
+  }
+
+  /// Processes the result of a boss combat encounter with special handling
+  void _processBossCombatResult(CombatResult result) {
+    // Show special boss combat messages
+    if (result.enemyDefeated && result.enemy is BossCharacter) {
+      final boss = result.enemy as BossCharacter;
+      if (_dialogueManager != null) {
+        _dialogueManager!.showBossAttack(
+          '${result.ally.id} delivers a devastating blow to the Vampire Lord for ${result.allyDamageDealt} damage!'
+        );
+        if (boss.isDefeated) {
+          _dialogueManager!.showBossAttack(
+            'The mighty Vampire Lord has been defeated by ${result.ally.id}!'
+          );
+        }
+      }
+      _enemiesDefeated++;
+      _handleEnemyDefeated(boss);
+    } else if (result.allyDefeated) {
+      if (_dialogueManager != null) {
+        _dialogueManager!.showBossAttack(
+          'The Vampire Lord crushes ${result.ally.id} with ${result.enemyDamageDealt} damage!'
+        );
+      }
+      _alliesLost++;
+    } else {
+      // Ongoing boss combat
+      if (_dialogueManager != null) {
+        _dialogueManager!.showCombatFeedback(
+          'Epic battle: ${result.ally.id} deals ${result.allyDamageDealt} damage, '
+          'Vampire Lord retaliates for ${result.enemyDamageDealt} damage!'
+        );
+      }
+    }
+
+    // Log boss combat events
+    debugPrint('GameLoopManager: BOSS Combat result - ${result.description}');
   }
 
   /// Handles when an enemy is defeated in combat
@@ -367,6 +456,9 @@ class GameLoopManager extends ChangeNotifier {
       // Update enemy activation based on new player position
       _enemyManager!.updateEnemyActivation(_ghostCharacter!.position);
 
+      // Check for boss encounter
+      _bossManager.checkBossEncounter(_ghostCharacter!.position);
+
       // Animation Phase 2: Enemy AI Movement
       await _animationManager.playAIMovementAnimation();
 
@@ -404,6 +496,12 @@ class GameLoopManager extends ChangeNotifier {
 
       // Clean up satisfied enemies
       _cleanupSatisfiedEnemies();
+
+      // Process boss turn (check victory conditions, phase changes, etc.)
+      _bossManager.processBossTurn(_ghostCharacter!);
+
+      // Check victory conditions
+      _victoryManager.checkVictoryConditions(_ghostCharacter!);
 
       // Notify listeners of updates
       notifyListeners();
@@ -633,6 +731,47 @@ class GameLoopManager extends ChangeNotifier {
       t.candyCollection.inventoryFullMessage,
     );
   }
+
+  /// Spawns the boss at the end of the main path
+  Future<void> spawnBoss(Position bossLocation) async {
+    await _bossManager.spawnBoss(bossLocation);
+    debugPrint('GameLoopManager: Boss spawned at $bossLocation');
+  }
+
+  /// Checks if player can use candy against the boss
+  bool canUseCandyAgainstBoss(CandyItem candy) {
+    if (_ghostCharacter == null) return false;
+    return _bossManager.canUseCandyAgainstBoss(_ghostCharacter!, candy);
+  }
+
+  /// Uses candy strategically against the boss
+  bool useCandyAgainstBoss(CandyItem candy) {
+    if (_ghostCharacter == null) return false;
+    return _bossManager.useCandyAgainstBoss(_ghostCharacter!, candy);
+  }
+
+  /// Gets boss battle statistics
+  Map<String, dynamic> getBossStats() {
+    return _bossManager.getBossStats();
+  }
+
+  /// Gets victory progress and status
+  Map<String, dynamic> getVictoryProgress() {
+    return _victoryManager.getVictoryProgress();
+  }
+
+  /// Forces victory for testing purposes
+  void forceVictory() {
+    if (_ghostCharacter != null) {
+      _victoryManager.forceVictory(_ghostCharacter!);
+    }
+  }
+
+  /// Checks if the game has been won
+  bool get gameWon => _victoryManager.gameWon;
+
+  /// Checks if victory has been triggered
+  bool get victoryTriggered => _victoryManager.victoryTriggered;
 
   @override
   void dispose() {

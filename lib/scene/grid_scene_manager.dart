@@ -1,7 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math_64.dart';
+import 'package:vector_math/vector_math_64.dart' hide Matrix4;
+import 'package:vector_math/vector_math_64.dart' as vm64;
 
 import '../models/model_3d.dart';
 import '../core/tile_map.dart';
@@ -73,15 +74,17 @@ class GridObject {
     );
   }
 
-  Matrix4 get modelMatrix {
-    final matrix = Matrix4.identity();
-    matrix.translateByVector3(worldPosition);
+  vm64.Matrix4 get modelMatrix {
+    final matrix = vm64.Matrix4.identity();
+    final worldPos64 = vm64.Vector3(worldPosition.x, worldPosition.y, worldPosition.z);
+    matrix.translateByVector3(worldPos64);
     if (rotationY != 0.0) {
       matrix.rotateY(rotationY);
     }
     return matrix;
   }
 }
+
 
 class GridSceneManager extends ChangeNotifier {
   static const int gridSize = 10; // Keep for backward compatibility
@@ -608,6 +611,25 @@ class GridSceneManager extends ChangeNotifier {
     _characterObjects[enemy.id] = enemyObject;
   }
 
+  /// Adds the boss to the scene for rendering
+  Future<void> _addBossToScene() async {
+    if (_gameLoopManager?.bossManager.currentBoss != null) {
+      final boss = _gameLoopManager!.bossManager.currentBoss!;
+
+      final bossObject = GridObject(
+        modelPath: boss.modelPath,
+        displayName: boss.id,
+        gridX: boss.position.x,
+        gridZ: boss.position.z,
+        model: boss.model,
+        rotationY: boss.facingDirection.rotationY,
+      );
+
+      _characterObjects[boss.id] = bossObject;
+      debugPrint('GridSceneManager: Added boss ${boss.id} to scene at ${boss.position}');
+    }
+  }
+
   /// Updates enemy positions in the scene (for when enemies move)
   void updateEnemyPositions() {
     if (_enemyManager == null) return;
@@ -753,7 +775,7 @@ class GridSceneManager extends ChangeNotifier {
   }
 
   /// Initialize and start the game loop manager
-  void initializeGameLoop() {
+  Future<void> initializeGameLoop() async {
     if (_ghostCharacter != null && _enemyManager != null && _tileMap != null) {
       _gameLoopManager = GameLoopManager();
       _gameLoopManager!.initialize(
@@ -789,6 +811,13 @@ class GridSceneManager extends ChangeNotifier {
 
       // Initialize turn-based system
       _gameLoopManager!.initializeTurnBasedSystem();
+
+      // Spawn the boss at the designated location
+      if (_tileMap!.bossLocation != null) {
+        debugPrint('GridSceneManager: Spawning boss at ${_tileMap!.bossLocation}');
+        await _gameLoopManager!.spawnBoss(_tileMap!.bossLocation!);
+        await _addBossToScene();
+      }
 
       // Listen for game loop updates
       _gameLoopManager!.addListener(_onGameLoopUpdate);

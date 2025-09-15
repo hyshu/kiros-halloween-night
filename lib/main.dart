@@ -201,9 +201,9 @@ class _GridSceneViewState extends State<GridSceneView> {
       _loadingStatus = 'Initializing combat systems...';
     });
 
-    // Initialize game loop with combat system
+    // Initialize game loop with combat system and spawn boss
     final gameLoopStopwatch = Stopwatch()..start();
-    _sceneManager.initializeGameLoop();
+    await _sceneManager.initializeGameLoop();
     gameLoopStopwatch.stop();
     debugPrint(
       'Game loop initialization: ${gameLoopStopwatch.elapsedMilliseconds}ms',
