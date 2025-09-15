@@ -14,62 +14,64 @@
   },
   "combat": {
     "bossAbilities": {
-      "charge": "💀 ボスが突進攻撃を繰り出した！ 大地が震える！",
-      "areaAttack": "⚡ ボスが範囲攻撃を放った！ 周囲一帯に破壊の嵐！",
-      "regeneration": "💚 ボスが邪悪な力で体力を回復した！ {healAmount}の体力が復活！",
-      "summonMinions": "👻 ボスが雑魚敵を召喚した！ 新たな脅威が現れる！"
+      "charge": "ボスが大声で笑った！ 大地が震える！",
+      "areaAttack": "ボスがくしゃみをした！ 広範囲に衝撃が走る！",
+      "regeneration": "ボスがブラッドオレンジを食べた！ {healAmount}の体力が復活！",
+      "summonMinions": "ボスが迷子の子供を呼び寄せた！ 新たな脅威が現れる！"
     },
     "enemyAttacks": {
       "withDamage": [
-        "{}がキロに意外なハグをしました！驚くほど温かいです！（{}ダメージ）",
-        "フレンドリーな{}がキロに遊び半分でぶつかってきました！（{}ダメージ）",
+        "{}がキロにハグをしました！驚くほど温かいです！（{}ダメージ）",
+        "{}がキロを驚かせようとしました！バアー！（{}ダメージ）",
         "{}がキロとハイタッチしようとしましたが、幽霊に触るのは難しいようです！（{}ダメージ）",
         "{}が浮いている幽霊にくすぐり攻撃を試みました！（{}ダメージ）",
-        "好奇心旺盛な{}がキロの幽霊の形を突いてきました！（{}ダメージ）"
+        "好奇心旺盛な{}がキロの布をめくろうとしました！（{}ダメージ）",
+        "キロは{}を驚かせようとしましたが、笑われるだけでした！（{}ダメージ）",
+        "キロはお菓子をねだる{}に恐怖しました！（{}ダメージ）"
       ],
       "withoutDamage": [
-        "{}がキロに手を振りましたが、幽霊のターゲットを外しました！（0ダメージ）",
-        "困惑した{}がキロが浮いていた空中を振り回しました！（0ダメージ）",
-        "{}のフレンドリーなジェスチャーがキロを素通りしました！（0ダメージ）"
+        "{}がキロにハグしようとしましたが、すんでのところで透明化しました！（0ダメージ）",
+        "{}がキロを驚かせようとしましたが、全然怖くなかったです！（0ダメージ）",
+        "{}の！（0ダメージ）"
       ]
     },
     "playerAttacks": {
       "withDamage": [
-        "キロが怖い「ブー！」を放ちます！敵は怖がって逃げてしまいました！（{}ダメージ）",
-        "キロの幽霊の存在感が敵を圧倒しました！敵は恐怖で消え去りました！（{}ダメージ）",
-        "フレンドリーな幽霊のハグで敵は恥ずかしくて戦えません！（{}ダメージ）",
-        "キロのエーテルなくすぐり攻撃がたまりません！敵は笑いながら去りました！（{}ダメージ）",
-        "敵はキロの幽霊ダンスに魅了され、平和的に立ち去りました！（{}ダメージ）"
+        "キロが怖い「バアー！」を放ちます！Enemyは怖がりました！（{}ダメージ）",
+        "キロの幽霊アピール！Enemyは恐怖で震えています！（{}ダメージ）",
+        "キロのフレンドリーなハグでEnemyは恥ずかしくて戦えません！（{}ダメージ）",
+        "キロのエーテルなくすぐり攻撃がたまりません！Enemyは大笑いしています！（{}ダメージ）",
+        "Enemyはキロの幽霊ダンスに魅了されています！（{}ダメージ）"
       ],
       "withoutDamage": [
-        "キロは怖がらせようとしましたが、敵は笑うだけでした！（{}ダメージ）",
-        "キロの幽霊タッチは気づかれましたが、あまり効果的ではありませんでした！（{}ダメージ）",
-        "敵はキロのアプローチから優しい幽霊の風を感じました！（{}ダメージ）",
-        "キロのフレンドリーな幽霊の手振りが敵を少し混乱させました！（{}ダメージ）"
+        "キロは怖がらせようとしましたが、Enemyは笑うだけでした！（{}ダメージ）",
+        "キロのお化けタッチは気づかれてしまい、あまり効果的ではありませんでした！（{}ダメージ）",
+        "Enemyはキロのアプローチから優しい幽霊の風を感じました！（{}ダメージ）",
+        "キロの優しい「バアー！」はEnemyを少し混乱させました！（{}ダメージ）"
       ]
     },
     "messages": {
-      "allyDefeatsEnemyStrike": "{ally}が強力な一撃で{enemy}を倒しました！",
-      "allyEmergesVictorious": "{ally}が{enemy}との戦いで勝利しました！",
-      "allyOvercomes": "{ally}が戦闘で{enemy}を克服しました！",
-      "allyDefeatedBy": "{ally}が{enemy}によって倒されました。",
-      "enemyOvercomes": "{enemy}が戦闘で{ally}を打ち負かしました。",
-      "allyFalls": "{ally}が{enemy}に倒れました。",
-      "bothDefeatEachOther": "{ally}と{enemy}が互いを倒しました！",
-      "bothFallInCombat": "{ally}と{enemy}が共に戦闘で倒れました！",
-      "bothDefeated": "{ally}と{enemy}が両方とも倒されました！",
-      "exchangeBlows": "{ally}と{enemy}が打ち合いを繰り広げています！",
-      "battleContinues": "{ally}と{enemy}の戦いが続いています！",
-      "fightFiercely": "{ally}と{enemy}が激しく戦っています！",
-      "engagesInCombat": "{ally}が{enemy}と戦闘を開始しました！",
-      "movesToAttack": "{ally}が{enemy}を攻撃するために動きました！",
+      "allyDefeatsEnemyStrike": "{ally}の強力なハグで{enemy}はもはや脅威ではありません！",
+      "allyEmergesVictorious": "{ally}が{enemy}を満足させました！",
+      "allyOvercomes": "{ally}が{enemy}との腕相撲で勝ちました！",
+      "allyDefeatedBy": "{ally}が{enemy}によって満足させられ帰りました！",
+      "enemyOvercomes": "{enemy}が{ally}とのダンス勝負に勝ちました！",
+      "allyFalls": "{ally}が{enemy}に満足させられました！",
+      "bothDefeatEachOther": "{ally}と{enemy}は満足して一緒に帰りました！",
+      "bothFallInCombat": "{ally}と{enemy}が友達になり一緒に帰りました！",
+      "bothDefeated": "{ally}と{enemy}はお互いを認め合いました！",
+      "exchangeBlows": "{ally}と{enemy}の激しいビートボックスバトル！",
+      "battleContinues": "{ally}と{enemy}とのダンス対決は続いています！",
+      "fightFiercely": "{ally}と{enemy}との激しいジョークバトル！",
+      "engagesInCombat": "{ally}が{enemy}とダンスバトルを開始しました！",
+      "movesToAttack": "{ally}が{enemy}と遊ぶために動きました！",
       "confronts": "{ally}が{enemy}に立ち向かいます！",
-      "hasBeenDefeated": "{enemy}が倒されました！",
-      "fallsToGround": "{enemy}が地面に倒れ、敗北しました。",
+      "hasBeenDefeated": "{enemy}が満足して帰りました！",
+      "fallsToGround": "{enemy}が笑い疲れて、横になりました。",
       "noLongerThreat": "{enemy}はもはや脅威ではありません。",
-      "entersCombat": "{ally}が戦闘モードに入りました！",
-      "preparesForBattle": "{ally}が戦闘の準備をしています！",
-      "readiesForCombat": "{ally}が戦闘に備えています！",
+      "entersCombat": "{ally}がエンジョイモードに入りました！",
+      "preparesForBattle": "{ally}が遊びの準備をしています！",
+      "readiesForCombat": "{ally}が遊びに備えています！",
       "returnsToFollowing": "{ally}があなたに従うために戻ってきました。",
       "comesBack": "{ally}があなたの元に戻ってきました。",
       "resumesFollowing": "{ally}が従うことを再開しました。",
@@ -82,12 +84,12 @@
       "looksLessSatisfied": "{ally}があまり満足していないようです。",
       "seemsTroubled": "{ally}が困っているようです。",
       "appearsUnhappy": "{ally}が不満そうに見えます。",
-      "allyDefeatedSatisfied": "{ally}が倒されましたが、奉仕に満足しています。",
-      "combatStarted": "{ally}が{enemy}と戦闘を開始しました！",
-      "combatConcluded": "戦闘が終了しました。",
+      "allyDefeatedSatisfied": "{ally}が帰りましたが、奉仕に満足しています。",
+      "combatStarted": "{ally}が{enemy}とラップバトルを開始しました！",
+      "combatConcluded": "ダンスバトルが終了しました。",
       "allyVictory": "あなたの味方が勝利しました！",
-      "enemyVictory": "敵があなたの味方を倒しました。",
-      "combatDraw": "戦闘は互角で終わりました。"
+      "enemyVictory": "Enemyがあなたの味方を倒しました。",
+      "combatDraw": "ダンスは互角で終わりました。"
     }
   },
   "dialogue": {
