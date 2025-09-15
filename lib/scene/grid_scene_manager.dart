@@ -922,20 +922,10 @@ class GridSceneManager extends ChangeNotifier {
       case TileType.obstacle:
         return (modelKey: _getSmartObstacleModel(position), rotation: 0.0);
       case TileType.candy:
-        // Always show candy items
-        final variant = (position.x * 5 + position.z * 13) % 4;
-        switch (variant) {
-          case 0:
-            return (modelKey: 'candy_apple', rotation: 0.0);
-          case 1:
-            return (modelKey: 'candy_chocolate', rotation: 0.0);
-          case 2:
-            return (modelKey: 'candy_lollipop', rotation: 0.0);
-          case 3:
-            return (modelKey: 'candy_pumpkin', rotation: 0.0);
-          default:
-            return (modelKey: 'candy_apple', rotation: 0.0);
-        }
+        // Always show candy items based on actual candy type
+        final candyType = _getCandyTypeForPosition(position);
+        final modelKey = _getCandyModelKeyForType(candyType);
+        return (modelKey: modelKey, rotation: 0.0);
       case TileType.floor:
         return null; // Most floor tiles remain empty for navigation
     }
@@ -1226,6 +1216,11 @@ class GridSceneManager extends ChangeNotifier {
     'candy_cookie': {'path': 'assets/foods/cookie.obj', 'name': 'Cookie'},
     'candy_donut': {'path': 'assets/foods/donut.obj', 'name': 'Donut'},
     'candy_cupcake': {'path': 'assets/foods/cupcake.obj', 'name': 'Cupcake'},
+    'candy_candyBar': {'path': 'assets/foods/candy-bar.obj', 'name': 'Candy Bar'},
+    'candy_iceCream': {'path': 'assets/foods/ice-cream.obj', 'name': 'Ice Cream'},
+    'candy_popsicle': {'path': 'assets/foods/popsicle.obj', 'name': 'Popsicle'},
+    'candy_gingerbread': {'path': 'assets/foods/ginger-bread.obj', 'name': 'Gingerbread'},
+    'candy_muffin': {'path': 'assets/foods/muffin.obj', 'name': 'Muffin'},
     'candy_pumpkin': {
       'path': 'assets/graveyard/pumpkin-carved.obj',
       'name': 'Pumpkin',
@@ -1278,6 +1273,32 @@ class GridSceneManager extends ChangeNotifier {
     final variant =
         (position.x * 5 + position.z * 13) % CandyType.values.length;
     return CandyType.values[variant];
+  }
+
+  /// Gets the appropriate model key for a candy type
+  String _getCandyModelKeyForType(CandyType candyType) {
+    switch (candyType) {
+      case CandyType.candyBar:
+        return 'candy_candyBar';
+      case CandyType.chocolate:
+        return 'candy_chocolate';
+      case CandyType.cookie:
+        return 'candy_cookie';
+      case CandyType.cupcake:
+        return 'candy_cupcake';
+      case CandyType.donut:
+        return 'candy_donut';
+      case CandyType.iceCream:
+        return 'candy_iceCream';
+      case CandyType.lollipop:
+        return 'candy_lollipop';
+      case CandyType.popsicle:
+        return 'candy_popsicle';
+      case CandyType.gingerbread:
+        return 'candy_gingerbread';
+      case CandyType.muffin:
+        return 'candy_muffin';
+    }
   }
 
   /// Removes candy from the scene when collected
