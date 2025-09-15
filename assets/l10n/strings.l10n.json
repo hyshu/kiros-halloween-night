@@ -14,62 +14,64 @@
   },
   "combat": {
     "bossAbilities": {
-      "charge": "💀 The Boss unleashes a devastating charge! The ground trembles!",
-      "areaAttack": "⚡ The Boss casts a destructive area attack! Devastation spreads!",
-      "regeneration": "💚 The Boss regenerates with dark power! {healAmount} health restored!",
-      "summonMinions": "👻 The Boss summons minions! New threats emerge!"
+      "charge": "The Boss laughs loudly! The ground trembles!",
+      "areaAttack": "The Boss sneezes! Shockwaves spread everywhere!",
+      "regeneration": "The Boss eats a blood orange! {healAmount} health restored!",
+      "summonMinions": "The Boss calls lost children! New threats emerge!"
     },
     "enemyAttacks": {
       "withDamage": [
         "The {} gives Kiro an unexpected hug! It's surprisingly warm! ({} damage)",
-        "A friendly {} bumps into Kiro playfully! ({} damage)",
+        "The {} tries to surprise Kiro! Boo! ({} damage)",
         "The {} tries to high-five Kiro, but ghosts are tricky to touch! ({} damage)",
-        "The {} attempts a tickle attack on the floating ghost! ({} damage)",
-        "A curious {} pokes at Kiro's ghostly form! ({} damage)"
+        "The {} attempts a tickle attack on Kiro! ({} damage)",
+        "A curious {} tries to lift Kiro's ghostly sheet! ({} damage)",
+        "Kiro tries to scare the {} but just gets laughed at! ({} damage)",
+        "Kiro is frightened by the {} asking for candy! ({} damage)"
       ],
       "withoutDamage": [
-        "The {} waves at Kiro but misses the ghostly target! (0 damage)",
-        "A confused {} swings at empty air where Kiro was floating! (0 damage)",
-        "The {}'s friendly gesture goes right through Kiro! (0 damage)"
+        "The {} tries to hug Kiro but he turns transparent at the last second! (0 damage)",
+        "The {} tries to surprise Kiro but it wasn't scary at all! (0 damage)",
+        "The {} misses completely! (0 damage)"
       ]
     },
     "playerAttacks": {
       "withDamage": [
-        "Kiro gives a spooky BOO! The enemy runs away scared! ({} damage)",
-        "Kiro's ghostly presence overwhelms the foe! They vanish in fright! ({} damage)",
-        "A friendly ghostly hug makes the enemy too embarrassed to continue! ({} damage)",
-        "Kiro's ethereal tickle attack is too much! The enemy giggles away! ({} damage)",
-        "The enemy is so charmed by Kiro's ghostly dance, they leave peacefully! ({} damage)"
+        "Kiro gives a scary BOO! Enemy is frightened! ({} damage)",
+        "Kiro's ghostly appeal! Enemy is trembling with fear! ({} damage)",
+        "Kiro's friendly hug makes Enemy too embarrassed to fight! ({} damage)",
+        "Kiro's ethereal tickle attack is irresistible! Enemy is laughing loudly! ({} damage)",
+        "Enemy is charmed by Kiro's ghostly dance! ({} damage)"
       ],
       "withoutDamage": [
-        "Kiro attempts a spooky scare, but the enemy just laughs! ({} damage)",
-        "Kiro's ghostly boop is noticed but not very effective! ({} damage)",
-        "The enemy feels a gentle ghostly breeze from Kiro's approach! ({} damage)",
-        "Kiro's friendly ghost wave confuses the enemy slightly! ({} damage)"
+        "Kiro tries to scare but Enemy just laughs! ({} damage)",
+        "Kiro's ghost touch is noticed but not very effective! ({} damage)",
+        "Enemy feels a gentle ghostly breeze from Kiro's approach! ({} damage)",
+        "Kiro's gentle BOO confuses Enemy slightly! ({} damage)"
       ]
     },
     "messages": {
-      "allyDefeatsEnemyStrike": "{ally} defeats {enemy} with a powerful strike!",
-      "allyEmergesVictorious": "{ally} emerges victorious against {enemy}!",
-      "allyOvercomes": "{ally} overcomes {enemy} in battle!",
-      "allyDefeatedBy": "{ally} is defeated by {enemy}.",
-      "enemyOvercomes": "{enemy} overcomes {ally} in combat.",
-      "allyFalls": "{ally} falls to {enemy}.",
-      "bothDefeatEachOther": "{ally} and {enemy} defeat each other!",
-      "bothFallInCombat": "Both {ally} and {enemy} fall in combat!",
-      "bothDefeated": "{ally} and {enemy} are both defeated!",
-      "exchangeBlows": "{ally} and {enemy} exchange blows!",
-      "battleContinues": "The battle between {ally} and {enemy} continues!",
-      "fightFiercely": "{ally} and {enemy} fight fiercely!",
-      "engagesInCombat": "{ally} engages {enemy} in combat!",
-      "movesToAttack": "{ally} moves to attack {enemy}!",
+      "allyDefeatsEnemyStrike": "{ally}'s powerful hug makes {enemy} no longer a threat!",
+      "allyEmergesVictorious": "{ally} satisfies {enemy}!",
+      "allyOvercomes": "{ally} wins the arm wrestling match against {enemy}!",
+      "allyDefeatedBy": "{ally} is satisfied by {enemy} and returns home!",
+      "enemyOvercomes": "{enemy} wins the dance battle against {ally}!",
+      "allyFalls": "{ally} is satisfied by {enemy}!",
+      "bothDefeatEachOther": "{ally} and {enemy} are satisfied and go home together!",
+      "bothFallInCombat": "{ally} and {enemy} become friends and go home together!",
+      "bothDefeated": "{ally} and {enemy} acknowledge each other!",
+      "exchangeBlows": "Intense beatbox battle between {ally} and {enemy}!",
+      "battleContinues": "The dance battle between {ally} and {enemy} continues!",
+      "fightFiercely": "Intense joke battle between {ally} and {enemy}!",
+      "engagesInCombat": "{ally} starts a dance battle with {enemy}!",
+      "movesToAttack": "{ally} moves to play with {enemy}!",
       "confronts": "{ally} confronts {enemy}!",
-      "hasBeenDefeated": "{enemy} has been defeated!",
-      "fallsToGround": "{enemy} falls to the ground, defeated.",
+      "hasBeenDefeated": "{enemy} is satisfied and goes home!",
+      "fallsToGround": "{enemy} is tired from laughing and lies down.",
       "noLongerThreat": "{enemy} is no longer a threat.",
-      "entersCombat": "{ally} enters combat mode!",
-      "preparesForBattle": "{ally} prepares for battle!",
-      "readiesForCombat": "{ally} readies for combat!",
+      "entersCombat": "{ally} enters enjoy mode!",
+      "preparesForBattle": "{ally} prepares to play!",
+      "readiesForCombat": "{ally} gets ready to play!",
       "returnsToFollowing": "{ally} returns to following you.",
       "comesBack": "{ally} comes back to your side.",
       "resumesFollowing": "{ally} resumes following.",
@@ -82,12 +84,12 @@
       "looksLessSatisfied": "{ally} looks less satisfied.",
       "seemsTroubled": "{ally} seems troubled.",
       "appearsUnhappy": "{ally} appears unhappy.",
-      "allyDefeatedSatisfied": "{ally} has been defeated but feels satisfied with their service.",
-      "combatStarted": "{ally} engages {enemy} in combat!",
-      "combatConcluded": "The combat has concluded.",
+      "allyDefeatedSatisfied": "{ally} has gone home but feels satisfied with their service.",
+      "combatStarted": "{ally} starts a rap battle with {enemy}!",
+      "combatConcluded": "The dance battle has concluded.",
       "allyVictory": "Your ally emerges victorious!",
       "enemyVictory": "The enemy has defeated your ally.",
-      "combatDraw": "The battle ends in a stalemate."
+      "combatDraw": "The dance ends in a tie."
     }
   },
   "dialogue": {
@@ -114,7 +116,7 @@
       "A glowing {name} catches Kiro's attention. Sweet supernatural treat!",
       "Kiro discovers a magical {name} that sparkles with otherworldly flavor.",
       "The {name} makes Kiro glow brighter with ghostly happiness.",
-      "Kiro gobbles up the {name}, feeling more spirited than ever!"
+      "Kiro picked up {name}! Looks delicious!"
     ],
     "inventoryFullMessage": "Kiro's inventory is full! Can't pick up more candy."
   },
